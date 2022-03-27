@@ -1,0 +1,16 @@
+[package]
+authors = ["realaravinth <realaravinth@batsense.net>"]
+description = "ForgeFlux world - Federated forge spider"
+documentation = "https://forgeflux.org/"
+edition = "2021"
+license = "AGPLv3 or later version"
+name = "world"
+repository = "https://github.com/forgeflux-org/world"
+version = "0.1.0"
+[dependencies]
+actix-rt = "*"
+rand = "*"
+
+[dependencies.trust-dns-resolver]
+features = ["tokio-runtime", "dns-over-tls", "dns-over-rustls"]
+version = "0.21.1"
