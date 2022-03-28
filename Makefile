@@ -9,7 +9,7 @@ clean: ## Clean all build artifacts and dependencies
 	@cargo clean
 
 coverage: migrate ## Generate coverage report in HTML format
-	cargo tarpaulin -t 1200 --out Html --skip-clean  --all-features --no-fail-fast --workspace=database/db-sqlx-postgres,database/db-sqlx-sqlite,.
+	cargo tarpaulin -t 1200 --out Html --skip-clean  --all-features --no-fail-fast #--workspace=database/db-sqlx-postgres,database/db-sqlx-sqlite,.
 
 dev-env: ## Download development dependencies
 	cargo fetch
@@ -44,16 +44,15 @@ sqlx-offline-data: ## prepare sqlx offline data
 		--all-features
 
 test: migrate ## Run tests
-	cd database/db-sqlx-postgres &&\
-		DATABASE_URL=${POSTGRES_DATABASE_URL}\
-		cargo test --no-fail-fast
-	cd database/db-sqlx-sqlite &&\
-		DATABASE_URL=${SQLITE_DATABASE_URL}\
-		cargo test --no-fail-fast
-	cargo test
+#	cd database/db-sqlx-postgres &&\
+#		DATABASE_URL=${POSTGRES_DATABASE_URL}\
+#		cargo test --no-fail-fast
+#	cd database/db-sqlx-sqlite &&\
+#		DATABASE_URL=${SQLITE_DATABASE_URL}\
+#		cargo test --no-fail-fast
 
 xml-test-coverage: migrate ## Generate cobertura.xml test coverage
-	cargo tarpaulin -t 1200 --out Xml --skip-clean --all-features --no-fail-fast --workspace=database/db-sqlx-postgres,database/db-sqlx-sqlite,.
+	cargo tarpaulin -t 1200 --out Xml --skip-clean --all-features --no-fail-fast #--workspace=database/db-sqlx-postgres,database/db-sqlx-sqlite,.
 
 help: ## Prints help for targets with comments
 	@cat $(MAKEFILE_LIST) | grep -E '^[a-zA-Z_-]+:.*?## .*$$' | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'
