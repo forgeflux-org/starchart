@@ -1,0 +1,4 @@
+var searchIndex = JSON.parse('{\
+"starchart":{"doc":"","t":[17,17,17,5,0,0,5,17,3,17,12,11,11,11,11,11,12,11,11,11,11,12,11,11],"n":["DOMAIN","PKG_NAME","VERSION","main","utils","verify","get_random","KEY_LEN","TXTChallenge","VALUES_LEN","base_hostname","borrow","borrow_mut","from","get_txt_key","into","key","new","try_from","try_into","type_id","value","verify_txt","vzip"],"q":["starchart","","","","","","starchart::utils","starchart::verify","","","","","","","","","","","","","","","",""],"d":["","","","","","","","","","","","","","","","","","","","","","","",""],"i":[0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1],"f":[null,null,null,[[]],null,null,[[["usize",15]],["string",3]],null,null,null,null,[[]],[[]],[[]],[[],["string",3]],[[]],null,[[["str",15]]],[[],["result",4]],[[],["result",4]],[[],["typeid",3]],null,[[]],[[]]],"p":[[3,"TXTChallenge"]]}\
+}');
+if (window.initSearch) {window.initSearch(searchIndex)};
