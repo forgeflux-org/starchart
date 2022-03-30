@@ -1,5 +1,5 @@
 /*
- * ForgeFlux World - A federated software forge spider
+ * ForgeFlux StarChart - A federated software forge spider
  * Copyright © 2022 Aravinth Manivannan <realaravinth@batsense.net>
  *
  * This program is free software: you can redistribute it and/or modify

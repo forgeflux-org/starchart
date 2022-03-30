@@ -1,5 +1,5 @@
 /*
- * ForgeFlux World - A federated software forge spider
+ * ForgeFlux StarChart - A federated software forge spider
  * Copyright © 2022 Aravinth Manivannan <realaravinth@batsense.net>
  *
  * This program is free software: you can redistribute it and/or modify
@@ -62,9 +62,9 @@ mod tests {
     #[actix_rt::test]
     async fn verify_txt_works() {
         // please note that this DNS record is in prod
-        const KEY: &str = "test-world-foobardontmindme";
-        const BASE_DOMAIN: &str = "world.forgeflux.org";
-        const VALUE: &str = "ifthisvalueisretrievedbyforgefluxworldthenthetestshouldpass";
+        const KEY: &str = "test-starchart-foobardontmindme";
+        const BASE_DOMAIN: &str = "starchart.forgeflux.org";
+        const VALUE: &str = "ifthisvalueisretrievedbyforgefluxstarchartthenthetestshouldpass";
         let mut txt_challenge = TXTChallenge {
             value: VALUE.to_string(),
             base_hostname: BASE_DOMAIN.to_string(),
@@ -72,7 +72,7 @@ mod tests {
         };
         assert_eq!(
             txt_challenge.get_txt_key(),
-            "test-world-foobardontmindme.world.forgeflux.org",
+            "test-starchart-foobardontmindme.starchart.forgeflux.org"
         );
 
         assert!(

@@ -1,5 +1,5 @@
 /*
- * ForgeFlux World - A federated software forge spider
+ * ForgeFlux StarChart - A federated software forge spider
  * Copyright © 2022 Aravinth Manivannan <realaravinth@batsense.net>
  *
  * This program is free software: you can redistribute it and/or modify
@@ -17,6 +17,10 @@
  */
 pub mod utils;
 pub mod verify;
+
+pub const VERSION: &str = env!("CARGO_PKG_VERSION");
+pub const PKG_NAME: &str = env!("CARGO_PKG_NAME");
+pub const DOMAIN: &str = "todo.example.forgeflux.org";
 
 #[actix_rt::main]
 async fn main() {}

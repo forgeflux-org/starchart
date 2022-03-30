@@ -1,15 +1,29 @@
 [package]
 authors = ["realaravinth <realaravinth@batsense.net>"]
-description = "ForgeFlux world - Federated forge spider"
+description = "ForgeFlux StarChart - Federated forge spider"
 documentation = "https://forgeflux.org/"
 edition = "2021"
 license = "AGPLv3 or later version"
-name = "world"
-repository = "https://github.com/forgeflux-org/world"
+name = "starchart"
+repository = "https://github.com/forgeflux-org/starchart"
 version = "0.1.0"
 [dependencies]
-actix-rt = "*"
-rand = "*"
+actix-rt = "2.7"
+lazy_static = "1.4.0"
+rand = "0.8.5"
+tera = "1.15"
+url = "2.2.2"
+
+[dependencies.reqwest]
+features = ["rustls-tls-native-roots", "gzip", "deflate", "brotli", "json"]
+version = "0.11.10"
+
+[dependencies.serde]
+features = ["derive"]
+version = "1"
+
+[dependencies.serde_json]
+version = "1"
 
 [dependencies.trust-dns-resolver]
 features = ["tokio-runtime", "dns-over-tls", "dns-over-rustls"]

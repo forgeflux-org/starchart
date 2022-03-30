@@ -47,7 +47,7 @@ jobs:
           key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
 
           #      - name: Login to DockerHub
-          #        if: (github.ref == 'refs/heads/master' || github.event_name == 'push') && github.repository == 'forgeflux-org/world'
+          #        if: (github.ref == 'refs/heads/master' || github.event_name == 'push') && github.repository == 'forgeflux-org/starchart'
           #        uses: docker/login-action@v1
           #        with:
           #          username: ${{ secrets.DOCKERHUB_USERNAME }}
@@ -77,7 +77,7 @@ jobs:
             #        run: make docker
             #
             #      - name: publish docker images
-            #        if: matrix.version == 'stable' && (github.ref == 'refs/heads/master' || github.event_name == 'push') && github.repository == 'realaravinth/gitpad'
+            #        if: matrix.version == 'stable' && (github.ref == 'refs/heads/master' || github.event_name == 'push') && github.repository == 'forgeflux-org/starchart'
             #        run: make docker-publish
             #
           #      - name: run migrations
@@ -96,7 +96,7 @@ jobs:
             #          SQLITE_DATABASE_URL: "${{ env.SQLITE_DATABASE_URL }}"
 
       - name: generate documentation
-        if: matrix.version == 'stable' && (github.ref == 'refs/heads/master' || github.event_name == 'push') && github.repository == 'realaravinth/gitpad'
+        if: matrix.version == 'stable' && (github.ref == 'refs/heads/master' || github.event_name == 'push') && github.repository == 'forgeflux-org/starchart'
         run: make doc
           #        env:
           #          GIT_HASH: 8e77345f1597e40c2e266cb4e6dee74888918a61 # dummy value
@@ -104,7 +104,7 @@ jobs:
             #          SQLITE_DATABASE_URL: "${{ env.SQLITE_DATABASE_URL }}"
 
       - name: Deploy to GitHub Pages
-        if: matrix.version == 'stable' && (github.ref == 'refs/heads/master' || github.event_name == 'push') && github.repository == 'realaravinth/gitpad'
+        if: matrix.version == 'stable' && (github.ref == 'refs/heads/master' || github.event_name == 'push') && github.repository == 'forgeflux-org/starchart'
         uses: JamesIves/github-pages-deploy-action@3.7.1
         with:
           branch: gh-pages
