@@ -15,12 +15,13 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+pub mod gitea;
 pub mod utils;
 pub mod verify;
 
 pub const VERSION: &str = env!("CARGO_PKG_VERSION");
 pub const PKG_NAME: &str = env!("CARGO_PKG_NAME");
-pub const DOMAIN: &str = "todo.example.forgeflux.org";
+pub const DOMAIN: &str = "developer-starchart.forgeflux.org";
 
 #[actix_rt::main]
 async fn main() {}
