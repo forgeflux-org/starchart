@@ -1,20 +1,25 @@
 [package]
+name = "starchart"
+repository = "https://github.com/forgeflux-org/starchart"
+version = "0.1.0"
 authors = ["realaravinth <realaravinth@batsense.net>"]
 description = "ForgeFlux StarChart - Federated forge spider"
 documentation = "https://forgeflux.org/"
 edition = "2021"
 license = "AGPLv3 or later version"
-name = "starchart"
-repository = "https://github.com/forgeflux-org/starchart"
-version = "0.1.0"
+build = "build.rs"
+
 [dependencies]
 actix-rt = "2.7"
-config = "0.12.0"
+config = "0.11.0"
 lazy_static = "1.4.0"
 rand = "0.8.5"
 tera = "1.15"
 tokio = { version = "1.17", features = ["fs", "time"] }
 url = "2.2.2"
+validator = { version = "0.14", features = ["derive"]}
+derive_more = "0.99.17"
+log = "0.4.16"
 
 [dependencies.reqwest]
 features = ["rustls-tls-native-roots", "gzip", "deflate", "brotli", "json"]
