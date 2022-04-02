@@ -16,11 +16,13 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 pub mod gitea;
+pub mod settings;
 pub mod utils;
 pub mod verify;
 
 pub const VERSION: &str = env!("CARGO_PKG_VERSION");
 pub const PKG_NAME: &str = env!("CARGO_PKG_NAME");
+pub const GIT_COMMIT_HASH: &str = env!("GIT_HASH");
 pub const DOMAIN: &str = "developer-starchart.forgeflux.org";
 
 #[actix_rt::main]
