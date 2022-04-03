@@ -31,6 +31,10 @@ name = "postgres"
 pool = 4
 database_type = "postgres"
 
+[crawler]
+ttl = 432000 # of crawled records / how often the instance must be polled. In seconds.
+items_per_api_call = 20
+client_timeout = 60 # of HTTP client involved in crawling. In seconds.
 
 [repository]
 root = "/tmp/starchart.batsense.net"

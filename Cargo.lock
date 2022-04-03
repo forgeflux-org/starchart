@@ -1902,6 +1902,7 @@ dependencies = [
  "idna",
  "matches",
  "percent-encoding",
+ "serde 1.0.136",
 ]
 
 [[package]]

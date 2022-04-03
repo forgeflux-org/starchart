@@ -138,6 +138,13 @@ pub struct Database {
 }
 
 #[derive(Debug, Validate, Clone, Deserialize)]
+pub struct Crawler {
+    pub ttl: u64,
+    pub client_timeout: u64,
+    pub items_per_api_call: u64,
+}
+
+#[derive(Debug, Validate, Clone, Deserialize)]
 pub struct Settings {
     pub log: LogLevel,
     pub database: Database,
@@ -148,6 +155,7 @@ pub struct Settings {
     pub repository: Repository,
     #[validate(email)]
     pub admin_email: String,
+    pub crawler: Crawler,
 }
 
 #[cfg(not(tarpaulin_include))]

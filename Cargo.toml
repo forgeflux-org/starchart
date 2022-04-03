@@ -16,7 +16,7 @@ lazy_static = "1.4.0"
 rand = "0.8.5"
 tera = "1.15"
 tokio = { version = "1.17", features = ["fs", "time"] }
-url = "2.2.2"
+url = { version  = "2.2.2", features = ["serde"] }
 validator = { version = "0.14", features = ["derive"]}
 derive_more = "0.99.17"
 log = "0.4.16"
