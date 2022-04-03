@@ -330,6 +330,14 @@
 <span id="328">328</span>
 <span id="329">329</span>
 <span id="330">330</span>
+<span id="331">331</span>
+<span id="332">332</span>
+<span id="333">333</span>
+<span id="334">334</span>
+<span id="335">335</span>
+<span id="336">336</span>
+<span id="337">337</span>
+<span id="338">338</span>
 </pre><pre class="rust"><code><span class="comment">/*
  * ForgeFlux StarChart - A federated software forge spider
  * Copyright (C) 2022  Aravinth Manivannan &lt;realaravinth@batsense.net&gt;
@@ -470,6 +478,13 @@
 }
 
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">Validate</span>, <span class="ident">Clone</span>, <span class="ident">Deserialize</span>)]</span>
+<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">Crawler</span> {
+    <span class="kw">pub</span> <span class="ident">ttl</span>: <span class="ident">u64</span>,
+    <span class="kw">pub</span> <span class="ident">client_timeout</span>: <span class="ident">u64</span>,
+    <span class="kw">pub</span> <span class="ident">items_per_api_call</span>: <span class="ident">u64</span>,
+}
+
+<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">Validate</span>, <span class="ident">Clone</span>, <span class="ident">Deserialize</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">Settings</span> {
     <span class="kw">pub</span> <span class="ident">log</span>: <span class="ident">LogLevel</span>,
     <span class="kw">pub</span> <span class="ident">database</span>: <span class="ident">Database</span>,
@@ -480,6 +495,7 @@
     <span class="kw">pub</span> <span class="ident">repository</span>: <span class="ident">Repository</span>,
     <span class="attribute">#[<span class="ident">validate</span>(<span class="ident">email</span>)]</span>
     <span class="kw">pub</span> <span class="ident">admin_email</span>: <span class="ident">String</span>,
+    <span class="kw">pub</span> <span class="ident">crawler</span>: <span class="ident">Crawler</span>,
 }
 
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">not</span>(<span class="ident">tarpaulin_include</span>))]</span>
