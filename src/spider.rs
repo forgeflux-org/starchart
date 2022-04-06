@@ -23,6 +23,7 @@ use crate::data::Data;
 use crate::gitea::SearchResults;
 
 const REPO_SEARCH_PATH: &str = "/api/v1/repos/search";
+const GITEA_NODEINFO: &str = "/api/v1/nodeinfo";
 
 impl Data {
     pub async fn crawl(&self, hostname: &str) -> Vec<SearchResults> {
@@ -58,6 +59,31 @@ impl Data {
             page += 1;
         }
     }
+
+    /// purpose: interact with instance running on provided hostname and verify if the instance is a
+    /// Gitea instance.
+    ///
+    /// will get nodeinfo information, which contains an identifier to uniquely identify Gitea
+    pub async fn is_gitea(&self, hostname: &str) -> bool {
+        const GITEA_IDENTIFIER: &str = "gitea";
+        let mut url = Url::parse(hostname).unwrap();
+        url.set_path(GITEA_NODEINFO);
+
+        let res: serde_json::Value = self
+            .client
+            .get(url)
+            .send()
+            .await
+            .unwrap()
+            .json()
+            .await
+            .unwrap();
+        if let serde_json::Value::String(software) = &res["software"]["name"] {
+            software == GITEA_IDENTIFIER
+        } else {
+            false
+        }
+    }
 }
 
 #[cfg(test)]
@@ -65,6 +91,12 @@ mod tests {
     use super::*;
     use crate::settings::Settings;
     pub const GITEA_HOST: &str = "http://localhost:8080";
+
+    #[actix_rt::test]
+    async fn is_gitea_works() {
+        let data = Data::new(Settings::new().unwrap()).await;
+        assert!(data.is_gitea(GITEA_HOST).await);
+    }
 
     #[actix_rt::test]
     async fn crawl_gitea() {
