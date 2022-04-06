@@ -1,6 +1,7 @@
 from urllib.parse import urlunparse, urlparse
 from html.parser import HTMLParser
 from time import sleep
+import random
 
 from requests import Session
 import requests
@@ -9,8 +10,8 @@ GITEA_USER = "bot"
 GITEA_EMAIL = "bot@example.com"
 GITEA_PASSWORD = "foobarpassword"
 
-requests.get
-
+TOTAL_NUM_REPOS = 100
+REPOS = []
 
 def check_online():
     count = 0
@@ -99,19 +100,24 @@ class HTMLClient:
         self.session = Session()
 
     @staticmethod
-    def get_csrf_token(page: str) -> str:
+    def __get_csrf_token(page: str) -> str:
         parser = ParseCSRFGiteaForm()
         parser.feed(page)
         csrf = parser.token
         return csrf
 
+    def get_csrf_token(self, url: str) -> str:
+        resp = self.session.get(url, allow_redirects=False)
+        if resp.status_code != 200 and resp.status_code != 302:
+            print(resp.status_code, resp.text)
+            raise Exception(f"Can't get csrf token: {resp.status_code}")
+        csrf = self.__get_csrf_token(resp.text)
+        return csrf
+
+
 def register(client: HTMLClient):
     url = "http://localhost:8080/user/sign_up"
-    resp = client.session.get(url, allow_redirects=False)
-    if resp.status_code != 200:
-        print(resp.status_code, resp.text)
-        raise Exception(resp.status_code)
-    csrf = client.get_csrf_token(resp.text)
+    csrf = client.get_csrf_token(url)
     payload = {
         "_csrf": csrf,
         "user_name": GITEA_USER,
@@ -121,7 +127,58 @@ def register(client: HTMLClient):
     }
     resp = client.session.post(url, data=payload, allow_redirects=False)
 
+
+
+def login(client: HTMLClient):
+    url = "http://localhost:8080/user/login"
+    csrf = client.get_csrf_token(url)
+    payload = {
+        "_csrf": csrf,
+        "user_name": GITEA_USER,
+        "password": GITEA_PASSWORD,
+        "remember": "on",
+    }
+    resp = client.session.post(url, data=payload, allow_redirects=False)
+    print(f"login {client.session.cookies}")
+    if resp.status_code == 302:
+        print("User logged in")
+        return
+
+    raise Exception(
+        f"[ERROR] Authentication failed. status code {resp.status_code}"
+    )
+
+
+
+def create_repositories(client: HTMLClient): 
+    print("foo")
+    def get_repository_payload(csrf: str, name: str):
+        data = {
+            "_csrf": csrf,
+            "uid": "1",
+            "repo_name": name,
+            "description": f"this repository is named {name}",
+            "repo_template": "",
+            "issue_labels": "",
+            "gitignores": "",
+            "license": "",
+            "readme": "Default",
+            "default_branch": "master",
+            "trust_model": "default"
+        }
+        return data
+    url = "http://localhost:8080/repo/create"
+    for repo in REPOS:
+        csrf  = client.get_csrf_token(url)
+        resp = client.session.post(url, data=get_repository_payload(csrf, repo))
+        print(f"Created repository {repo}")
+        if resp.status_code != 302 and resp.status_code != 200:
+            raise Exception(f"Error while creating repository: {repo} {resp.status_code}")
+        
+
 if __name__ == "__main__":
+    for i in range(TOTAL_NUM_REPOS):
+        REPOS.append(f"reopsitory_{i}")
     check_online()
     print("Instace online")
     install()
@@ -132,8 +189,12 @@ if __name__ == "__main__":
         try:
             register(client)
             print("User registered")
+            login(client)
+            create_repositories(client)
             break
-        except:
+        except Exception as e:
+                print(f"Error: {e}")
                 print(f"Retrying {count} time")
                 count += 1
+                sleep(5)
                 continue

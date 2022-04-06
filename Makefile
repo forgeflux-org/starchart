@@ -11,6 +11,14 @@ clean: ## Clean all build artifacts and dependencies
 coverage: migrate ## Generate coverage report in HTML format
 	cargo tarpaulin -t 1200 --out Html --skip-clean  --all-features --no-fail-fast #--workspace=database/db-sqlx-postgres,database/db-sqlx-sqlite,.
 
+check: ## Check for syntax errors on all workspaces
+	cargo check
+#	cd db/db-sqlx-sqlite &&\
+#		DATABASE_URL=${SQLITE_DATABASE_URL}\
+#		cargo check
+#	cd db/db-core/ && cargo check
+#	cd db/migrator && cargo check
+
 dev-env: ## Download development dependencies
 	cargo fetch
 
@@ -45,11 +53,11 @@ sqlx-offline-data: ## prepare sqlx offline data
 
 test: migrate ## Run tests
 	cargo test --no-fail-fast
+#	cd db/db-sqlx-sqlite &&\
+#		DATABASE_URL=${SQLITE_DATABASE_URL}\
 #	cd database/db-sqlx-postgres &&\
 #		DATABASE_URL=${POSTGRES_DATABASE_URL}\
 #		cargo test --no-fail-fast
-#	cd database/db-sqlx-sqlite &&\
-#		DATABASE_URL=${SQLITE_DATABASE_URL}\
 
 xml-test-coverage: migrate ## Generate cobertura.xml test coverage
 	cargo tarpaulin -t 1200 --out Xml --skip-clean --all-features --no-fail-fast #--workspace=database/db-sqlx-postgres,database/db-sqlx-sqlite,.
