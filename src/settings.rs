@@ -121,12 +121,12 @@ impl DatabaseBuilder {
         let name = path.next().expect("no database name").to_string();
 
         let database_type = DBType::from_url(url).unwrap();
-        let port;
-        if database_type == DBType::Sqlite {
-            port = 0;
+        let port = if database_type == DBType::Sqlite {
+            0
         } else {
-            port = url.port().expect("Enter database port").into();
-        }
+            url.port().expect("Enter database port").into()
+        };
+
         DatabaseBuilder {
             port,
             hostname: url.host().expect("Enter database host").to_string(),
