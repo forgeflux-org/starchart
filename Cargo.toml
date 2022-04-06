@@ -35,3 +35,8 @@ version = "1"
 [dependencies.trust-dns-resolver]
 features = ["tokio-runtime", "dns-over-tls", "dns-over-rustls"]
 version = "0.21.1"
+
+#[workspace]
+#exclude = ["db/migrator"]
+#members = [".", "db/db-core", "db/db-sqlx-sqlite"]
+# "db/db-sqlx-postgres"

@@ -24,7 +24,7 @@ cookie_secret = "f12d9adf4e364648664442b8f50bf478e748e1d77c4797b2ec1f56803278"
 # username = "batman"
 # password = "somereallycomplicatedBatmanpassword"
 hostname = "localhost"
-port = "5432"
+port = 5432
 username = "postgres"
 password = "password"
 name = "postgres"
@@ -35,6 +35,7 @@ database_type = "postgres"
 ttl = 432000 # of crawled records / how often the instance must be polled. In seconds.
 items_per_api_call = 20
 client_timeout = 60 # of HTTP client involved in crawling. In seconds.
+wait_before_next_api_call = 2 # in seconds
 
 [repository]
-root = "/tmp/starchart.batsense.net"
+root = "/tmp/starchart.forgeflux.org"

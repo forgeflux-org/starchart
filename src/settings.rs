@@ -119,8 +119,16 @@ impl DatabaseBuilder {
         let mut path = url.path().split('/');
         path.next();
         let name = path.next().expect("no database name").to_string();
+
+        let database_type = DBType::from_url(url).unwrap();
+        let port;
+        if database_type == DBType::Sqlite {
+            port = 0;
+        } else {
+            port = url.port().expect("Enter database port").into();
+        }
         DatabaseBuilder {
-            port: url.port().expect("Enter database port").into(),
+            port,
             hostname: url.host().expect("Enter database host").to_string(),
             username: url.username().into(),
             password: url.password().expect("Enter database password").into(),
@@ -142,6 +150,7 @@ pub struct Crawler {
     pub ttl: u64,
     pub client_timeout: u64,
     pub items_per_api_call: u64,
+    pub wait_before_next_api_call: u64,
 }
 
 #[derive(Debug, Validate, Clone, Deserialize)]
