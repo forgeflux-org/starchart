@@ -18,6 +18,7 @@
 pub mod data;
 pub mod gitea;
 pub mod settings;
+pub mod spider;
 pub mod utils;
 pub mod verify;
 
