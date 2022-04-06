@@ -1,0 +1,1 @@
+initSidebarItems({"constant":[["GITEA_NODEINFO",""],["REPO_SEARCH_PATH",""]]});

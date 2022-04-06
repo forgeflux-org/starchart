@@ -338,6 +338,15 @@
 <span id="336">336</span>
 <span id="337">337</span>
 <span id="338">338</span>
+<span id="339">339</span>
+<span id="340">340</span>
+<span id="341">341</span>
+<span id="342">342</span>
+<span id="343">343</span>
+<span id="344">344</span>
+<span id="345">345</span>
+<span id="346">346</span>
+<span id="347">347</span>
 </pre><pre class="rust"><code><span class="comment">/*
  * ForgeFlux StarChart - A federated software forge spider
  * Copyright (C) 2022  Aravinth Manivannan &lt;realaravinth@batsense.net&gt;
@@ -459,8 +468,16 @@
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">path</span> <span class="op">=</span> <span class="ident">url</span>.<span class="ident">path</span>().<span class="ident">split</span>(<span class="string">&#39;/&#39;</span>);
         <span class="ident">path</span>.<span class="ident">next</span>();
         <span class="kw">let</span> <span class="ident">name</span> <span class="op">=</span> <span class="ident">path</span>.<span class="ident">next</span>().<span class="ident">expect</span>(<span class="string">&quot;no database name&quot;</span>).<span class="ident">to_string</span>();
+
+        <span class="kw">let</span> <span class="ident">database_type</span> <span class="op">=</span> <span class="ident">DBType::from_url</span>(<span class="ident">url</span>).<span class="ident">unwrap</span>();
+        <span class="kw">let</span> <span class="ident">port</span> <span class="op">=</span> <span class="kw">if</span> <span class="ident">database_type</span> <span class="op">==</span> <span class="ident">DBType::Sqlite</span> {
+            <span class="number">0</span>
+        } <span class="kw">else</span> {
+            <span class="ident">url</span>.<span class="ident">port</span>().<span class="ident">expect</span>(<span class="string">&quot;Enter database port&quot;</span>).<span class="ident">into</span>()
+        };
+
         <span class="ident">DatabaseBuilder</span> {
-            <span class="ident">port</span>: <span class="ident">url</span>.<span class="ident">port</span>().<span class="ident">expect</span>(<span class="string">&quot;Enter database port&quot;</span>).<span class="ident">into</span>(),
+            <span class="ident">port</span>,
             <span class="ident">hostname</span>: <span class="ident">url</span>.<span class="ident">host</span>().<span class="ident">expect</span>(<span class="string">&quot;Enter database host&quot;</span>).<span class="ident">to_string</span>(),
             <span class="ident">username</span>: <span class="ident">url</span>.<span class="ident">username</span>().<span class="ident">into</span>(),
             <span class="ident">password</span>: <span class="ident">url</span>.<span class="ident">password</span>().<span class="ident">expect</span>(<span class="string">&quot;Enter database password&quot;</span>).<span class="ident">into</span>(),
@@ -482,6 +499,7 @@
     <span class="kw">pub</span> <span class="ident">ttl</span>: <span class="ident">u64</span>,
     <span class="kw">pub</span> <span class="ident">client_timeout</span>: <span class="ident">u64</span>,
     <span class="kw">pub</span> <span class="ident">items_per_api_call</span>: <span class="ident">u64</span>,
+    <span class="kw">pub</span> <span class="ident">wait_before_next_api_call</span>: <span class="ident">u64</span>,
 }
 
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">Validate</span>, <span class="ident">Clone</span>, <span class="ident">Deserialize</span>)]</span>
