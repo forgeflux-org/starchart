@@ -19,23 +19,18 @@
 use crate::prelude::*;
 
 /// adding forge works
-pub async fn adding_forge_works<T: SCDatabase>(
-    db: &T,
-    create_forge_msg: CreateForge<'static>
-) {
-        let _ = db.delete_forge_instance(&create_forge_msg.hostname).await;
-        db.create_forge_isntance(&create_forge_msg).await.unwrap();
-        assert!(db.forge_exists(create_forge_msg.hostname).await.unwrap(), "forge creation failed, forge existance check failure");
+pub async fn adding_forge_works<T: SCDatabase>(db: &T, create_forge_msg: CreateForge<'static>) {
+    let _ = db.delete_forge_instance(&create_forge_msg.hostname).await;
+    db.create_forge_isntance(&create_forge_msg).await.unwrap();
+    assert!(
+        db.forge_exists(create_forge_msg.hostname).await.unwrap(),
+        "forge creation failed, forge existance check failure"
+    );
 }
-
 
 /// test if all forge type implementations are loaded into DB
 pub async fn forge_type_exists_helper<T: SCDatabase>(db: &T) {
-    for f in [
-        ForgeImplementation::Gitea
-    ]
-    .iter()
-    {
+    for f in [ForgeImplementation::Gitea].iter() {
         println!("Testing forge implementation exists for: {}", f.to_str());
         assert!(db.forge_type_exists(f).await.unwrap());
     }
