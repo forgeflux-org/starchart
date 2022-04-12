@@ -215,13 +215,14 @@ impl Settings {
         match env::var("DATABASE_URL") {
             Ok(val) => {
                 let url = Url::parse(&val).expect("couldn't parse Database URL");
-                let database_conf = DatabaseBuilder::extract_database_url(&url);
-                set_from_database_url(&mut s, &database_conf);
+                s.set("database.url", url.to_string())
+                    .expect("unable to set database URL");
             }
-            Err(e) => warn!("couldn't interpret DATABASE_URL: {}", e),
+            Err(e) => {
+                warn!("couldn't interpret DATABASE_URL: {}", e);
+                set_database_url(&mut s);
+            }
         }
-
-        set_database_url(&mut s);
 
         let mut settings: Settings = s.try_into()?;
 
