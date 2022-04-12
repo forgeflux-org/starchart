@@ -1,0 +1,136 @@
+/*
+ * ForgeFlux StarChart - A federated software forge spider
+ * Copyright (C) 2022  Aravinth Manivannan <realaravinth@batsense.net>
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+#![warn(missing_docs)]
+//! # `Starchart` database operations
+//!
+//! Traits and datastructures used in Starchart to interact with database.
+//!
+//! To use an unsupported database with Starchart, traits present within this crate should be
+//! implemented.
+//!
+//!
+//! ## Organisation
+//!
+//! Database functionallity is divided accross various modules:
+//!
+//! - [errors](crate::auth): error data structures used in this crate
+//! - [ops](crate::ops): meta operations like connection pool creation, migrations and getting
+//! connection from pool
+use std::str::FromStr;
+
+use serde::{Deserialize, Serialize};
+
+pub mod errors;
+pub mod ops;
+#[cfg(feature = "test")]
+pub mod tests;
+
+pub use ops::GetConnection;
+
+pub mod prelude {
+    //! useful imports for users working with a supported database
+
+    pub use super::errors::*;
+    pub use super::ops::*;
+    pub use super::*;
+}
+
+pub mod dev {
+    //! useful imports for supporting a new database
+    pub use super::prelude::*;
+    pub use async_trait::async_trait;
+}
+
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+/// create a new forge on the database
+pub struct CreateForge<'a> {
+    /// hostname of the forge instance: with scheme but remove trailing slash
+    pub hostname: &'a str,
+    /// forge type: which software is the instance running?
+    pub forge_type: ForgeImplementation,
+}
+
+use dev::*;
+#[async_trait]
+/// Starchart's database requirements. To implement support for $Database, kindly implement this
+/// trait.
+pub trait SCDatabase: std::marker::Send + std::marker::Sync + CloneSPDatabase {
+    /// ping DB
+    async fn ping(&self) -> bool;
+
+    /// create forge isntance
+    async fn create_forge_isntance(&self, f: &CreateForge) -> DBResult<()>;
+
+    /// delete forge isntance
+    async fn delete_forge_instance(&self, hostname: &str) -> DBResult<()>;
+
+    /// check if a forge instance exists
+    async fn forge_exists(&self, hostname: &str) -> DBResult<bool>;
+}
+
+/// Trait to clone SCDatabase
+pub trait CloneSPDatabase {
+    /// clone DB
+    fn clone_db(&self) -> Box<dyn SCDatabase>;
+}
+
+impl<T> CloneSPDatabase for T
+where
+    T: SCDatabase + Clone + 'static,
+{
+    fn clone_db(&self) -> Box<dyn SCDatabase> {
+        Box::new(self.clone())
+    }
+}
+
+impl Clone for Box<dyn SCDatabase> {
+    fn clone(&self) -> Self {
+        (**self).clone_db()
+    }
+}
+
+/// Forge type: Gitea, Sourcehut, GitLab, etc. Support is currently only available for Gitea
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "lowercase")]
+pub enum ForgeImplementation {
+    /// [Gitea](https://gitea.io) softare forge
+    Gitea,
+}
+
+impl ForgeImplementation {
+    /// Convert [ForgeImplementation] to [str]
+    pub const fn to_str(&self) -> &'static str {
+        match self {
+            ForgeImplementation::Gitea => "gitea",
+        }
+    }
+}
+
+impl FromStr for ForgeImplementation {
+    type Err = DBError;
+
+    /// Convert [str] to [ForgeImplementation]
+    fn from_str(s: &str) -> DBResult<Self> {
+        const GITEA: &str = ForgeImplementation::Gitea.to_str();
+        let s = s.trim();
+        match s {
+            GITEA => Ok(Self::Gitea),
+            _ => Err(DBError::UnknownForgeType(s.to_owned())),
+        }
+    }
+}
