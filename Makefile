@@ -1,3 +1,9 @@
+define test_sqlite_db
+	cd db/db-sqlx-sqlite &&\
+		DATABASE_URL=${SQLITE_DATABASE_URL}\
+		cargo test --no-fail-fast
+endef
+
 default: ## Debug build
 	cargo build
 
@@ -12,12 +18,12 @@ coverage: migrate ## Generate coverage report in HTML format
 	cargo tarpaulin -t 1200 --out Html --skip-clean  --all-features --no-fail-fast #--workspace=database/db-sqlx-postgres,database/db-sqlx-sqlite,.
 
 check: ## Check for syntax errors on all workspaces
-	cargo check
-#	cd db/db-sqlx-sqlite &&\
-#		DATABASE_URL=${SQLITE_DATABASE_URL}\
-#		cargo check
-#	cd db/db-core/ && cargo check
-#	cd db/migrator && cargo check
+	cargo check --workspace --tests --all-features
+	cd db/migrator && cargo check --tests --all-features
+	cd db/db-sqlx-sqlite &&\
+		DATABASE_URL=${SQLITE_DATABASE_URL}\
+		cargo check
+	cd db/db-core/ && cargo check
 
 dev-env: ## Download development dependencies
 	cargo fetch
@@ -43,18 +49,19 @@ run: default ## Run debug build
 	cargo run
 
 migrate: ## run migrations
-	echo TODO: add migrations
-#	@-rm -rf database/db-sqlx-sqlite/tmp && mkdir database/db-sqlx-sqlite/tmp
-#	cd database/migrator && cargo run
+	@-rm -rf db/db-sqlx-sqlite/tmp && mkdir db/db-sqlx-sqlite/tmp
+	cd db/migrator && cargo run
+#	echo TODO: add migrations
 
 sqlx-offline-data: ## prepare sqlx offline data
-	cargo sqlx prepare  --database-url=${POSTGRES_DATABASE_URL} -- --bin gitpad \
+	cd db/db-sqlx-sqlite/ \
+		&& DATABASE_URL=${SQLITE_DATABASE_URL} cargo sqlx prepare
+#	cargo sqlx prepare  --database-url=${POSTGRES_DATABASE_URL} -- --bin starchart \
 		--all-features
-
 test: migrate ## Run tests
+	$(call test_sqlite_db)
 	cargo test --no-fail-fast
-#	cd db/db-sqlx-sqlite &&\
-#		DATABASE_URL=${SQLITE_DATABASE_URL}\
+
 #	cd database/db-sqlx-postgres &&\
 #		DATABASE_URL=${POSTGRES_DATABASE_URL}\
 #		cargo test --no-fail-fast
