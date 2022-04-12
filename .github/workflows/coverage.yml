@@ -44,6 +44,7 @@ jobs:
             target
           key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
 
+
       - name: Install ${{ matrix.version }}
         uses: actions-rs/toolchain@v1
         with:
@@ -85,7 +86,8 @@ jobs:
           #          POSTGRES_DATABASE_URL: "${{ env.POSTGRES_DATABASE_URL }}"
           #          SQLITE_DATABASE_URL: "${{ env.SQLITE_DATABASE_URL }}"
         with:
-          args: "--all-features --no-fail-fast --workspace=database/db-sqlx-postgres,database/db-sqlx-sqlite,. -t 1200"
+          args: "--all-features --no-fail-fast --workspace=db/db-sqlx-sqlite,. -t 1200"
+          #          args: "--all-features --no-fail-fast --workspace=database/db-sqlx-postgres,database/db-sqlx-sqlite,. -t 1200"
 
       - name: Upload to Codecov
         if: matrix.version == 'stable' && (github.ref == 'refs/heads/master' || github.event_name == 'pull_request')
