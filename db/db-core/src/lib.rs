@@ -81,6 +81,9 @@ pub trait SCDatabase: std::marker::Send + std::marker::Sync + CloneSPDatabase {
 
     /// check if a forge instance exists
     async fn forge_exists(&self, hostname: &str) -> DBResult<bool>;
+
+    /// check if forge type exists
+    async fn forge_type_exists(&self, forge_type: &ForgeImplementation) -> DBResult<bool>;
 }
 
 /// Trait to clone SCDatabase
