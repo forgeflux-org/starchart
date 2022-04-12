@@ -1,0 +1,59 @@
+{
+  "db": "SQLite",
+  "0bb37cc79d5ef803285d05d06e6ef93b62c0b532c0298148fe436178761fd70a": {
+    "describe": {
+      "columns": [
+        {
+          "name": "ID",
+          "ordinal": 0,
+          "type_info": "Int64"
+        }
+      ],
+      "nullable": [
+        false
+      ],
+      "parameters": {
+        "Right": 1
+      }
+    },
+    "query": "SELECT ID FROM starchart_forges WHERE hostname = $1"
+  },
+  "30de2d37dd1bd602249cd2adfab499e41105249c20dc58cb360f539d6a782fa1": {
+    "describe": {
+      "columns": [
+        {
+          "name": "ID",
+          "ordinal": 0,
+          "type_info": "Int64"
+        }
+      ],
+      "nullable": [
+        false
+      ],
+      "parameters": {
+        "Right": 1
+      }
+    },
+    "query": "SELECT ID FROM starchart_forge_type WHERE name = $1"
+  },
+  "8c78e074d78291f9d3c4ef3526bae00cb356591edad79a7fb1f20aa7bb681216": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Right": 3
+      }
+    },
+    "query": "INSERT INTO\n            starchart_forges (hostname, verified_on, forge_type ) \n        VALUES ($1, $2, (SELECT ID FROM starchart_forge_type WHERE name = $3))"
+  },
+  "f52cde89ec10d5ca2151c9df6ae273ee0d52af9f79bb776765cfa716aad6af53": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Right": 1
+      }
+    },
+    "query": "DELETE FROM starchart_forges WHERE hostname = ($1)"
+  }
+}
