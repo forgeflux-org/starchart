@@ -36,7 +36,20 @@ version = "1"
 features = ["tokio-runtime", "dns-over-tls", "dns-over-rustls"]
 version = "0.21.1"
 
-#[workspace]
-#exclude = ["db/migrator"]
-#members = [".", "db/db-core", "db/db-sqlx-sqlite"]
+[dependencies.db-core]
+path = "./db/db-core"
+
+#[dependencies.db-sqlx-postgres]
+#path = "./db/db-sqlx-postgres"
+#
+[dependencies.db-sqlx-sqlite]
+path = "./db/db-sqlx-sqlite"
+
+[dependencies.sqlx]
+features = ["runtime-actix-rustls", "uuid", "postgres", "time", "offline", "sqlite"]
+version = "0.5.11"
+
+[workspace]
+exclude = ["db/migrator"]
+members = [".", "db/db-core", "db/db-sqlx-sqlite"]
 # "db/db-sqlx-postgres"
