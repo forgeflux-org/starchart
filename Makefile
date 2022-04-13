@@ -31,6 +31,7 @@ check: ## Check for syntax errors on all workspaces
 	cd db/db-core/ && cargo check
 
 dev-env: ## Download development dependencies
+	$(call launch_test_env)
 	cargo fetch
 
 doc: ## Prepare documentation
