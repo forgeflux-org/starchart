@@ -1,1 +1,1 @@
-initSidebarItems({"constant":[["DOMAIN",""],["GIT_COMMIT_HASH",""],["PKG_NAME",""],["VERSION",""]],"fn":[["main",""]],"mod":[["data",""],["gitea",""],["settings",""],["spider",""],["utils",""],["verify",""]]});
+initSidebarItems({"constant":[["DOMAIN",""],["GIT_COMMIT_HASH",""],["PKG_NAME",""],["VERSION",""]],"fn":[["main",""]],"mod":[["data",""],["db",""],["gitea",""],["settings",""],["spider",""],["utils",""],["verify",""]]});
