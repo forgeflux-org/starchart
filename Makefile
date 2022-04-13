@@ -1,3 +1,8 @@
+define launch_test_env
+	docker-compose -f docker-compose-dev-deps.yml up --detach
+	python ./scripts/gitea.py
+endef
+
 define test_sqlite_db
 	cd db/db-sqlx-sqlite &&\
 		DATABASE_URL=${SQLITE_DATABASE_URL}\
@@ -59,6 +64,7 @@ sqlx-offline-data: ## prepare sqlx offline data
 #	cargo sqlx prepare  --database-url=${POSTGRES_DATABASE_URL} -- --bin starchart \
 		--all-features
 test: migrate ## Run tests
+	$(call launch_test_env)
 	$(call test_sqlite_db)
 	cargo test --no-fail-fast
 
