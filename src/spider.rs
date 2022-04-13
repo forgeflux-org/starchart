@@ -19,16 +19,28 @@ use std::time::Duration;
 use tokio::time;
 use url::Url;
 
+use db_core::prelude::*;
+
 use crate::data::Data;
+use crate::db::BoxDB;
 use crate::gitea::SearchResults;
 
 const REPO_SEARCH_PATH: &str = "/api/v1/repos/search";
 const GITEA_NODEINFO: &str = "/api/v1/nodeinfo";
 
 impl Data {
-    pub async fn crawl(&self, hostname: &str) -> Vec<SearchResults> {
+    pub async fn crawl(&self, hostname: &str, db: &BoxDB) -> Vec<SearchResults> {
         let mut page = 1;
         let mut url = Url::parse(hostname).unwrap();
+        let hostname = url.host().as_ref().unwrap().to_string();
+        if !db.forge_exists(&hostname).await.unwrap() {
+            let msg = CreateForge {
+                hostname: &hostname,
+                forge_type: ForgeImplementation::Gitea,
+            };
+            db.create_forge_isntance(&msg).await.unwrap();
+        }
+
         url.set_path(REPO_SEARCH_PATH);
         let mut repos = Vec::new();
         loop {
@@ -46,7 +58,7 @@ impl Data {
                 .json()
                 .await
                 .unwrap();
-            // TODO implement save
+
             time::sleep(Duration::new(
                 self.settings.crawler.wait_before_next_api_call,
                 0,
@@ -88,20 +100,20 @@ impl Data {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
-    use crate::settings::Settings;
+    use crate::tests::sqlx_sqlite;
+
     pub const GITEA_HOST: &str = "http://localhost:8080";
 
     #[actix_rt::test]
     async fn is_gitea_works() {
-        let data = Data::new(Settings::new().unwrap()).await;
+        let (_db, data) = sqlx_sqlite::get_data().await;
         assert!(data.is_gitea(GITEA_HOST).await);
     }
 
     #[actix_rt::test]
     async fn crawl_gitea() {
-        let data = Data::new(Settings::new().unwrap()).await;
-        let res = data.crawl(GITEA_HOST).await;
+        let (db, data) = sqlx_sqlite::get_data().await;
+        let res = data.crawl(GITEA_HOST, &db).await;
         let mut elements = 0;
         res.iter().for_each(|r| elements += r.data.len());
         assert_eq!(res.len(), 5);
