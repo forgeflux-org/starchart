@@ -53,17 +53,19 @@ jobs:
 
       - name: load env
         run: |
+          mkdir -p db/db-sqlx-sqlite/tmp &&
           source .env-sample \
             && echo "POSTGRES_DATABASE_URL=$POSTGRES_DATABASE_URL" >> $GITHUB_ENV \
             && echo "SQLITE_DATABASE_URL=$SQLITE_DATABASE_URL" >> $GITHUB_ENV
 
-      - name: launch gitea
-        timeout-minutes: 10
-        run: docker-compose -f docker-compose-dev-deps.yml up --detach
-
-      - name: Install and setup Gitea
-        timeout-minutes: 10
-        run: python ./scripts/gitea.py
+      # usually run as part of `make test` but because this workflow doesn't run
+      # that command, `make dev-env` is used
+      - name: setup dev environment
+        run: make dev-env
+        env:
+          GIT_HASH: 8e77345f1597e40c2e266cb4e6dee74888918a61 # dummy value
+          POSTGRES_DATABASE_URL: "${{ env.POSTGRES_DATABASE_URL }}"
+          SQLITE_DATABASE_URL: "${{ env.SQLITE_DATABASE_URL }}"
 
       - name: run migrations
         run: make migrate
