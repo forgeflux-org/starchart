@@ -16,9 +16,12 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 pub mod data;
+pub mod db;
 pub mod gitea;
 pub mod settings;
 pub mod spider;
+#[cfg(test)]
+mod tests;
 pub mod utils;
 pub mod verify;
 
