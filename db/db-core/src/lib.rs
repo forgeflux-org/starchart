@@ -40,6 +40,7 @@ pub mod ops;
 #[cfg(feature = "test")]
 pub mod tests;
 
+use dev::*;
 pub use ops::GetConnection;
 
 pub mod prelude {
@@ -65,7 +66,20 @@ pub struct CreateForge<'a> {
     pub forge_type: ForgeImplementation,
 }
 
-use dev::*;
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+/// add new user to database
+pub struct AddUser<'a> {
+    /// hostname of the forge instance: with scheme but remove trailing slash
+    /// hostname can be derived  from html_link also, but used to link to user's forge instance
+    pub hostname: &'a str,
+    /// username of the user
+    pub username: &'a str,
+    /// html link to the user profile
+    pub html_link: &'a str,
+    /// OPTIONAL: html link to the user's profile photo
+    pub profile_photo: Option<&'a str>,
+}
+
 #[async_trait]
 /// Starchart's database requirements. To implement support for $Database, kindly implement this
 /// trait.
@@ -84,6 +98,13 @@ pub trait SCDatabase: std::marker::Send + std::marker::Sync + CloneSPDatabase {
 
     /// check if forge type exists
     async fn forge_type_exists(&self, forge_type: &ForgeImplementation) -> DBResult<bool>;
+
+    /// add new user to database
+    async fn add_user(&self, u: &AddUser) -> DBResult<()>;
+
+    /// check if an user exists. When hostname of a forge instace is provided, username search is
+    /// done only on that forge
+    async fn user_exists(&self, username: &str, hostname: Option<&str>) -> DBResult<bool>;
 }
 
 /// Trait to clone SCDatabase
