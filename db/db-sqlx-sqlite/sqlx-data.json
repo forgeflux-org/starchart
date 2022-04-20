@@ -46,6 +46,16 @@
     },
     "query": "INSERT INTO\n            starchart_forges (hostname, verified_on, forge_type ) \n        VALUES ($1, $2, (SELECT ID FROM starchart_forge_type WHERE name = $3))"
   },
+  "b4985ad11fafa367302ca9c0126b95bc70f6ae387f9de649aabb2ef424f676db": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Right": 6
+      }
+    },
+    "query": "INSERT INTO \n                    starchart_users (\n                        hostname_id, username, html_url,\n                        profile_photo_html_url, added_on, last_crawl_on\n                    ) \n            VALUES (\n                    (SELECT ID FROM starchart_forges WHERE hostname = $1), $2, $3, $4, $5, $6)"
+  },
   "f52cde89ec10d5ca2151c9df6ae273ee0d52af9f79bb776765cfa716aad6af53": {
     "describe": {
       "columns": [],

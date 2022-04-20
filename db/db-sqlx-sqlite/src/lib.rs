@@ -162,6 +162,47 @@ impl SCDatabase for Database {
             Err(e) => Err(DBError::DBError(Box::new(e)).into()),
         }
     }
+
+    /// add new user to database
+    async fn add_user(&self, u: &AddUser) -> DBResult<()> {
+        let now = now_unix_time_stamp();
+        sqlx::query!(
+            "INSERT INTO 
+                    starchart_users (
+                        hostname_id, username, html_url,
+                        profile_photo_html_url, added_on, last_crawl_on
+                    ) 
+            VALUES (
+                    (SELECT ID FROM starchart_forges WHERE hostname = $1), $2, $3, $4, $5, $6)",
+            u.hostname,
+            u.username,
+            u.html_link,
+            u.profile_photo,
+            now,
+            now
+        )
+        .execute(&self.pool)
+        .await
+        .map_err(map_register_err)?;
+
+        Ok(())
+    }
+
+    /// check if an user exists. When hostname of a forge instace is provided, username search is
+    /// done only on that forge
+    async fn user_exists(&self, username: &str, hostname: Option<&str>) -> DBResult<bool> {
+        match sqlx::query!(
+            "SELECT ID FROM starchart_forges WHERE hostname = $1",
+            hostname
+        )
+        .fetch_one(&self.pool)
+        .await
+        {
+            Ok(_) => Ok(true),
+            Err(Error::RowNotFound) => Ok(false),
+            Err(e) => Err(DBError::DBError(Box::new(e).into())),
+        }
+    }
 }
 
 fn now_unix_time_stamp() -> i64 {
