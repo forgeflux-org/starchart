@@ -142,6 +142,27 @@
 <span id="137">137</span>
 <span id="138">138</span>
 <span id="139">139</span>
+<span id="140">140</span>
+<span id="141">141</span>
+<span id="142">142</span>
+<span id="143">143</span>
+<span id="144">144</span>
+<span id="145">145</span>
+<span id="146">146</span>
+<span id="147">147</span>
+<span id="148">148</span>
+<span id="149">149</span>
+<span id="150">150</span>
+<span id="151">151</span>
+<span id="152">152</span>
+<span id="153">153</span>
+<span id="154">154</span>
+<span id="155">155</span>
+<span id="156">156</span>
+<span id="157">157</span>
+<span id="158">158</span>
+<span id="159">159</span>
+<span id="160">160</span>
 </pre><pre class="rust"><code><span class="comment">/*
  * ForgeFlux StarChart - A federated software forge spider
  * Copyright (C) 2022  Aravinth Manivannan &lt;realaravinth@batsense.net&gt;
@@ -184,6 +205,7 @@
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;test&quot;</span>)]</span>
 <span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">tests</span>;
 
+<span class="kw">use</span> <span class="ident">dev</span>::<span class="kw-2">*</span>;
 <span class="kw">pub</span> <span class="kw">use</span> <span class="ident">ops::GetConnection</span>;
 
 <span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">prelude</span> {
@@ -209,7 +231,20 @@
     <span class="kw">pub</span> <span class="ident">forge_type</span>: <span class="ident">ForgeImplementation</span>,
 }
 
-<span class="kw">use</span> <span class="ident">dev</span>::<span class="kw-2">*</span>;
+<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Clone</span>, <span class="ident">Debug</span>, <span class="ident">PartialEq</span>, <span class="ident">Serialize</span>, <span class="ident">Deserialize</span>)]</span>
+<span class="doccomment">/// add new user to database</span>
+<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">AddUser</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> {
+    <span class="doccomment">/// hostname of the forge instance: with scheme but remove trailing slash</span>
+    <span class="doccomment">/// hostname can be derived  from html_link also, but used to link to user&#39;s forge instance</span>
+    <span class="kw">pub</span> <span class="ident">hostname</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">str</span>,
+    <span class="doccomment">/// username of the user</span>
+    <span class="kw">pub</span> <span class="ident">username</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">str</span>,
+    <span class="doccomment">/// html link to the user profile</span>
+    <span class="kw">pub</span> <span class="ident">html_link</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">str</span>,
+    <span class="doccomment">/// OPTIONAL: html link to the user&#39;s profile photo</span>
+    <span class="kw">pub</span> <span class="ident">profile_photo</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">str</span><span class="op">&gt;</span>,
+}
+
 <span class="attribute">#[<span class="ident">async_trait</span>]</span>
 <span class="doccomment">/// Starchart&#39;s database requirements. To implement support for $Database, kindly implement this</span>
 <span class="doccomment">/// trait.</span>
@@ -228,6 +263,13 @@
 
     <span class="doccomment">/// check if forge type exists</span>
     <span class="kw">async</span> <span class="kw">fn</span> <span class="ident">forge_type_exists</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">forge_type</span>: <span class="kw-2">&amp;</span><span class="ident">ForgeImplementation</span>) -&gt; <span class="ident">DBResult</span><span class="op">&lt;</span><span class="ident">bool</span><span class="op">&gt;</span>;
+
+    <span class="doccomment">/// add new user to database</span>
+    <span class="kw">async</span> <span class="kw">fn</span> <span class="ident">add_user</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">u</span>: <span class="kw-2">&amp;</span><span class="ident">AddUser</span>) -&gt; <span class="ident">DBResult</span><span class="op">&lt;</span>()<span class="op">&gt;</span>;
+
+    <span class="doccomment">/// check if an user exists. When hostname of a forge instace is provided, username search is</span>
+    <span class="doccomment">/// done only on that forge</span>
+    <span class="kw">async</span> <span class="kw">fn</span> <span class="ident">user_exists</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">username</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>, <span class="ident">hostname</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">str</span><span class="op">&gt;</span>) -&gt; <span class="ident">DBResult</span><span class="op">&lt;</span><span class="ident">bool</span><span class="op">&gt;</span>;
 }
 
 <span class="doccomment">/// Trait to clone SCDatabase</span>
