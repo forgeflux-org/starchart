@@ -16,6 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 use std::time::Duration;
+
 use tokio::time;
 use url::Url;
 
@@ -31,8 +32,8 @@ const GITEA_NODEINFO: &str = "/api/v1/nodeinfo";
 impl Data {
     pub async fn crawl(&self, hostname: &str, db: &BoxDB) -> Vec<SearchResults> {
         let mut page = 1;
-        let mut url = Url::parse(hostname).unwrap();
-        let hostname = url.host().as_ref().unwrap().to_string();
+        let mut instance_url = Url::parse(hostname).unwrap();
+        let hostname = get_hostname(&instance_url);
         if !db.forge_exists(&hostname).await.unwrap() {
             let msg = CreateForge {
                 hostname: &hostname,
@@ -41,6 +42,7 @@ impl Data {
             db.create_forge_isntance(&msg).await.unwrap();
         }
 
+        let mut url = instance_url.clone();
         url.set_path(REPO_SEARCH_PATH);
         let mut repos = Vec::new();
         loop {
@@ -59,11 +61,31 @@ impl Data {
                 .await
                 .unwrap();
 
-            time::sleep(Duration::new(
+            let sleep_fut = time::sleep(Duration::new(
                 self.settings.crawler.wait_before_next_api_call,
                 0,
-            ))
-            .await;
+            ));
+            let sleep_fut = tokio::spawn(sleep_fut);
+
+            for repo in res.data.iter() {
+                if !db
+                    .user_exists(&repo.owner.username, Some(&hostname))
+                    .await
+                    .unwrap()
+                {
+                    let mut profile_url = instance_url.clone();
+                    profile_url.set_path(&repo.owner.username);
+                    let msg = AddUser {
+                        hostname: &hostname,
+                        username: &repo.owner.username,
+                        html_link: profile_url.as_str(),
+                        profile_photo: Some(&repo.owner.avatar_url),
+                    };
+                    db.add_user(&msg).await.unwrap();
+                }
+            }
+
+            sleep_fut.await.unwrap();
             if res.data.is_empty() {
                 return repos;
             }
@@ -101,6 +123,9 @@ impl Data {
 #[cfg(test)]
 mod tests {
     use crate::tests::sqlx_sqlite;
+    use db_core::prelude::*;
+
+    use url::Url;
 
     pub const GITEA_HOST: &str = "http://localhost:8080";
 
@@ -115,7 +140,12 @@ mod tests {
         let (db, data) = sqlx_sqlite::get_data().await;
         let res = data.crawl(GITEA_HOST, &db).await;
         let mut elements = 0;
+        let username = &res.get(0).unwrap().data.get(0).unwrap().owner.username;
+        let hostname = get_hostname(&Url::parse(GITEA_HOST).unwrap());
+        assert!(db.forge_exists(&hostname).await.unwrap());
+        assert!(db.user_exists(username, Some(&hostname)).await.unwrap());
         res.iter().for_each(|r| elements += r.data.len());
+
         assert_eq!(res.len(), 5);
         assert_eq!(elements, 100);
     }
