@@ -191,16 +191,31 @@ impl SCDatabase for Database {
     /// check if an user exists. When hostname of a forge instace is provided, username search is
     /// done only on that forge
     async fn user_exists(&self, username: &str, hostname: Option<&str>) -> DBResult<bool> {
-        match sqlx::query!(
-            "SELECT ID FROM starchart_forges WHERE hostname = $1",
-            hostname
-        )
-        .fetch_one(&self.pool)
-        .await
-        {
-            Ok(_) => Ok(true),
-            Err(Error::RowNotFound) => Ok(false),
-            Err(e) => Err(DBError::DBError(Box::new(e).into())),
+        match hostname {
+            Some(hostname) => match sqlx::query!(
+                "SELECT ID FROM starchart_users WHERE username = $1 AND 
+                hostname_id = (SELECT ID FROM starchart_forges WHERE hostname = $2)",
+                username,
+                hostname,
+            )
+            .fetch_one(&self.pool)
+            .await
+            {
+                Ok(_) => Ok(true),
+                Err(Error::RowNotFound) => Ok(false),
+                Err(e) => Err(DBError::DBError(Box::new(e).into())),
+            },
+            None => match sqlx::query!(
+                "SELECT ID FROM starchart_users WHERE username = $1",
+                username
+            )
+            .fetch_one(&self.pool)
+            .await
+            {
+                Ok(_) => Ok(true),
+                Err(Error::RowNotFound) => Ok(false),
+                Err(e) => Err(DBError::DBError(Box::new(e).into())),
+            },
         }
     }
 }

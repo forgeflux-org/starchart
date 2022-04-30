@@ -18,6 +18,24 @@
     },
     "query": "SELECT ID FROM starchart_forges WHERE hostname = $1"
   },
+  "2afb17ba3753aa440465a836b46b7a1466f25791cfc4d0acdd38bc2755ae3e86": {
+    "describe": {
+      "columns": [
+        {
+          "name": "ID",
+          "ordinal": 0,
+          "type_info": "Int64"
+        }
+      ],
+      "nullable": [
+        false
+      ],
+      "parameters": {
+        "Right": 1
+      }
+    },
+    "query": "SELECT ID FROM starchart_users WHERE username = $1"
+  },
   "30de2d37dd1bd602249cd2adfab499e41105249c20dc58cb360f539d6a782fa1": {
     "describe": {
       "columns": [
@@ -45,6 +63,24 @@
       }
     },
     "query": "INSERT INTO\n            starchart_forges (hostname, verified_on, forge_type ) \n        VALUES ($1, $2, (SELECT ID FROM starchart_forge_type WHERE name = $3))"
+  },
+  "a81dd4b5df666e22fac211092e7b8425d838dd9023aa2b17659352f30831944d": {
+    "describe": {
+      "columns": [
+        {
+          "name": "ID",
+          "ordinal": 0,
+          "type_info": "Int64"
+        }
+      ],
+      "nullable": [
+        false
+      ],
+      "parameters": {
+        "Right": 2
+      }
+    },
+    "query": "SELECT ID FROM starchart_users WHERE username = $1 AND \n                hostname_id = (SELECT ID FROM starchart_forges WHERE hostname = $2)"
   },
   "b4985ad11fafa367302ca9c0126b95bc70f6ae387f9de649aabb2ef424f676db": {
     "describe": {
