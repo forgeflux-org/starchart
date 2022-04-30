@@ -25,7 +25,7 @@ pub struct SearchResults {
     pub data: Vec<Repository>,
 }
 
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Hash, Eq, Serialize, Deserialize)]
 pub struct User {
     pub id: usize,
     pub login: String,
@@ -65,6 +65,7 @@ pub struct Repository {
     pub ssh_url: String,
     pub clone_url: String,
     pub original_url: String,
+    pub owner: User,
     pub website: String,
     pub stars_count: usize,
     pub forks_count: usize,
@@ -108,7 +109,7 @@ pub struct RepoTransfer {
     pub teams: Option<Team>,
 }
 
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Hash, Deserialize)]
 pub struct Organization {
     pub avatar_url: String,
     pub description: String,
@@ -121,7 +122,7 @@ pub struct Organization {
     pub website: String,
 }
 
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Hash, Deserialize)]
 #[serde(rename_all = "lowercase")]
 pub enum Permission {
     None,
