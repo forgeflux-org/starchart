@@ -169,6 +169,7 @@
 <span id="164">164</span>
 <span id="165">165</span>
 <span id="166">166</span>
+<span id="167">167</span>
 </pre><pre class="rust"><code><span class="comment">/*
  * ForgeFlux StarChart - A federated software forge spider
  * Copyright © 2usize22 Aravinth Manivannan &lt;realaravinth@batsense.net&gt;
@@ -196,7 +197,7 @@
     <span class="kw">pub</span> <span class="ident">data</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Repository</span><span class="op">&gt;</span>,
 }
 
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">Clone</span>, <span class="ident">PartialEq</span>, <span class="ident">Serialize</span>, <span class="ident">Deserialize</span>)]</span>
+<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">Clone</span>, <span class="ident">PartialEq</span>, <span class="ident">Hash</span>, <span class="ident">Eq</span>, <span class="ident">Serialize</span>, <span class="ident">Deserialize</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">User</span> {
     <span class="kw">pub</span> <span class="ident">id</span>: <span class="ident">usize</span>,
     <span class="kw">pub</span> <span class="ident">login</span>: <span class="ident">String</span>,
@@ -236,6 +237,7 @@
     <span class="kw">pub</span> <span class="ident">ssh_url</span>: <span class="ident">String</span>,
     <span class="kw">pub</span> <span class="ident">clone_url</span>: <span class="ident">String</span>,
     <span class="kw">pub</span> <span class="ident">original_url</span>: <span class="ident">String</span>,
+    <span class="kw">pub</span> <span class="ident">owner</span>: <span class="ident">User</span>,
     <span class="kw">pub</span> <span class="ident">website</span>: <span class="ident">String</span>,
     <span class="kw">pub</span> <span class="ident">stars_count</span>: <span class="ident">usize</span>,
     <span class="kw">pub</span> <span class="ident">forks_count</span>: <span class="ident">usize</span>,
@@ -279,7 +281,7 @@
     <span class="kw">pub</span> <span class="ident">teams</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Team</span><span class="op">&gt;</span>,
 }
 
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">Clone</span>, <span class="ident">PartialEq</span>, <span class="ident">Serialize</span>, <span class="ident">Deserialize</span>)]</span>
+<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">Clone</span>, <span class="ident">PartialEq</span>, <span class="ident">Serialize</span>, <span class="ident">Hash</span>, <span class="ident">Deserialize</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">Organization</span> {
     <span class="kw">pub</span> <span class="ident">avatar_url</span>: <span class="ident">String</span>,
     <span class="kw">pub</span> <span class="ident">description</span>: <span class="ident">String</span>,
@@ -292,7 +294,7 @@
     <span class="kw">pub</span> <span class="ident">website</span>: <span class="ident">String</span>,
 }
 
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">Clone</span>, <span class="ident">PartialEq</span>, <span class="ident">Serialize</span>, <span class="ident">Deserialize</span>)]</span>
+<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">Clone</span>, <span class="ident">PartialEq</span>, <span class="ident">Serialize</span>, <span class="ident">Hash</span>, <span class="ident">Deserialize</span>)]</span>
 <span class="attribute">#[<span class="ident">serde</span>(<span class="ident">rename_all</span> <span class="op">=</span> <span class="string">&quot;lowercase&quot;</span>)]</span>
 <span class="kw">pub</span> <span class="kw">enum</span> <span class="ident">Permission</span> {
     <span class="prelude-val">None</span>,
