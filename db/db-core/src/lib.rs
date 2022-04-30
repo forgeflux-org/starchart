@@ -34,6 +34,7 @@
 use std::str::FromStr;
 
 use serde::{Deserialize, Serialize};
+use url::Url;
 
 pub mod errors;
 pub mod ops;
@@ -64,6 +65,12 @@ pub struct CreateForge<'a> {
     pub hostname: &'a str,
     /// forge type: which software is the instance running?
     pub forge_type: ForgeImplementation,
+}
+
+/// Get hostname from URL
+/// Utility function for uniform hostname format
+pub fn get_hostname(url: &Url) -> String {
+    url.host().as_ref().unwrap().to_string()
 }
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]

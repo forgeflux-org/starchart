@@ -16,6 +16,7 @@ authors = ["Aravinth Manivannan <realaravinth@batsense.net>"]
 async-trait = "0.1.51"
 thiserror = "1.0.30"
 serde = { version = "1", features = ["derive"]}
+url = { version  = "2.2.2", features = ["serde"] }
 
 [features]
 default = []
