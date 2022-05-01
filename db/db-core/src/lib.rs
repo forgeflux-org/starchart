@@ -112,6 +112,9 @@ pub trait SCDatabase: std::marker::Send + std::marker::Sync + CloneSPDatabase {
     /// check if an user exists. When hostname of a forge instace is provided, username search is
     /// done only on that forge
     async fn user_exists(&self, username: &str, hostname: Option<&str>) -> DBResult<bool>;
+
+    /// check if a repository exists.
+    async fn repository_exists(&self, name: &str, owner: &str, hostname: &str) -> DBResult<bool>;
 }
 
 /// Trait to clone SCDatabase
