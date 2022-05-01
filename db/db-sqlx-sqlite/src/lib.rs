@@ -218,6 +218,29 @@ impl SCDatabase for Database {
             },
         }
     }
+
+    /// check if a repo exists.
+    async fn repository_exists(&self, name: &str, owner: &str, hostname: &str) -> DBResult<bool> {
+        match sqlx::query!(
+            "SELECT ID FROM starchart_repositories
+                    WHERE 
+                        name = $1
+                    AND
+                        owner_id = ( SELECT ID FROM starchart_users WHERE username = $2)
+                    AND
+                        hostname_id = (SELECT ID FROM starchart_forges WHERE hostname = $3)",
+            name,
+            owner,
+            hostname,
+        )
+        .fetch_one(&self.pool)
+        .await
+        {
+            Ok(_) => Ok(true),
+            Err(Error::RowNotFound) => Ok(false),
+            Err(e) => Err(DBError::DBError(Box::new(e).into())),
+        }
+    }
 }
 
 fn now_unix_time_stamp() -> i64 {
