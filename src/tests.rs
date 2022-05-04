@@ -44,6 +44,7 @@ pub mod sqlx_sqlite {
 
     pub async fn get_data() -> (BoxDB, Arc<Data>) {
         let url = env::var("SQLITE_DATABASE_URL").unwrap();
+        env::set_var("DATABASE_URL", &url);
         println!("found db url: {url}");
         let mut settings = Settings::new().unwrap();
         settings.database.url = url.clone();

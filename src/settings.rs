@@ -180,51 +180,57 @@ impl Settings {
     }
 
     pub fn new() -> Result<Self, ConfigError> {
-        let mut s = Config::new();
+        let mut s = Config::builder();
 
         // setting default values
         #[cfg(test)]
-        s.set_default("database.pool", 2.to_string())
-            .expect("Couldn't get the number of CPUs");
+        {
+            s = s
+                .set_default("database.pool", "2")
+                .expect("Couldn't get the number of CPUs");
+        }
 
         const CURRENT_DIR: &str = "./config/default.toml";
         const ETC: &str = "/etc/starchart/config.toml";
 
-        if let Ok(path) = env::var("STARCHART_CONFIG") {
-            s.merge(File::with_name(&path))?;
-        } else if Path::new(CURRENT_DIR).exists() {
+        let mut read_file = false;
+        if Path::new(CURRENT_DIR).exists() {
             // merging default config from file
-            s.merge(File::with_name(CURRENT_DIR))?;
-        } else if Path::new(ETC).exists() {
-            s.merge(File::with_name(ETC))?;
-        } else {
+            s = s.add_source(File::with_name(CURRENT_DIR));
+            read_file = true;
+        }
+
+        if Path::new(ETC).exists() {
+            s = s.add_source(File::with_name(ETC));
+            read_file = true;
+        }
+
+        if let Ok(path) = env::var("STARCHART_CONFIG") {
+            s = s.add_source(File::with_name(&path));
+            read_file = true;
+        }
+        if !read_file {
             log::warn!("configuration file not found");
         }
 
-        s.merge(Environment::with_prefix("STARCHART").separator("__"))?;
-
-        check_url(&s);
+        s = s.add_source(Environment::with_prefix("STARCHART").separator("__"));
 
         match env::var("PORT") {
-            Ok(val) => {
-                s.set("server.port", val).unwrap();
-            }
+            Ok(val) => s = s.set_override("server.port", val).unwrap(),
             Err(e) => warn!("couldn't interpret PORT: {}", e),
         }
 
         match env::var("DATABASE_URL") {
-            Ok(val) => {
-                let url = Url::parse(&val).expect("couldn't parse Database URL");
-                s.set("database.url", url.to_string())
-                    .expect("unable to set database URL");
-            }
+            Ok(val) => s = s.set_override("database.url", val).unwrap(),
+            //let url = Url::parse(&val).expect("couldn't parse Database URL");
+            //TODO: sqlite fails Url::parse, figure out workarounds
             Err(e) => {
                 warn!("couldn't interpret DATABASE_URL: {}", e);
-                set_database_url(&mut s);
             }
         }
 
-        let mut settings: Settings = s.try_into()?;
+        let mut settings = s.build()?.try_deserialize::<Settings>()?;
+        settings.check_url();
 
         settings.log.set_log_level();
         settings.repository.create_root_dir();
@@ -234,58 +240,54 @@ impl Settings {
 
         Ok(settings)
     }
+
+    #[cfg(not(tarpaulin_include))]
+    fn check_url(&self) {
+        Url::parse(&self.source_code).expect("Please enter a URL for source_code in settings");
+    }
 }
 
-#[cfg(not(tarpaulin_include))]
-fn check_url(s: &Config) {
-    let url = s
-        .get::<String>("source_code")
-        .expect("Couldn't access source_code");
+//#[cfg(not(tarpaulin_include))]
+//fn set_from_database_url(s: &mut Config, database_conf: &DatabaseBuilder) {
+//    s.set("database.username", database_conf.username.clone())
+//        .expect("Couldn't set database username");
+//    s.set("database.password", database_conf.password.clone())
+//        .expect("Couldn't access database password");
+//    s.set("database.hostname", database_conf.hostname.clone())
+//        .expect("Couldn't access database hostname");
+//    s.set("database.port", database_conf.port as i64)
+//        .expect("Couldn't access database port");
+//    s.set("database.name", database_conf.name.clone())
+//        .expect("Couldn't access database name");
+//    s.set(
+//        "database.database_type",
+//        format!("{}", database_conf.database_type),
+//    )
+//    .expect("Couldn't access database type");
+//}
 
-    Url::parse(&url).expect("Please enter a URL for source_code in settings");
-}
-
-#[cfg(not(tarpaulin_include))]
-fn set_from_database_url(s: &mut Config, database_conf: &DatabaseBuilder) {
-    s.set("database.username", database_conf.username.clone())
-        .expect("Couldn't set database username");
-    s.set("database.password", database_conf.password.clone())
-        .expect("Couldn't access database password");
-    s.set("database.hostname", database_conf.hostname.clone())
-        .expect("Couldn't access database hostname");
-    s.set("database.port", database_conf.port as i64)
-        .expect("Couldn't access database port");
-    s.set("database.name", database_conf.name.clone())
-        .expect("Couldn't access database name");
-    s.set(
-        "database.database_type",
-        format!("{}", database_conf.database_type),
-    )
-    .expect("Couldn't access database type");
-}
-
-#[cfg(not(tarpaulin_include))]
-fn set_database_url(s: &mut Config) {
-    s.set(
-        "database.url",
-        format!(
-            r"{}://{}:{}@{}:{}/{}",
-            s.get::<String>("database.database_type")
-                .expect("Couldn't access database database_type"),
-            s.get::<String>("database.username")
-                .expect("Couldn't access database username"),
-            s.get::<String>("database.password")
-                .expect("Couldn't access database password"),
-            s.get::<String>("database.hostname")
-                .expect("Couldn't access database hostname"),
-            s.get::<String>("database.port")
-                .expect("Couldn't access database port"),
-            s.get::<String>("database.name")
-                .expect("Couldn't access database name")
-        ),
-    )
-    .expect("Couldn't set databse url");
-}
+//#[cfg(not(tarpaulin_include))]
+//fn set_database_url(s: &mut Config) {
+//    s.set(
+//        "database.url",
+//        format!(
+//            r"{}://{}:{}@{}:{}/{}",
+//            s.get::<String>("database.database_type")
+//                .expect("Couldn't access database database_type"),
+//            s.get::<String>("database.username")
+//                .expect("Couldn't access database username"),
+//            s.get::<String>("database.password")
+//                .expect("Couldn't access database password"),
+//            s.get::<String>("database.hostname")
+//                .expect("Couldn't access database hostname"),
+//            s.get::<String>("database.port")
+//                .expect("Couldn't access database port"),
+//            s.get::<String>("database.name")
+//                .expect("Couldn't access database name")
+//        ),
+//    )
+//    .expect("Couldn't set databse url");
+//}
 
 #[cfg(test)]
 mod tests {
