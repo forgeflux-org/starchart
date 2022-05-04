@@ -93,7 +93,7 @@ pub struct AddRepository<'a> {
     /// html link to the repository
     pub html_link: &'a str,
     /// repository topic tags
-    pub tags: Option<Vec<&'a str>>,
+    pub tags: Option<Vec<String>>,
     /// hostname of the forge instance: with scheme but remove trailing slash
     /// hostname can be derived  from html_link also, but used to link to user's forge instance
     pub hostname: &'a str,

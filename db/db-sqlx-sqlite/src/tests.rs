@@ -63,10 +63,12 @@ async fn everything_works() {
     let connection_options = ConnectionOptions::Fresh(Fresh { pool_options, url });
     let db = connection_options.connect().await.unwrap();
 
+    let tags = TAGS.iter().map(|s| s.to_string()).collect();
+
     let add_repo_msg = AddRepository {
         html_link: HTML_REPO_URL,
         name: REPO_NAME,
-        tags: Some(TAGS.into()),
+        tags: Some(tags),
         owner: USERNAME,
         website: None,
         description: None,
