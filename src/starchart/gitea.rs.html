@@ -170,6 +170,12 @@
 <span id="165">165</span>
 <span id="166">166</span>
 <span id="167">167</span>
+<span id="168">168</span>
+<span id="169">169</span>
+<span id="170">170</span>
+<span id="171">171</span>
+<span id="172">172</span>
+<span id="173">173</span>
 </pre><pre class="rust"><code><span class="comment">/*
  * ForgeFlux StarChart - A federated software forge spider
  * Copyright © 2usize22 Aravinth Manivannan &lt;realaravinth@batsense.net&gt;
@@ -189,6 +195,7 @@
  */</span>
 <span class="kw">use</span> <span class="ident">std::collections::HashMap</span>;
 
+<span class="kw">use</span> <span class="ident">db_core::AddRepository</span>;
 <span class="kw">use</span> <span class="ident">serde</span>::{<span class="ident">Deserialize</span>, <span class="ident">Serialize</span>};
 
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">Clone</span>, <span class="ident">PartialEq</span>, <span class="ident">Serialize</span>, <span class="ident">Deserialize</span>)]</span>
@@ -315,6 +322,11 @@
     <span class="kw">pub</span> <span class="ident">permission</span>: <span class="ident">Permission</span>,
     <span class="kw">pub</span> <span class="ident">units</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>,
     <span class="kw">pub</span> <span class="ident">units_map</span>: <span class="ident">HashMap</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">String</span><span class="op">&gt;</span>,
+}
+
+<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">Clone</span>, <span class="ident">PartialEq</span>, <span class="ident">Serialize</span>, <span class="ident">Deserialize</span>)]</span>
+<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">Topics</span> {
+    <span class="kw">pub</span> <span class="ident">topics</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>,
 }
 
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">test</span>)]</span>

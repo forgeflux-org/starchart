@@ -48,6 +48,8 @@
 <span id="43">43</span>
 <span id="44">44</span>
 <span id="45">45</span>
+<span id="46">46</span>
+<span id="47">47</span>
 </pre><pre class="rust"><code><span class="comment">/*
  * ForgeFlux StarChart - A federated software forge spider
  * Copyright (C) 2022  Aravinth Manivannan &lt;realaravinth@batsense.net&gt;
@@ -69,11 +71,12 @@
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::prelude</span>::<span class="kw-2">*</span>;
 
 <span class="doccomment">/// adding forge works</span>
-<span class="kw">pub</span> <span class="kw">async</span> <span class="kw">fn</span> <span class="ident">adding_forge_works</span><span class="op">&lt;</span><span class="ident">T</span>: <span class="ident">SCDatabase</span><span class="op">&gt;</span>(
+<span class="kw">pub</span> <span class="kw">async</span> <span class="kw">fn</span> <span class="ident">adding_forge_works</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">T</span>: <span class="ident">SCDatabase</span><span class="op">&gt;</span>(
     <span class="ident">db</span>: <span class="kw-2">&amp;</span><span class="ident">T</span>,
-    <span class="ident">create_forge_msg</span>: <span class="ident">CreateForge</span><span class="op">&lt;</span><span class="lifetime">&#39;static</span><span class="op">&gt;</span>,
-    <span class="ident">add_user_msg</span>: <span class="ident">AddUser</span><span class="op">&lt;</span><span class="lifetime">&#39;static</span><span class="op">&gt;</span>,
-    <span class="ident">add_user_msg2</span>: <span class="ident">AddUser</span><span class="op">&lt;</span><span class="lifetime">&#39;static</span><span class="op">&gt;</span>,
+    <span class="ident">create_forge_msg</span>: <span class="ident">CreateForge</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span>,
+    <span class="ident">add_user_msg</span>: <span class="ident">AddUser</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span>,
+    <span class="ident">add_user_msg2</span>: <span class="ident">AddUser</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span>,
+    <span class="ident">add_repo_msg</span>: <span class="ident">AddRepository</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span>,
 ) {
     <span class="kw">let</span> <span class="kw">_</span> <span class="op">=</span> <span class="ident">db</span>.<span class="ident">delete_forge_instance</span>(<span class="kw-2">&amp;</span><span class="ident">create_forge_msg</span>.<span class="ident">hostname</span>).<span class="kw">await</span>;
     <span class="ident">db</span>.<span class="ident">create_forge_isntance</span>(<span class="kw-2">&amp;</span><span class="ident">create_forge_msg</span>).<span class="kw">await</span>.<span class="ident">unwrap</span>();
@@ -84,6 +87,7 @@
 
     <span class="ident">db</span>.<span class="ident">add_user</span>(<span class="kw-2">&amp;</span><span class="ident">add_user_msg</span>).<span class="kw">await</span>.<span class="ident">unwrap</span>();
     <span class="ident">db</span>.<span class="ident">add_user</span>(<span class="kw-2">&amp;</span><span class="ident">add_user_msg2</span>).<span class="kw">await</span>.<span class="ident">unwrap</span>();
+    <span class="ident">db</span>.<span class="ident">create_repository</span>(<span class="kw-2">&amp;</span><span class="ident">add_repo_msg</span>).<span class="kw">await</span>.<span class="ident">unwrap</span>();
 }
 
 <span class="doccomment">/// test if all forge type implementations are loaded into DB</span>
