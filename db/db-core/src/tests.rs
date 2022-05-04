@@ -19,11 +19,12 @@
 use crate::prelude::*;
 
 /// adding forge works
-pub async fn adding_forge_works<T: SCDatabase>(
+pub async fn adding_forge_works<'a, T: SCDatabase>(
     db: &T,
-    create_forge_msg: CreateForge<'static>,
-    add_user_msg: AddUser<'static>,
-    add_user_msg2: AddUser<'static>,
+    create_forge_msg: CreateForge<'a>,
+    add_user_msg: AddUser<'a>,
+    add_user_msg2: AddUser<'a>,
+    add_repo_msg: AddRepository<'a>,
 ) {
     let _ = db.delete_forge_instance(&create_forge_msg.hostname).await;
     db.create_forge_isntance(&create_forge_msg).await.unwrap();
@@ -34,6 +35,7 @@ pub async fn adding_forge_works<T: SCDatabase>(
 
     db.add_user(&add_user_msg).await.unwrap();
     db.add_user(&add_user_msg2).await.unwrap();
+    db.create_repository(&add_repo_msg).await.unwrap();
 }
 
 /// test if all forge type implementations are loaded into DB

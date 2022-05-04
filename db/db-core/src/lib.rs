@@ -87,6 +87,26 @@ pub struct AddUser<'a> {
     pub profile_photo: Option<&'a str>,
 }
 
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+/// add new repository to database
+pub struct AddRepository<'a> {
+    /// html link to the repository
+    pub html_link: &'a str,
+    /// repository topic tags
+    pub tags: Option<Vec<&'a str>>,
+    /// hostname of the forge instance: with scheme but remove trailing slash
+    /// hostname can be derived  from html_link also, but used to link to user's forge instance
+    pub hostname: &'a str,
+    /// repository name
+    pub name: &'a str,
+    /// repository owner
+    pub owner: &'a str,
+    /// repository description, if any
+    pub description: Option<&'a str>,
+    /// repository website, if any
+    pub website: Option<&'a str>,
+}
+
 #[async_trait]
 /// Starchart's database requirements. To implement support for $Database, kindly implement this
 /// trait.
@@ -115,6 +135,9 @@ pub trait SCDatabase: std::marker::Send + std::marker::Sync + CloneSPDatabase {
 
     /// check if a repository exists.
     async fn repository_exists(&self, name: &str, owner: &str, hostname: &str) -> DBResult<bool>;
+
+    /// add new repository to database.
+    async fn create_repository(&self, r: &AddRepository) -> DBResult<()>;
 }
 
 /// Trait to clone SCDatabase
