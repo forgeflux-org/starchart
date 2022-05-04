@@ -25,14 +25,23 @@ use db_core::prelude::*;
 use crate::data::Data;
 use crate::db::BoxDB;
 use crate::gitea::SearchResults;
+use crate::gitea::Topics;
 
 const REPO_SEARCH_PATH: &str = "/api/v1/repos/search";
 const GITEA_NODEINFO: &str = "/api/v1/nodeinfo";
 
 impl Data {
     pub async fn crawl(&self, hostname: &str, db: &BoxDB) -> Vec<SearchResults> {
+        fn empty_is_none(s: &str) -> Option<&str> {
+            if s.trim().is_empty() {
+                None
+            } else {
+                Some(s)
+            }
+        }
+
         let mut page = 1;
-        let mut instance_url = Url::parse(hostname).unwrap();
+        let instance_url = Url::parse(hostname).unwrap();
         let hostname = get_hostname(&instance_url);
         if !db.forge_exists(&hostname).await.unwrap() {
             let msg = CreateForge {
@@ -83,6 +92,34 @@ impl Data {
                     };
                     db.add_user(&msg).await.unwrap();
                 }
+
+                let mut url = instance_url.clone();
+                url.set_path(&format!(
+                    "/api/v1/repos/{}/{}/topics",
+                    repo.owner.username, repo.name
+                ));
+
+                let topics: Topics = self
+                    .client
+                    .get(url)
+                    .send()
+                    .await
+                    .unwrap()
+                    .json()
+                    .await
+                    .unwrap();
+
+                let add_repo_msg = AddRepository {
+                    tags: Some(topics.topics),
+                    name: &repo.name,
+                    website: empty_is_none(&repo.website),
+                    description: empty_is_none(&repo.description),
+                    owner: &repo.owner.username,
+                    html_link: &repo.html_url,
+                    hostname: &hostname,
+                };
+
+                db.create_repository(&add_repo_msg).await.unwrap();
             }
 
             sleep_fut.await.unwrap();

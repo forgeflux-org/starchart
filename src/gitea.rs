@@ -17,6 +17,7 @@
  */
 use std::collections::HashMap;
 
+use db_core::AddRepository;
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -143,6 +144,11 @@ pub struct Team {
     pub permission: Permission,
     pub units: Vec<String>,
     pub units_map: HashMap<String, String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct Topics {
+    pub topics: Vec<String>,
 }
 
 #[cfg(test)]
