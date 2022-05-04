@@ -4,6 +4,7 @@ from time import sleep
 import random
 
 from requests import Session
+from requests.auth import HTTPBasicAuth
 import requests
 
 GITEA_USER = "bot"
@@ -12,6 +13,7 @@ GITEA_PASSWORD = "foobarpassword"
 
 TOTAL_NUM_REPOS = 100
 REPOS = []
+
 
 def check_online():
     count = 0
@@ -128,7 +130,6 @@ def register(client: HTMLClient):
     resp = client.session.post(url, data=payload, allow_redirects=False)
 
 
-
 def login(client: HTMLClient):
     url = "http://localhost:8080/user/login"
     csrf = client.get_csrf_token(url)
@@ -144,14 +145,12 @@ def login(client: HTMLClient):
         print("User logged in")
         return
 
-    raise Exception(
-        f"[ERROR] Authentication failed. status code {resp.status_code}"
-    )
+    raise Exception(f"[ERROR] Authentication failed. status code {resp.status_code}")
 
 
-
-def create_repositories(client: HTMLClient): 
+def create_repositories(client: HTMLClient):
     print("foo")
+
     def get_repository_payload(csrf: str, name: str):
         data = {
             "_csrf": csrf,
@@ -164,17 +163,33 @@ def create_repositories(client: HTMLClient):
             "license": "",
             "readme": "Default",
             "default_branch": "master",
-            "trust_model": "default"
+            "trust_model": "default",
         }
         return data
+
     url = "http://localhost:8080/repo/create"
     for repo in REPOS:
-        csrf  = client.get_csrf_token(url)
+        csrf = client.get_csrf_token(url)
         resp = client.session.post(url, data=get_repository_payload(csrf, repo))
         print(f"Created repository {repo}")
         if resp.status_code != 302 and resp.status_code != 200:
-            raise Exception(f"Error while creating repository: {repo} {resp.status_code}")
-        
+            raise Exception(
+                f"Error while creating repository: {repo} {resp.status_code}"
+            )
+        add_tag(repo, client)
+
+
+def add_tag(repo: str, client: HTMLClient):
+    print("adding tags")
+    tag = "testing"
+    url = f"http://{GITEA_USER}:{GITEA_PASSWORD}@localhost:8080/api/v1/repos/{GITEA_USER}/{repo}/topics/{tag}"
+    resp = requests.put(url)
+    if resp.status_code != 204:
+        print(f"Error while adding tags repository: {repo} {resp.status_code}")
+        raise Exception(
+            f"Error while adding tags repository: {repo} {resp.status_code}"
+        )
+
 
 if __name__ == "__main__":
     for i in range(TOTAL_NUM_REPOS):
@@ -193,8 +208,8 @@ if __name__ == "__main__":
             create_repositories(client)
             break
         except Exception as e:
-                print(f"Error: {e}")
-                print(f"Retrying {count} time")
-                count += 1
-                sleep(5)
-                continue
+            print(f"Error: {e}")
+            print(f"Retrying {count} time")
+            count += 1
+            sleep(5)
+            continue
