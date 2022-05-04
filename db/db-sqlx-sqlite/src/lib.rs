@@ -241,6 +241,62 @@ impl SCDatabase for Database {
             Err(e) => Err(DBError::DBError(Box::new(e).into())),
         }
     }
+
+    /// add new repository to database.
+    async fn create_repository(&self, r: &AddRepository) -> DBResult<()> {
+        //        unimplemented!()
+        let now = now_unix_time_stamp();
+        sqlx::query!(
+            "INSERT INTO 
+                starchart_repositories (
+                    hostname_id, owner_id, name, description, html_url, website, created, last_crawl
+                )
+                VALUES (
+                    (SELECT ID FROM starchart_forges WHERE hostname = $1),
+                    (SELECT ID FROM starchart_users WHERE username = $2),
+                    $3, $4, $5, $6, $7, $8
+                );",
+            r.hostname,
+            r.owner,
+            r.name,
+            r.description,
+            r.html_link,
+            r.website,
+            now,
+            now
+        )
+        .execute(&self.pool)
+        .await
+        .map_err(map_register_err)?;
+
+        if let Some(topics) = &r.tags {
+            for topic in topics.iter() {
+                sqlx::query!(
+                    "INSERT OR IGNORE INTO starchart_project_topics ( name ) VALUES ( $1 );",
+                    topic,
+                )
+                .execute(&self.pool)
+                .await
+                .map_err(map_register_err)?;
+
+                sqlx::query!(
+                    "
+                        INSERT INTO starchart_repository_topic_mapping ( topic_id, repository_id )
+                        VALUES (
+                            (SELECT ID FROM starchart_project_topics WHERE name = $1),
+                            (SELECT ID FROM starchart_repositories WHERE html_url = $2)
+                        );",
+                    topic,
+                    r.html_link,
+                )
+                .execute(&self.pool)
+                .await
+                .map_err(map_register_err)?;
+            }
+        }
+
+        Ok(())
+    }
 }
 
 fn now_unix_time_stamp() -> i64 {

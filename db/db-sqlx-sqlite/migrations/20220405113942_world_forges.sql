@@ -40,7 +40,8 @@ CREATE TABLE IF NOT EXISTS starchart_repositories (
 	hostname_id INTEGER NOT NULL REFERENCES starchart_forges(ID) ON DELETE CASCADE,
 	owner_id INTEGER NOT NULL REFERENCES starchart_users(ID) ON DELETE CASCADE,
 	name TEXT NOT NULL,
-	description TEXT NOT NULL,
+	description TEXT DEFAULT NULL,
+	website TEXT DEFAULT NULL,
 	html_url TEXT NOT NULL UNIQUE,
 	created INTEGER NOT NULL,
 	last_crawl INTEGER NOT NULL

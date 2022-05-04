@@ -54,6 +54,16 @@
     },
     "query": "SELECT ID FROM starchart_forge_type WHERE name = $1"
   },
+  "6f5ca3d71a541eb6f33e37a5889c048536ab6ad7e81a6236d73aa71433c13717": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Right": 1
+      }
+    },
+    "query": "INSERT OR IGNORE INTO starchart_project_topics ( name ) VALUES ( $1 );"
+  },
   "71079442588dfaece04582acdb14d2c8928c695d4eab5332d09b82cefc880d54": {
     "describe": {
       "columns": [
@@ -109,6 +119,26 @@
       }
     },
     "query": "INSERT INTO \n                    starchart_users (\n                        hostname_id, username, html_url,\n                        profile_photo_html_url, added_on, last_crawl_on\n                    ) \n            VALUES (\n                    (SELECT ID FROM starchart_forges WHERE hostname = $1), $2, $3, $4, $5, $6)"
+  },
+  "e00c8a8b0dbeb4a89a673864055c137365c2ae7bc5daf677bdacb20f21d0fcb2": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Right": 8
+      }
+    },
+    "query": "INSERT INTO \n                starchart_repositories (\n                    hostname_id, owner_id, name, description, html_url, website, created, last_crawl\n                )\n                VALUES (\n                    (SELECT ID FROM starchart_forges WHERE hostname = $1),\n                    (SELECT ID FROM starchart_users WHERE username = $2),\n                    $3, $4, $5, $6, $7, $8\n                );"
+  },
+  "e30ccfaa6aeda8cf30a2b3e9134abd0c0420441c5ed05189c3be605b1405c8e9": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Right": 2
+      }
+    },
+    "query": "\n                        INSERT INTO starchart_repository_topic_mapping ( topic_id, repository_id )\n                        VALUES (\n                            (SELECT ID FROM starchart_project_topics WHERE name = $1),\n                            (SELECT ID FROM starchart_repositories WHERE html_url = $2)\n                        );"
   },
   "f52cde89ec10d5ca2151c9df6ae273ee0d52af9f79bb776765cfa716aad6af53": {
     "describe": {
