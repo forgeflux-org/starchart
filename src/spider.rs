@@ -21,54 +21,32 @@ use tokio::time;
 use url::Url;
 
 use db_core::prelude::*;
+use forge_core::prelude::*;
+use gitea::Gitea;
 
 use crate::data::Data;
 use crate::db::BoxDB;
-use crate::gitea::SearchResults;
-use crate::gitea::Topics;
-
-const REPO_SEARCH_PATH: &str = "/api/v1/repos/search";
-const GITEA_NODEINFO: &str = "/api/v1/nodeinfo";
 
 impl Data {
-    pub async fn crawl(&self, hostname: &str, db: &BoxDB) -> Vec<SearchResults> {
-        fn empty_is_none(s: &str) -> Option<&str> {
-            if s.trim().is_empty() {
-                None
-            } else {
-                Some(s)
-            }
-        }
-
+    pub async fn crawl(&self, instance_url: &str, db: &BoxDB) {
+        let gitea = Gitea::new(Url::parse(instance_url).unwrap(), self.client.clone());
         let mut page = 1;
-        let instance_url = Url::parse(hostname).unwrap();
-        let hostname = get_hostname(&instance_url);
-        if !db.forge_exists(&hostname).await.unwrap() {
+        let hostname = gitea.get_hostname();
+        if !db.forge_exists(hostname).await.unwrap() {
             let msg = CreateForge {
-                hostname: &hostname,
-                forge_type: ForgeImplementation::Gitea,
+                hostname,
+                forge_type: gitea.forge_type(),
             };
             db.create_forge_isntance(&msg).await.unwrap();
         }
 
-        let mut url = instance_url.clone();
-        url.set_path(REPO_SEARCH_PATH);
-        let mut repos = Vec::new();
         loop {
-            let mut url = url.clone();
-            url.set_query(Some(&format!(
-                "page={page}&limit={}",
-                self.settings.crawler.items_per_api_call
-            )));
-            let res: SearchResults = self
-                .client
-                .get(url)
-                .send()
-                .await
-                .unwrap()
-                .json()
-                .await
-                .unwrap();
+            let res = gitea
+                .crawl(self.settings.crawler.items_per_api_call, page)
+                .await;
+            if res.repos.is_empty() {
+                break;
+            }
 
             let sleep_fut = time::sleep(Duration::new(
                 self.settings.crawler.wait_before_next_api_call,
@@ -76,83 +54,24 @@ impl Data {
             ));
             let sleep_fut = tokio::spawn(sleep_fut);
 
-            for repo in res.data.iter() {
+            for (username, u) in res.users.iter() {
                 if !db
-                    .user_exists(&repo.owner.username, Some(&hostname))
+                    .user_exists(&username, Some(&gitea.get_hostname()))
                     .await
                     .unwrap()
                 {
-                    let mut profile_url = instance_url.clone();
-                    profile_url.set_path(&repo.owner.username);
-                    let msg = AddUser {
-                        hostname: &hostname,
-                        username: &repo.owner.username,
-                        html_link: profile_url.as_str(),
-                        profile_photo: Some(&repo.owner.avatar_url),
-                    };
+                    let msg = u.as_ref().into();
                     db.add_user(&msg).await.unwrap();
                 }
+            }
 
-                let mut url = instance_url.clone();
-                url.set_path(&format!(
-                    "/api/v1/repos/{}/{}/topics",
-                    repo.owner.username, repo.name
-                ));
-
-                let topics: Topics = self
-                    .client
-                    .get(url)
-                    .send()
-                    .await
-                    .unwrap()
-                    .json()
-                    .await
-                    .unwrap();
-
-                let add_repo_msg = AddRepository {
-                    tags: Some(topics.topics),
-                    name: &repo.name,
-                    website: empty_is_none(&repo.website),
-                    description: empty_is_none(&repo.description),
-                    owner: &repo.owner.username,
-                    html_link: &repo.html_url,
-                    hostname: &hostname,
-                };
-
-                db.create_repository(&add_repo_msg).await.unwrap();
+            for r in res.repos.iter() {
+                let msg = r.into();
+                db.create_repository(&msg).await.unwrap();
             }
 
             sleep_fut.await.unwrap();
-            if res.data.is_empty() {
-                return repos;
-            }
-            repos.push(res);
             page += 1;
-        }
-    }
-
-    /// purpose: interact with instance running on provided hostname and verify if the instance is a
-    /// Gitea instance.
-    ///
-    /// will get nodeinfo information, which contains an identifier to uniquely identify Gitea
-    pub async fn is_gitea(&self, hostname: &str) -> bool {
-        const GITEA_IDENTIFIER: &str = "gitea";
-        let mut url = Url::parse(hostname).unwrap();
-        url.set_path(GITEA_NODEINFO);
-
-        let res: serde_json::Value = self
-            .client
-            .get(url)
-            .send()
-            .await
-            .unwrap()
-            .json()
-            .await
-            .unwrap();
-        if let serde_json::Value::String(software) = &res["software"]["name"] {
-            software == GITEA_IDENTIFIER
-        } else {
-            false
         }
     }
 }
@@ -165,25 +84,26 @@ mod tests {
     use url::Url;
 
     pub const GITEA_HOST: &str = "http://localhost:8080";
-
-    #[actix_rt::test]
-    async fn is_gitea_works() {
-        let (_db, data) = sqlx_sqlite::get_data().await;
-        assert!(data.is_gitea(GITEA_HOST).await);
-    }
+    pub const GITEA_USERNAME: &str = "bot";
 
     #[actix_rt::test]
     async fn crawl_gitea() {
         let (db, data) = sqlx_sqlite::get_data().await;
         let res = data.crawl(GITEA_HOST, &db).await;
-        let mut elements = 0;
-        let username = &res.get(0).unwrap().data.get(0).unwrap().owner.username;
         let hostname = get_hostname(&Url::parse(GITEA_HOST).unwrap());
         assert!(db.forge_exists(&hostname).await.unwrap());
-        assert!(db.user_exists(username, Some(&hostname)).await.unwrap());
-        res.iter().for_each(|r| elements += r.data.len());
-
-        assert_eq!(res.len(), 5);
-        assert_eq!(elements, 100);
+        assert!(db
+            .user_exists(GITEA_USERNAME, Some(&hostname))
+            .await
+            .unwrap());
+        assert!(db.user_exists(GITEA_USERNAME, None).await.unwrap());
+        for i in 0..100 {
+            let repo = format!("reopsitory_{i}");
+            assert!(db
+                .repository_exists(&repo, GITEA_USERNAME, hostname.as_str())
+                .await
+                .unwrap())
+        }
+        assert!(db.forge_exists(&hostname).await.unwrap());
     }
 }

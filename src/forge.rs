@@ -15,20 +15,32 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-pub mod data;
-pub mod db;
-pub mod forge;
-pub mod settings;
-pub mod spider;
-#[cfg(test)]
-mod tests;
-pub mod utils;
-pub mod verify;
+use async_trait::async_trait;
+use db_core::prelude::*;
 
-pub const VERSION: &str = env!("CARGO_PKG_VERSION");
-pub const PKG_NAME: &str = env!("CARGO_PKG_NAME");
-pub const GIT_COMMIT_HASH: &str = env!("GIT_HASH");
-pub const DOMAIN: &str = "developer-starchart.forgeflux.org";
+#[async_trait]
+pub trait SCForge: std::marker::Send + std::marker::Sync + CloneSPForge {
+    async fn is_forge(&self) -> bool;
+    async fn get_repositories(&self, limit: usize, page: usize) -> Vec<AddRepository>;
+}
 
-#[actix_rt::main]
-async fn main() {}
+/// Trait to clone SCForge
+pub trait CloneSPForge {
+    /// clone DB
+    fn clone_db(&self) -> Box<dyn SCForge>;
+}
+
+impl<T> CloneSPForge for T
+where
+    T: SCForge + Clone + 'static,
+{
+    fn clone_db(&self) -> Box<dyn SCForge> {
+        Box::new(self.clone())
+    }
+}
+
+impl Clone for Box<dyn SCForge> {
+    fn clone(&self) -> Self {
+        (**self).clone_db()
+    }
+}

@@ -103,42 +103,6 @@ impl DBType {
 }
 
 #[derive(Debug, Clone, Deserialize)]
-struct DatabaseBuilder {
-    pub port: u32,
-    pub hostname: String,
-    pub username: String,
-    pub password: String,
-    pub name: String,
-    pub database_type: DBType,
-}
-
-impl DatabaseBuilder {
-    #[cfg(not(tarpaulin_include))]
-    fn extract_database_url(url: &Url) -> Self {
-        log::debug!("Databse name: {}", url.path());
-        let mut path = url.path().split('/');
-        path.next();
-        let name = path.next().expect("no database name").to_string();
-
-        let database_type = DBType::from_url(url).unwrap();
-        let port = if database_type == DBType::Sqlite {
-            0
-        } else {
-            url.port().expect("Enter database port").into()
-        };
-
-        DatabaseBuilder {
-            port,
-            hostname: url.host().expect("Enter database host").to_string(),
-            username: url.username().into(),
-            password: url.password().expect("Enter database password").into(),
-            name,
-            database_type: DBType::from_url(url).unwrap(),
-        }
-    }
-}
-
-#[derive(Debug, Clone, Deserialize)]
 pub struct Database {
     pub url: String,
     pub pool: u32,
@@ -246,48 +210,6 @@ impl Settings {
         Url::parse(&self.source_code).expect("Please enter a URL for source_code in settings");
     }
 }
-
-//#[cfg(not(tarpaulin_include))]
-//fn set_from_database_url(s: &mut Config, database_conf: &DatabaseBuilder) {
-//    s.set("database.username", database_conf.username.clone())
-//        .expect("Couldn't set database username");
-//    s.set("database.password", database_conf.password.clone())
-//        .expect("Couldn't access database password");
-//    s.set("database.hostname", database_conf.hostname.clone())
-//        .expect("Couldn't access database hostname");
-//    s.set("database.port", database_conf.port as i64)
-//        .expect("Couldn't access database port");
-//    s.set("database.name", database_conf.name.clone())
-//        .expect("Couldn't access database name");
-//    s.set(
-//        "database.database_type",
-//        format!("{}", database_conf.database_type),
-//    )
-//    .expect("Couldn't access database type");
-//}
-
-//#[cfg(not(tarpaulin_include))]
-//fn set_database_url(s: &mut Config) {
-//    s.set(
-//        "database.url",
-//        format!(
-//            r"{}://{}:{}@{}:{}/{}",
-//            s.get::<String>("database.database_type")
-//                .expect("Couldn't access database database_type"),
-//            s.get::<String>("database.username")
-//                .expect("Couldn't access database username"),
-//            s.get::<String>("database.password")
-//                .expect("Couldn't access database password"),
-//            s.get::<String>("database.hostname")
-//                .expect("Couldn't access database hostname"),
-//            s.get::<String>("database.port")
-//                .expect("Couldn't access database port"),
-//            s.get::<String>("database.name")
-//                .expect("Couldn't access database name")
-//        ),
-//    )
-//    .expect("Couldn't set databse url");
-//}
 
 #[cfg(test)]
 mod tests {
