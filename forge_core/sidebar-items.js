@@ -1,0 +1,1 @@
+initSidebarItems({"mod":[["dev",""],["prelude",""]],"struct":[["CrawlResp",""],["Repository","add new repository to database"],["User",""]],"trait":[["CloneSPForge","Trait to clone SCForge"],["SCForge",""]],"type":[["Repositories",""],["Tags",""],["UserMap",""]]});

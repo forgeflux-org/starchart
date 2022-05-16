@@ -275,84 +275,6 @@
 <span id="270">270</span>
 <span id="271">271</span>
 <span id="272">272</span>
-<span id="273">273</span>
-<span id="274">274</span>
-<span id="275">275</span>
-<span id="276">276</span>
-<span id="277">277</span>
-<span id="278">278</span>
-<span id="279">279</span>
-<span id="280">280</span>
-<span id="281">281</span>
-<span id="282">282</span>
-<span id="283">283</span>
-<span id="284">284</span>
-<span id="285">285</span>
-<span id="286">286</span>
-<span id="287">287</span>
-<span id="288">288</span>
-<span id="289">289</span>
-<span id="290">290</span>
-<span id="291">291</span>
-<span id="292">292</span>
-<span id="293">293</span>
-<span id="294">294</span>
-<span id="295">295</span>
-<span id="296">296</span>
-<span id="297">297</span>
-<span id="298">298</span>
-<span id="299">299</span>
-<span id="300">300</span>
-<span id="301">301</span>
-<span id="302">302</span>
-<span id="303">303</span>
-<span id="304">304</span>
-<span id="305">305</span>
-<span id="306">306</span>
-<span id="307">307</span>
-<span id="308">308</span>
-<span id="309">309</span>
-<span id="310">310</span>
-<span id="311">311</span>
-<span id="312">312</span>
-<span id="313">313</span>
-<span id="314">314</span>
-<span id="315">315</span>
-<span id="316">316</span>
-<span id="317">317</span>
-<span id="318">318</span>
-<span id="319">319</span>
-<span id="320">320</span>
-<span id="321">321</span>
-<span id="322">322</span>
-<span id="323">323</span>
-<span id="324">324</span>
-<span id="325">325</span>
-<span id="326">326</span>
-<span id="327">327</span>
-<span id="328">328</span>
-<span id="329">329</span>
-<span id="330">330</span>
-<span id="331">331</span>
-<span id="332">332</span>
-<span id="333">333</span>
-<span id="334">334</span>
-<span id="335">335</span>
-<span id="336">336</span>
-<span id="337">337</span>
-<span id="338">338</span>
-<span id="339">339</span>
-<span id="340">340</span>
-<span id="341">341</span>
-<span id="342">342</span>
-<span id="343">343</span>
-<span id="344">344</span>
-<span id="345">345</span>
-<span id="346">346</span>
-<span id="347">347</span>
-<span id="348">348</span>
-<span id="349">349</span>
-<span id="350">350</span>
 </pre><pre class="rust"><code><span class="comment">/*
  * ForgeFlux StarChart - A federated software forge spider
  * Copyright (C) 2022  Aravinth Manivannan &lt;realaravinth@batsense.net&gt;
@@ -453,42 +375,6 @@
             <span class="string">&quot;sqlite&quot;</span> =&gt; <span class="prelude-val">Ok</span>(<span class="ident"><span class="self">Self</span>::Sqlite</span>),
             <span class="string">&quot;postgres&quot;</span> =&gt; <span class="prelude-val">Ok</span>(<span class="ident"><span class="self">Self</span>::Postgres</span>),
             <span class="kw">_</span> =&gt; <span class="prelude-val">Err</span>(<span class="ident">ConfigError::Message</span>(<span class="string">&quot;Unknown database type&quot;</span>.<span class="ident">into</span>())),
-        }
-    }
-}
-
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">Clone</span>, <span class="ident">Deserialize</span>)]</span>
-<span class="kw">struct</span> <span class="ident">DatabaseBuilder</span> {
-    <span class="kw">pub</span> <span class="ident">port</span>: <span class="ident">u32</span>,
-    <span class="kw">pub</span> <span class="ident">hostname</span>: <span class="ident">String</span>,
-    <span class="kw">pub</span> <span class="ident">username</span>: <span class="ident">String</span>,
-    <span class="kw">pub</span> <span class="ident">password</span>: <span class="ident">String</span>,
-    <span class="kw">pub</span> <span class="ident">name</span>: <span class="ident">String</span>,
-    <span class="kw">pub</span> <span class="ident">database_type</span>: <span class="ident">DBType</span>,
-}
-
-<span class="kw">impl</span> <span class="ident">DatabaseBuilder</span> {
-    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">not</span>(<span class="ident">tarpaulin_include</span>))]</span>
-    <span class="kw">fn</span> <span class="ident">extract_database_url</span>(<span class="ident">url</span>: <span class="kw-2">&amp;</span><span class="ident">Url</span>) -&gt; <span class="self">Self</span> {
-        <span class="macro">log::debug!</span>(<span class="string">&quot;Databse name: {}&quot;</span>, <span class="ident">url</span>.<span class="ident">path</span>());
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">path</span> <span class="op">=</span> <span class="ident">url</span>.<span class="ident">path</span>().<span class="ident">split</span>(<span class="string">&#39;/&#39;</span>);
-        <span class="ident">path</span>.<span class="ident">next</span>();
-        <span class="kw">let</span> <span class="ident">name</span> <span class="op">=</span> <span class="ident">path</span>.<span class="ident">next</span>().<span class="ident">expect</span>(<span class="string">&quot;no database name&quot;</span>).<span class="ident">to_string</span>();
-
-        <span class="kw">let</span> <span class="ident">database_type</span> <span class="op">=</span> <span class="ident">DBType::from_url</span>(<span class="ident">url</span>).<span class="ident">unwrap</span>();
-        <span class="kw">let</span> <span class="ident">port</span> <span class="op">=</span> <span class="kw">if</span> <span class="ident">database_type</span> <span class="op">==</span> <span class="ident">DBType::Sqlite</span> {
-            <span class="number">0</span>
-        } <span class="kw">else</span> {
-            <span class="ident">url</span>.<span class="ident">port</span>().<span class="ident">expect</span>(<span class="string">&quot;Enter database port&quot;</span>).<span class="ident">into</span>()
-        };
-
-        <span class="ident">DatabaseBuilder</span> {
-            <span class="ident">port</span>,
-            <span class="ident">hostname</span>: <span class="ident">url</span>.<span class="ident">host</span>().<span class="ident">expect</span>(<span class="string">&quot;Enter database host&quot;</span>).<span class="ident">to_string</span>(),
-            <span class="ident">username</span>: <span class="ident">url</span>.<span class="ident">username</span>().<span class="ident">into</span>(),
-            <span class="ident">password</span>: <span class="ident">url</span>.<span class="ident">password</span>().<span class="ident">expect</span>(<span class="string">&quot;Enter database password&quot;</span>).<span class="ident">into</span>(),
-            <span class="ident">name</span>,
-            <span class="ident">database_type</span>: <span class="ident">DBType::from_url</span>(<span class="ident">url</span>).<span class="ident">unwrap</span>(),
         }
     }
 }
@@ -601,48 +487,6 @@
         <span class="ident">Url::parse</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">source_code</span>).<span class="ident">expect</span>(<span class="string">&quot;Please enter a URL for source_code in settings&quot;</span>);
     }
 }
-
-<span class="comment">//#[cfg(not(tarpaulin_include))]</span>
-<span class="comment">//fn set_from_database_url(s: &amp;mut Config, database_conf: &amp;DatabaseBuilder) {</span>
-<span class="comment">//    s.set(&quot;database.username&quot;, database_conf.username.clone())</span>
-<span class="comment">//        .expect(&quot;Couldn&#39;t set database username&quot;);</span>
-<span class="comment">//    s.set(&quot;database.password&quot;, database_conf.password.clone())</span>
-<span class="comment">//        .expect(&quot;Couldn&#39;t access database password&quot;);</span>
-<span class="comment">//    s.set(&quot;database.hostname&quot;, database_conf.hostname.clone())</span>
-<span class="comment">//        .expect(&quot;Couldn&#39;t access database hostname&quot;);</span>
-<span class="comment">//    s.set(&quot;database.port&quot;, database_conf.port as i64)</span>
-<span class="comment">//        .expect(&quot;Couldn&#39;t access database port&quot;);</span>
-<span class="comment">//    s.set(&quot;database.name&quot;, database_conf.name.clone())</span>
-<span class="comment">//        .expect(&quot;Couldn&#39;t access database name&quot;);</span>
-<span class="comment">//    s.set(</span>
-<span class="comment">//        &quot;database.database_type&quot;,</span>
-<span class="comment">//        format!(&quot;{}&quot;, database_conf.database_type),</span>
-<span class="comment">//    )</span>
-<span class="comment">//    .expect(&quot;Couldn&#39;t access database type&quot;);</span>
-<span class="comment">//}</span>
-
-<span class="comment">//#[cfg(not(tarpaulin_include))]</span>
-<span class="comment">//fn set_database_url(s: &amp;mut Config) {</span>
-<span class="comment">//    s.set(</span>
-<span class="comment">//        &quot;database.url&quot;,</span>
-<span class="comment">//        format!(</span>
-<span class="comment">//            r&quot;{}://{}:{}@{}:{}/{}&quot;,</span>
-<span class="comment">//            s.get::&lt;String&gt;(&quot;database.database_type&quot;)</span>
-<span class="comment">//                .expect(&quot;Couldn&#39;t access database database_type&quot;),</span>
-<span class="comment">//            s.get::&lt;String&gt;(&quot;database.username&quot;)</span>
-<span class="comment">//                .expect(&quot;Couldn&#39;t access database username&quot;),</span>
-<span class="comment">//            s.get::&lt;String&gt;(&quot;database.password&quot;)</span>
-<span class="comment">//                .expect(&quot;Couldn&#39;t access database password&quot;),</span>
-<span class="comment">//            s.get::&lt;String&gt;(&quot;database.hostname&quot;)</span>
-<span class="comment">//                .expect(&quot;Couldn&#39;t access database hostname&quot;),</span>
-<span class="comment">//            s.get::&lt;String&gt;(&quot;database.port&quot;)</span>
-<span class="comment">//                .expect(&quot;Couldn&#39;t access database port&quot;),</span>
-<span class="comment">//            s.get::&lt;String&gt;(&quot;database.name&quot;)</span>
-<span class="comment">//                .expect(&quot;Couldn&#39;t access database name&quot;)</span>
-<span class="comment">//        ),</span>
-<span class="comment">//    )</span>
-<span class="comment">//    .expect(&quot;Couldn&#39;t set databse url&quot;);</span>
-<span class="comment">//}</span>
 
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">test</span>)]</span>
 <span class="kw">mod</span> <span class="ident">tests</span> {

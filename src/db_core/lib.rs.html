@@ -291,7 +291,7 @@
     <span class="doccomment">/// html link to the repository</span>
     <span class="kw">pub</span> <span class="ident">html_link</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">str</span>,
     <span class="doccomment">/// repository topic tags</span>
-    <span class="kw">pub</span> <span class="ident">tags</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span><span class="op">&gt;</span>,
+    <span class="kw">pub</span> <span class="ident">tags</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">str</span><span class="op">&gt;</span><span class="op">&gt;</span>,
     <span class="doccomment">/// hostname of the forge instance: with scheme but remove trailing slash</span>
     <span class="doccomment">/// hostname can be derived  from html_link also, but used to link to user&#39;s forge instance</span>
     <span class="kw">pub</span> <span class="ident">hostname</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">str</span>,

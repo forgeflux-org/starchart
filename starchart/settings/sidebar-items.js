@@ -1,1 +1,1 @@
-initSidebarItems({"enum":[["DBType",""],["LogLevel",""]],"struct":[["Crawler",""],["Database",""],["DatabaseBuilder",""],["Repository",""],["Server",""],["Settings",""]]});
+initSidebarItems({"enum":[["DBType",""],["LogLevel",""]],"struct":[["Crawler",""],["Database",""],["Repository",""],["Server",""],["Settings",""]]});

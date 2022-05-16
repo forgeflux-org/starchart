@@ -1,1 +1,1 @@
-window.ALL_CRATES = ["db_core","db_sqlx_sqlite","starchart"];
+window.ALL_CRATES = ["db_core","db_sqlx_sqlite","forge_core","gitea","starchart"];
