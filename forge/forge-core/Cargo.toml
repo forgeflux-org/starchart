@@ -1,0 +1,18 @@
+[package]
+name = "forge-core"
+repository = "https://github.com/forgeflux-org/starchart"
+version = "0.1.0"
+authors = ["realaravinth <realaravinth@batsense.net>"]
+description = "ForgeFlux StarChart - Federated forge spider"
+documentation = "https://forgeflux.org/"
+edition = "2021"
+license = "AGPLv3 or later version"
+
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+async-trait = "0.1.51"
+
+[dependencies.db-core]
+path = "../../db/db-core"
