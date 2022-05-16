@@ -9,6 +9,11 @@ define test_sqlite_db
 		cargo test --no-fail-fast
 endef
 
+define test_gitea_forge
+	cd forge/gitea && \
+		cargo test --no-fail-fast
+endef
+
 default: ## Debug build
 	cargo build
 
@@ -25,6 +30,8 @@ coverage: migrate ## Generate coverage report in HTML format
 check: ## Check for syntax errors on all workspaces
 	cargo check --workspace --tests --all-features
 	cd db/migrator && cargo check --tests --all-features
+	cd forge/forge-core && cargo check --tests --all-features
+	cd forge/gitea && cargo check --tests --all-features
 	cd db/db-sqlx-sqlite &&\
 		DATABASE_URL=${SQLITE_DATABASE_URL}\
 		cargo check
@@ -67,6 +74,7 @@ sqlx-offline-data: ## prepare sqlx offline data
 test: migrate ## Run tests
 	$(call launch_test_env)
 	$(call test_sqlite_db)
+	$(call test_gitea_forge)
 	cargo test --no-fail-fast
 
 #	cd database/db-sqlx-postgres &&\

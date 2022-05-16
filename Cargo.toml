@@ -11,6 +11,7 @@ build = "build.rs"
 
 [dependencies]
 actix-rt = "2.7"
+async-trait = "0.1.51"
 config = "0.13.0"
 lazy_static = "1.4.0"
 rand = "0.8.5"
@@ -45,11 +46,17 @@ path = "./db/db-core"
 [dependencies.db-sqlx-sqlite]
 path = "./db/db-sqlx-sqlite"
 
+
+[dependencies.gitea]
+path = "./forge/gitea"
+
+[dependencies.forge-core]
+path = "./forge/forge-core"
+
 [dependencies.sqlx]
 features = ["runtime-actix-rustls", "uuid", "postgres", "time", "offline", "sqlite"]
 version = "0.5.11"
 
 [workspace]
 exclude = ["db/migrator"]
-members = [".", "db/db-core", "db/db-sqlx-sqlite"]
-# "db/db-sqlx-postgres"
+members = [".", "db/db-core", "db/db-sqlx-sqlite", "forge/forge-core", "forge/gitea"]

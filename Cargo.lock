@@ -564,6 +564,14 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "00b0228411908ca8685dba7fc2cdd70ec9990a6e753e89b6ac91a84c40fbaf4b"
 
 [[package]]
+name = "forge-core"
+version = "0.1.0"
+dependencies = [
+ "async-trait",
+ "db-core",
+]
+
+[[package]]
 name = "form_urlencoded"
 version = "1.0.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -671,6 +679,19 @@ dependencies = [
  "cfg-if",
  "libc",
  "wasi 0.10.2+wasi-snapshot-preview1",
+]
+
+[[package]]
+name = "gitea"
+version = "0.1.0"
+dependencies = [
+ "actix-rt",
+ "async-trait",
+ "forge-core",
+ "reqwest",
+ "serde",
+ "serde_json",
+ "url",
 ]
 
 [[package]]
@@ -2127,10 +2148,13 @@ name = "starchart"
 version = "0.1.0"
 dependencies = [
  "actix-rt",
+ "async-trait",
  "config",
  "db-core",
  "db-sqlx-sqlite",
  "derive_more",
+ "forge-core",
+ "gitea",
  "lazy_static",
  "log",
  "rand",
