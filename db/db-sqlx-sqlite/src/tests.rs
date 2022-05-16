@@ -15,7 +15,6 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 use std::env;
-use std::rc::Rc;
 
 use sqlx::sqlite::SqlitePoolOptions;
 use url::Url;
@@ -63,12 +62,10 @@ async fn everything_works() {
     let connection_options = ConnectionOptions::Fresh(Fresh { pool_options, url });
     let db = connection_options.connect().await.unwrap();
 
-    let tags = TAGS.iter().map(|s| s.to_string()).collect();
-
     let add_repo_msg = AddRepository {
         html_link: HTML_REPO_URL,
         name: REPO_NAME,
-        tags: Some(tags),
+        tags: Some(TAGS.into()),
         owner: USERNAME,
         website: None,
         description: None,

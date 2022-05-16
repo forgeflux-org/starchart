@@ -16,7 +16,6 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 use db_core::dev::*;
-use std::str::FromStr;
 
 use sqlx::sqlite::SqlitePool;
 use sqlx::sqlite::SqlitePoolOptions;
@@ -159,7 +158,7 @@ impl SCDatabase for Database {
         {
             Ok(_) => Ok(true),
             Err(Error::RowNotFound) => Ok(false),
-            Err(e) => Err(DBError::DBError(Box::new(e)).into()),
+            Err(e) => Err(DBError::DBError(Box::new(e))),
         }
     }
 
