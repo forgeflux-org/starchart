@@ -296,6 +296,40 @@ impl SCDatabase for Database {
 
         Ok(())
     }
+
+    /// delete user
+    async fn delete_user(&self, username: &str, hostname: &str) -> DBResult<()> {
+        sqlx::query!(
+            " DELETE FROM starchart_users WHERE username = $1 AND 
+                hostname_id = (SELECT ID FROM starchart_forges WHERE hostname = $2)",
+            username,
+            hostname
+        )
+        .execute(&self.pool)
+        .await
+        .map_err(map_register_err)?;
+        Ok(())
+    }
+
+    /// delete repository
+    async fn delete_repository(&self, owner: &str, name: &str, hostname: &str) -> DBResult<()> {
+        sqlx::query!(
+            " DELETE FROM starchart_repositories
+                    WHERE 
+                        name = $1
+                    AND
+                        owner_id = ( SELECT ID FROM starchart_users WHERE username = $2)
+                    AND
+                        hostname_id = (SELECT ID FROM starchart_forges WHERE hostname = $3)",
+            name,
+            owner,
+            hostname
+        )
+        .execute(&self.pool)
+        .await
+        .map_err(map_register_err)?;
+        Ok(())
+    }
 }
 
 fn now_unix_time_stamp() -> i64 {

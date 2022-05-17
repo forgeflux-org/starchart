@@ -54,6 +54,16 @@
     },
     "query": "SELECT ID FROM starchart_forge_type WHERE name = $1"
   },
+  "364c8e3d147318b864fd28ad284f225aaace9479b5cf0428fb97f0e5689e248d": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Right": 2
+      }
+    },
+    "query": " DELETE FROM starchart_users WHERE username = $1 AND \n                hostname_id = (SELECT ID FROM starchart_forges WHERE hostname = $2)"
+  },
   "6f5ca3d71a541eb6f33e37a5889c048536ab6ad7e81a6236d73aa71433c13717": {
     "describe": {
       "columns": [],
@@ -139,6 +149,16 @@
       }
     },
     "query": "\n                        INSERT INTO starchart_repository_topic_mapping ( topic_id, repository_id )\n                        VALUES (\n                            (SELECT ID FROM starchart_project_topics WHERE name = $1),\n                            (SELECT ID FROM starchart_repositories WHERE html_url = $2)\n                        );"
+  },
+  "ed20e6fcac091172778119cdfc68c8e511224205a0bb7c74df192dcdfbfe63f2": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Right": 3
+      }
+    },
+    "query": " DELETE FROM starchart_repositories\n                    WHERE \n                        name = $1\n                    AND\n                        owner_id = ( SELECT ID FROM starchart_users WHERE username = $2)\n                    AND\n                        hostname_id = (SELECT ID FROM starchart_forges WHERE hostname = $3)"
   },
   "f52cde89ec10d5ca2151c9df6ae273ee0d52af9f79bb776765cfa716aad6af53": {
     "describe": {
