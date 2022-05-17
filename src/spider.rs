@@ -26,9 +26,10 @@ use gitea::Gitea;
 
 use crate::ctx::Ctx;
 use crate::db::BoxDB;
+use crate::federate::BoxFederate;
 
 impl Ctx {
-    pub async fn crawl(&self, instance_url: &str, db: &BoxDB) {
+    pub async fn crawl(&self, instance_url: &str, db: &BoxDB, federate: &BoxFederate) {
         let gitea = Gitea::new(Url::parse(instance_url).unwrap(), self.client.clone());
         let mut page = 1;
         let hostname = gitea.get_hostname();
@@ -38,6 +39,7 @@ impl Ctx {
                 forge_type: gitea.forge_type(),
             };
             db.create_forge_isntance(&msg).await.unwrap();
+            federate.create_forge_isntance(&msg).await.unwrap();
         }
 
         loop {
@@ -62,6 +64,7 @@ impl Ctx {
                 {
                     let msg = u.as_ref().into();
                     db.add_user(&msg).await.unwrap();
+                    federate.create_user(&msg).await.unwrap();
                 }
             }
 
@@ -73,6 +76,7 @@ impl Ctx {
                 {
                     let msg = r.into();
                     db.create_repository(&msg).await.unwrap();
+                    federate.create_repository(&msg).await.unwrap();
                 }
             }
 
@@ -94,8 +98,8 @@ mod tests {
 
     #[actix_rt::test]
     async fn crawl_gitea() {
-        let (db, ctx) = sqlx_sqlite::get_ctx().await;
-        ctx.crawl(GITEA_HOST, &db).await;
+        let (db, ctx, federate, _tmp_dir) = sqlx_sqlite::get_ctx().await;
+        ctx.crawl(GITEA_HOST, &db, &federate).await;
         let hostname = get_hostname(&Url::parse(GITEA_HOST).unwrap());
         assert!(db.forge_exists(&hostname).await.unwrap());
         assert!(db

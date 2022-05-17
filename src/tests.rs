@@ -21,6 +21,7 @@ pub use std::sync::Arc;
 
 use crate::ctx::Ctx;
 pub use crate::db::BoxDB;
+pub use crate::federate::{get_federate, BoxFederate};
 use crate::settings::{DBType, Settings};
 
 //pub mod sqlx_postgres {
@@ -38,8 +39,9 @@ use crate::settings::{DBType, Settings};
 pub mod sqlx_sqlite {
     use super::*;
     use crate::db::sqlite;
+    use mktemp::Temp;
 
-    pub async fn get_ctx() -> (BoxDB, Arc<Ctx>) {
+    pub async fn get_ctx() -> (BoxDB, Arc<Ctx>, BoxFederate, Temp) {
         let url = env::var("SQLITE_DATABASE_URL").unwrap();
         env::set_var("DATABASE_URL", &url);
         println!("found db url: {url}");
@@ -47,6 +49,11 @@ pub mod sqlx_sqlite {
         settings.database.url = url.clone();
         settings.database.database_type = DBType::Sqlite;
         let db = sqlite::get_data(Some(settings.clone())).await;
-        (db, Ctx::new(settings).await)
+
+        let tmp_dir = Temp::new_dir().unwrap();
+        settings.repository.root = tmp_dir.to_str().unwrap().to_string();
+        let federate = get_federate(Some(settings.clone())).await;
+
+        (db, Ctx::new(settings).await, federate, tmp_dir)
     }
 }
