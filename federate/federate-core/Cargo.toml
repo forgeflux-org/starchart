@@ -1,0 +1,24 @@
+[package]
+name = "federate-core"
+version = "0.1.0"
+authors = ["realaravinth <realaravinth@batsense.net>"]
+description = "ForgeFlux StarChart - Federated forge spider"
+documentation = "https://forgeflux.org/"
+edition = "2021"
+license = "AGPLv3 or later version"
+
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+async-trait = "0.1.51"
+thiserror = "1.0.30"
+serde = { version = "1", features = ["derive"]}
+url = { version  = "2.2.2", features = ["serde"] }
+
+[dependencies.db-core]
+path = "../../db/db-core"
+
+[features]
+default = []
+test = []
