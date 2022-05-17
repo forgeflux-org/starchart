@@ -87,6 +87,13 @@ impl PccFederate {
         }
         Ok(path)
     }
+
+    /// utility method to write data
+    async fn write_util<S: Serialize + Send + Sync>(&self, data: &S, path: &Path) -> FResult<()> {
+        let fcontents = serde_yaml::to_string(data)?;
+        fs::write(path, &fcontents).await?;
+        Ok(())
+    }
 }
 
 #[async_trait]
@@ -98,13 +105,6 @@ impl Federate for PccFederate {
         if !path.exists() {
             fs::create_dir_all(path).await?;
         }
-        Ok(())
-    }
-
-    /// utility method to write data
-    async fn write_util<S: Serialize + Send + Sync>(&self, data: &S, path: &Path) -> FResult<()> {
-        let fcontents = serde_yaml::to_string(data)?;
-        fs::write(path, &fcontents).await?;
         Ok(())
     }
 

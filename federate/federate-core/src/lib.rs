@@ -19,7 +19,6 @@ use std::path::Path;
 use std::result::Result;
 
 use async_trait::async_trait;
-use serde::Serialize;
 
 use db_core::prelude::*;
 
@@ -27,18 +26,11 @@ use db_core::prelude::*;
 pub mod tests;
 
 #[async_trait]
-pub trait Federate: Sync + Send + Clone {
+pub trait Federate: Sync + Send {
     type Error: std::error::Error + std::fmt::Debug;
 
     /// utility method to create dir if not exists
     async fn create_dir_if_not_exists(&self, path: &Path) -> Result<(), Self::Error>;
-
-    /// utility method to write data
-    async fn write_util<S: Serialize + Send + Sync>(
-        &self,
-        data: &S,
-        path: &Path,
-    ) -> Result<(), Self::Error>;
 
     /// utility method to remove file/dir
     async fn rm_util(&self, path: &Path) -> Result<(), Self::Error>;
