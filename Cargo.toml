@@ -9,6 +9,18 @@ edition = "2021"
 license = "AGPLv3 or later version"
 build = "build.rs"
 
+[workspace]
+exclude = ["db/migrator"]
+members = [
+    ".",
+    "db/db-core",
+    "db/db-sqlx-sqlite",
+    "forge/forge-core",
+    "forge/gitea",
+    "federate/federate-core",
+    "federate/publiccodeyml"
+]
+
 [dependencies]
 actix-rt = "2.7"
 async-trait = "0.1.51"
@@ -56,7 +68,3 @@ path = "./forge/forge-core"
 [dependencies.sqlx]
 features = ["runtime-actix-rustls", "uuid", "postgres", "time", "offline", "sqlite"]
 version = "0.5.11"
-
-[workspace]
-exclude = ["db/migrator"]
-members = [".", "db/db-core", "db/db-sqlx-sqlite", "forge/forge-core", "forge/gitea"]

@@ -3,15 +3,33 @@ define launch_test_env
 	python ./scripts/gitea.py
 endef
 
-define test_sqlite_db
+define test_databases
+	cd db/db-core &&\
+		cargo test --no-fail-fast
 	cd db/db-sqlx-sqlite &&\
 		DATABASE_URL=${SQLITE_DATABASE_URL}\
 		cargo test --no-fail-fast
 endef
 
-define test_gitea_forge
+define test_forges
+	cd forge/forge-core && \
+		cargo test --no-fail-fast
 	cd forge/gitea && \
 		cargo test --no-fail-fast
+endef
+
+define test_federation
+	cd federate/federate-core && \
+		cargo test --no-fail-fast
+	cd federate/publiccodeyml && \
+		cargo test --no-fail-fast
+endef
+
+define test_workspaces
+	$(call test_databases)
+	$(call test_forges)
+	$(call test_federation)
+	cargo test --no-fail-fast
 endef
 
 default: ## Debug build
@@ -29,13 +47,15 @@ coverage: migrate ## Generate coverage report in HTML format
 
 check: ## Check for syntax errors on all workspaces
 	cargo check --workspace --tests --all-features
-	cd db/migrator && cargo check --tests --all-features
-	cd forge/forge-core && cargo check --tests --all-features
-	cd forge/gitea && cargo check --tests --all-features
 	cd db/db-sqlx-sqlite &&\
 		DATABASE_URL=${SQLITE_DATABASE_URL}\
 		cargo check
 	cd db/db-core/ && cargo check
+	cd db/migrator && cargo check --tests --all-features
+	cd forge/forge-core && cargo check --tests --all-features
+	cd forge/gitea && cargo check --tests --all-features
+	cd federate/federate-core && cargo check --tests --all-features
+	cd federate/publiccodeyml && cargo check --tests --all-features
 
 dev-env: ## Download development dependencies
 	$(call launch_test_env)
@@ -73,9 +93,7 @@ sqlx-offline-data: ## prepare sqlx offline data
 		--all-features
 test: migrate ## Run tests
 	$(call launch_test_env)
-	$(call test_sqlite_db)
-	$(call test_gitea_forge)
-	cargo test --no-fail-fast
+	$(call test_workspaces)
 
 #	cd database/db-sqlx-postgres &&\
 #		DATABASE_URL=${POSTGRES_DATABASE_URL}\
