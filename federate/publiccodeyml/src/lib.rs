@@ -1,0 +1,169 @@
+/*
+ * ForgeFlux StarChart - A federated software forge spider
+ * Copyright (C) 2022  Aravinth Manivannan <realaravinth@batsense.net>
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+use std::path::{Path, PathBuf};
+
+use async_trait::async_trait;
+use serde::Serialize;
+use tokio::fs;
+
+use db_core::prelude::*;
+
+use federate_core::Federate;
+
+pub mod errors;
+pub mod schema;
+#[cfg(test)]
+mod tests;
+
+use errors::*;
+
+pub const INSTANCE_INFO_FILE: &str = "instance.yml";
+pub const USER_INFO_FILE: &str = "user.yml";
+pub const REPO_INFO_FILE: &str = "publiccode.yml";
+
+#[derive(Clone)]
+pub struct PccFederate {
+    pub base_dir: String,
+}
+
+impl PccFederate {
+    pub async fn new(base_dir: String) -> FResult<Self> {
+        let path = Path::new(&base_dir);
+        if !path.exists() {
+            fs::create_dir_all(&path).await?;
+        }
+        Ok(Self { base_dir })
+    }
+
+    pub async fn get_instance_path(&self, hostname: &str, create_dirs: bool) -> FResult<PathBuf> {
+        let path = Path::new(&self.base_dir).join(hostname);
+        if create_dirs {
+            self.create_dir_if_not_exists(&path).await?;
+        }
+        Ok(path)
+    }
+
+    pub async fn get_user_path(
+        &self,
+        username: &str,
+        hostname: &str,
+        create_dirs: bool,
+    ) -> FResult<PathBuf> {
+        let path = self
+            .get_instance_path(hostname, false)
+            .await?
+            .join(username);
+        if create_dirs {
+            self.create_dir_if_not_exists(&path).await?;
+        }
+        Ok(path)
+    }
+
+    pub async fn get_repo_path(
+        &self,
+        name: &str,
+        owner: &str,
+        hostname: &str,
+        create_dirs: bool,
+    ) -> FResult<PathBuf> {
+        let path = self.get_user_path(owner, hostname, false).await?.join(name);
+        if create_dirs {
+            self.create_dir_if_not_exists(&path).await?;
+        }
+        Ok(path)
+    }
+}
+
+#[async_trait]
+impl Federate for PccFederate {
+    type Error = FederateErorr;
+
+    /// utility method to create dir if not exists
+    async fn create_dir_if_not_exists(&self, path: &Path) -> FResult<()> {
+        if !path.exists() {
+            fs::create_dir_all(path).await?;
+        }
+        Ok(())
+    }
+
+    /// utility method to write data
+    async fn write_util<S: Serialize + Send + Sync>(&self, data: &S, path: &Path) -> FResult<()> {
+        let fcontents = serde_yaml::to_string(data)?;
+        fs::write(path, &fcontents).await?;
+        Ok(())
+    }
+
+    /// utility method to remove file/dir
+    async fn rm_util(&self, path: &Path) -> FResult<()> {
+        if path.exists() {
+            if path.is_dir() {
+                fs::remove_dir_all(path).await?;
+            } else {
+                fs::remove_file(&path).await?;
+            }
+        }
+        Ok(())
+    }
+
+    /// create forge isntance
+    async fn create_forge_isntance(&self, f: &CreateForge<'_>) -> FResult<()> {
+        let path = self.get_instance_path(f.hostname, true).await?;
+        self.write_util(f, &path.join(INSTANCE_INFO_FILE)).await?;
+        Ok(())
+    }
+
+    /// delete forge isntance
+    async fn delete_forge_instance(&self, hostname: &str) -> FResult<()> {
+        let path = self.get_instance_path(hostname, false).await?;
+        self.rm_util(&path).await
+    }
+
+    /// create user isntance
+    async fn create_user(&self, f: &AddUser<'_>) -> Result<(), Self::Error> {
+        let path = self.get_user_path(f.username, f.hostname, true).await?;
+        self.write_util(f, &path.join(USER_INFO_FILE)).await
+    }
+
+    /// add repository isntance
+    async fn create_repository(&self, f: &AddRepository<'_>) -> Result<(), Self::Error> {
+        let path = self
+            .get_repo_path(f.name, f.owner, f.hostname, true)
+            .await?
+            .join(REPO_INFO_FILE);
+        let publiccode: schema::Repository = f.into();
+        self.write_util(&publiccode, &path).await
+    }
+
+    /// delete user
+    async fn delete_user(&self, username: &str, hostname: &str) -> Result<(), Self::Error> {
+        let path = self.get_user_path(username, hostname, false).await?;
+        self.rm_util(&path).await?;
+        Ok(())
+    }
+
+    /// delete repository
+    async fn delete_repository(
+        &self,
+        owner: &str,
+        name: &str,
+        hostname: &str,
+    ) -> Result<(), Self::Error> {
+        let path = self.get_repo_path(name, owner, hostname, false).await?;
+        self.rm_util(&path).await
+    }
+}

@@ -1,0 +1,30 @@
+[package]
+name = "publiccodeyml"
+version = "0.1.0"
+authors = ["realaravinth <realaravinth@batsense.net>"]
+description = "ForgeFlux StarChart - Federated forge spider"
+documentation = "https://forgeflux.org/"
+edition = "2021"
+license = "AGPLv3 or later version"
+
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+async-trait = "0.1.51"
+serde = { version = "1", features = ["derive"]}
+serde_yaml = "0.8.24"
+tokio = { version = "1.18.2", features = ["fs"]}
+thiserror = "1.0.30"
+url = { version  = "2.2.2", features = ["serde"] }
+
+[dependencies.db-core]
+path = "../../db/db-core"
+
+[dependencies.federate-core]
+path = "../federate-core"
+
+[dev-dependencies]
+actix-rt = "2"
+mktemp = "0.4.1"
+federate-core = { path = "../federate-core", features = ["test"] }
