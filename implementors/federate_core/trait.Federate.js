@@ -1,0 +1,3 @@
+(function() {var implementors = {};
+implementors["publiccodeyml"] = [{"text":"impl <a class=\"trait\" href=\"federate_core/trait.Federate.html\" title=\"trait federate_core::Federate\">Federate</a> for <a class=\"struct\" href=\"publiccodeyml/struct.PccFederate.html\" title=\"struct publiccodeyml::PccFederate\">PccFederate</a>","synthetic":false,"types":["publiccodeyml::PccFederate"]}];
+if (window.register_implementors) {window.register_implementors(implementors);} else {window.pending_implementors = implementors;}})()

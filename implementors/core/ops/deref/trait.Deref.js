@@ -1,3 +1,3 @@
 (function() {var implementors = {};
-implementors["starchart"] = [{"text":"impl <a class=\"trait\" href=\"https://doc.rust-lang.org/1.60.0/core/ops/deref/trait.Deref.html\" title=\"trait core::ops::deref::Deref\">Deref</a> for <a class=\"struct\" href=\"starchart/data/struct.USER_AGENT.html\" title=\"struct starchart::data::USER_AGENT\">USER_AGENT</a>","synthetic":false,"types":["starchart::data::USER_AGENT"]}];
+implementors["starchart"] = [{"text":"impl <a class=\"trait\" href=\"https://doc.rust-lang.org/1.60.0/core/ops/deref/trait.Deref.html\" title=\"trait core::ops::deref::Deref\">Deref</a> for <a class=\"struct\" href=\"starchart/ctx/struct.USER_AGENT.html\" title=\"struct starchart::ctx::USER_AGENT\">USER_AGENT</a>","synthetic":false,"types":["starchart::ctx::USER_AGENT"]}];
 if (window.register_implementors) {window.register_implementors(implementors);} else {window.pending_implementors = implementors;}})()

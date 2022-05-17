@@ -1,3 +1,3 @@
 (function() {var implementors = {};
-implementors["starchart"] = [{"text":"impl <a class=\"trait\" href=\"https://docs.rs/lazy_static/1.4.0/lazy_static/trait.LazyStatic.html\" title=\"trait lazy_static::LazyStatic\">LazyStatic</a> for <a class=\"struct\" href=\"starchart/data/struct.USER_AGENT.html\" title=\"struct starchart::data::USER_AGENT\">USER_AGENT</a>","synthetic":false,"types":["starchart::data::USER_AGENT"]}];
+implementors["starchart"] = [{"text":"impl <a class=\"trait\" href=\"https://docs.rs/lazy_static/1.4.0/lazy_static/trait.LazyStatic.html\" title=\"trait lazy_static::LazyStatic\">LazyStatic</a> for <a class=\"struct\" href=\"starchart/ctx/struct.USER_AGENT.html\" title=\"struct starchart::ctx::USER_AGENT\">USER_AGENT</a>","synthetic":false,"types":["starchart::ctx::USER_AGENT"]}];
 if (window.register_implementors) {window.register_implementors(implementors);} else {window.pending_implementors = implementors;}})()

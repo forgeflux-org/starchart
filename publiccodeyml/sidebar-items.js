@@ -1,0 +1,1 @@
+initSidebarItems({"constant":[["INSTANCE_INFO_FILE",""],["REPO_INFO_FILE",""],["USER_INFO_FILE",""]],"mod":[["errors","represents all the ways a trait can fail using this crate"],["schema",""]],"struct":[["PccFederate",""]]});
