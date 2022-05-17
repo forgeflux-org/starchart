@@ -23,20 +23,29 @@ pub fn map_register_err(e: Error) -> DBError {
     if let Error::Database(err) = e {
         if err.code() == Some(Cow::from("2067")) {
             let msg = err.message();
-            unimplemented!("deal with errors upon insertaion of duplicate values");
-            println!("{}", msg);
+            println!("db err: {msg}");
             if msg.contains("starchart_dns_challenges.hostname") {
-                unimplemented!()
+                DBError::DuplicateChallengeHostname
+            } else if msg.contains("starchart_forges.hostname") {
+                DBError::DuplicateHostname
             } else if msg.contains("starchart_dns_challenges.challenge") {
-                unimplemented!()
+                DBError::DuplicateChallengeText
             } else if msg.contains("starchart_users.html_url") {
-                unimplemented!()
+                DBError::DuplicateUserLink
             } else if msg.contains("starchart_project_topics.name") {
-                unimplemented!()
+                DBError::DuplicateTopic
             } else if msg.contains("starchart_repositories.html_url") {
-                unimplemented!()
+                DBError::DuplicateRepositoryLink
             } else if msg.contains("starchart_forge_type.name") {
-                unimplemented!()
+                DBError::DuplicateForgeType
+            } else if msg.contains("starchart_users.html_url") {
+                DBError::DuplicateUserLink
+            } else if msg.contains("starchart_users.profile_photo_html_url") {
+                DBError::DuplicateProfilePhotoLink
+            } else if msg.contains("starchart_project_topics.name") {
+                DBError::DuplicateTopic
+            } else if msg.contains("starchart_repositories.name") {
+                DBError::DuplicateRepositoryLink
             } else {
                 DBError::DBError(Box::new(Error::Database(err)).into())
             }

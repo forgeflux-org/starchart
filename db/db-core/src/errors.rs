@@ -32,6 +32,30 @@ pub enum DBError {
     #[error("DNS challenge hostname is already taken")]
     DuplicateChallengeHostname,
 
+    /// Hostname is already taken
+    #[error("Hostname is already taken")]
+    DuplicateHostname,
+
+    /// Forge Type is already taken
+    #[error("Forge Type is already taken")]
+    DuplicateForgeType,
+
+    /// HTML link Type is already taken
+    #[error("User HTML link is already taken")]
+    DuplicateUserLink,
+
+    /// User profile photo link Type is already taken
+    #[error("User profile photo link is already taken")]
+    DuplicateProfilePhotoLink,
+
+    /// Topic is already taken
+    #[error("Topic is already taken")]
+    DuplicateTopic,
+
+    /// Repository link is already taken
+    #[error("Repository link is already taken")]
+    DuplicateRepositoryLink,
+
     /// forge instance type is unknown
     #[error("Unknown forge instance specifier {}", _0)]
     UnknownForgeType(String),

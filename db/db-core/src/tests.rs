@@ -26,7 +26,7 @@ pub async fn adding_forge_works<'a, T: SCDatabase>(
     add_user_msg2: AddUser<'a>,
     add_repo_msg: AddRepository<'a>,
 ) {
-    let _ = db.delete_forge_instance(&create_forge_msg.hostname).await;
+    let _ = db.delete_forge_instance(create_forge_msg.hostname).await;
     db.create_forge_isntance(&create_forge_msg).await.unwrap();
     assert!(
         db.forge_exists(create_forge_msg.hostname).await.unwrap(),
