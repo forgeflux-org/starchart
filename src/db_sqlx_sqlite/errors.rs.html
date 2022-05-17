@@ -52,6 +52,15 @@
 <span id="47">47</span>
 <span id="48">48</span>
 <span id="49">49</span>
+<span id="50">50</span>
+<span id="51">51</span>
+<span id="52">52</span>
+<span id="53">53</span>
+<span id="54">54</span>
+<span id="55">55</span>
+<span id="56">56</span>
+<span id="57">57</span>
+<span id="58">58</span>
 </pre><pre class="rust"><code><span class="comment">/*
  * Copyright (C) 2022  Aravinth Manivannan &lt;realaravinth@batsense.net&gt;
  *
@@ -77,20 +86,29 @@
     <span class="kw">if</span> <span class="kw">let</span> <span class="ident">Error::Database</span>(<span class="ident">err</span>) <span class="op">=</span> <span class="ident">e</span> {
         <span class="kw">if</span> <span class="ident">err</span>.<span class="ident">code</span>() <span class="op">==</span> <span class="prelude-val">Some</span>(<span class="ident">Cow::from</span>(<span class="string">&quot;2067&quot;</span>)) {
             <span class="kw">let</span> <span class="ident">msg</span> <span class="op">=</span> <span class="ident">err</span>.<span class="ident">message</span>();
-            <span class="macro">unimplemented!</span>(<span class="string">&quot;deal with errors upon insertaion of duplicate values&quot;</span>);
-            <span class="macro">println!</span>(<span class="string">&quot;{}&quot;</span>, <span class="ident">msg</span>);
+            <span class="macro">println!</span>(<span class="string">&quot;db err: {msg}&quot;</span>);
             <span class="kw">if</span> <span class="ident">msg</span>.<span class="ident">contains</span>(<span class="string">&quot;starchart_dns_challenges.hostname&quot;</span>) {
-                <span class="macro">unimplemented!</span>()
+                <span class="ident">DBError::DuplicateChallengeHostname</span>
+            } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">msg</span>.<span class="ident">contains</span>(<span class="string">&quot;starchart_forges.hostname&quot;</span>) {
+                <span class="ident">DBError::DuplicateHostname</span>
             } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">msg</span>.<span class="ident">contains</span>(<span class="string">&quot;starchart_dns_challenges.challenge&quot;</span>) {
-                <span class="macro">unimplemented!</span>()
+                <span class="ident">DBError::DuplicateChallengeText</span>
             } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">msg</span>.<span class="ident">contains</span>(<span class="string">&quot;starchart_users.html_url&quot;</span>) {
-                <span class="macro">unimplemented!</span>()
+                <span class="ident">DBError::DuplicateUserLink</span>
             } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">msg</span>.<span class="ident">contains</span>(<span class="string">&quot;starchart_project_topics.name&quot;</span>) {
-                <span class="macro">unimplemented!</span>()
+                <span class="ident">DBError::DuplicateTopic</span>
             } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">msg</span>.<span class="ident">contains</span>(<span class="string">&quot;starchart_repositories.html_url&quot;</span>) {
-                <span class="macro">unimplemented!</span>()
+                <span class="ident">DBError::DuplicateRepositoryLink</span>
             } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">msg</span>.<span class="ident">contains</span>(<span class="string">&quot;starchart_forge_type.name&quot;</span>) {
-                <span class="macro">unimplemented!</span>()
+                <span class="ident">DBError::DuplicateForgeType</span>
+            } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">msg</span>.<span class="ident">contains</span>(<span class="string">&quot;starchart_users.html_url&quot;</span>) {
+                <span class="ident">DBError::DuplicateUserLink</span>
+            } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">msg</span>.<span class="ident">contains</span>(<span class="string">&quot;starchart_users.profile_photo_html_url&quot;</span>) {
+                <span class="ident">DBError::DuplicateProfilePhotoLink</span>
+            } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">msg</span>.<span class="ident">contains</span>(<span class="string">&quot;starchart_project_topics.name&quot;</span>) {
+                <span class="ident">DBError::DuplicateTopic</span>
+            } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">msg</span>.<span class="ident">contains</span>(<span class="string">&quot;starchart_repositories.name&quot;</span>) {
+                <span class="ident">DBError::DuplicateRepositoryLink</span>
             } <span class="kw">else</span> {
                 <span class="ident">DBError::DBError</span>(<span class="ident">Box::new</span>(<span class="ident">Error::Database</span>(<span class="ident">err</span>)).<span class="ident">into</span>())
             }

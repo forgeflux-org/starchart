@@ -51,6 +51,30 @@
 <span id="46">46</span>
 <span id="47">47</span>
 <span id="48">48</span>
+<span id="49">49</span>
+<span id="50">50</span>
+<span id="51">51</span>
+<span id="52">52</span>
+<span id="53">53</span>
+<span id="54">54</span>
+<span id="55">55</span>
+<span id="56">56</span>
+<span id="57">57</span>
+<span id="58">58</span>
+<span id="59">59</span>
+<span id="60">60</span>
+<span id="61">61</span>
+<span id="62">62</span>
+<span id="63">63</span>
+<span id="64">64</span>
+<span id="65">65</span>
+<span id="66">66</span>
+<span id="67">67</span>
+<span id="68">68</span>
+<span id="69">69</span>
+<span id="70">70</span>
+<span id="71">71</span>
+<span id="72">72</span>
 </pre><pre class="rust"><code><span class="comment">/*
  * ForgeFlux StarChart - A federated software forge spider
  * Copyright (C) 2022  Aravinth Manivannan &lt;realaravinth@batsense.net&gt;
@@ -84,6 +108,30 @@
     <span class="doccomment">/// DNS challenge hostname is already taken</span>
     <span class="attribute">#[<span class="ident">error</span>(<span class="string">&quot;DNS challenge hostname is already taken&quot;</span>)]</span>
     <span class="ident">DuplicateChallengeHostname</span>,
+
+    <span class="doccomment">/// Hostname is already taken</span>
+    <span class="attribute">#[<span class="ident">error</span>(<span class="string">&quot;Hostname is already taken&quot;</span>)]</span>
+    <span class="ident">DuplicateHostname</span>,
+
+    <span class="doccomment">/// Forge Type is already taken</span>
+    <span class="attribute">#[<span class="ident">error</span>(<span class="string">&quot;Forge Type is already taken&quot;</span>)]</span>
+    <span class="ident">DuplicateForgeType</span>,
+
+    <span class="doccomment">/// HTML link Type is already taken</span>
+    <span class="attribute">#[<span class="ident">error</span>(<span class="string">&quot;User HTML link is already taken&quot;</span>)]</span>
+    <span class="ident">DuplicateUserLink</span>,
+
+    <span class="doccomment">/// User profile photo link Type is already taken</span>
+    <span class="attribute">#[<span class="ident">error</span>(<span class="string">&quot;User profile photo link is already taken&quot;</span>)]</span>
+    <span class="ident">DuplicateProfilePhotoLink</span>,
+
+    <span class="doccomment">/// Topic is already taken</span>
+    <span class="attribute">#[<span class="ident">error</span>(<span class="string">&quot;Topic is already taken&quot;</span>)]</span>
+    <span class="ident">DuplicateTopic</span>,
+
+    <span class="doccomment">/// Repository link is already taken</span>
+    <span class="attribute">#[<span class="ident">error</span>(<span class="string">&quot;Repository link is already taken&quot;</span>)]</span>
+    <span class="ident">DuplicateRepositoryLink</span>,
 
     <span class="doccomment">/// forge instance type is unknown</span>
     <span class="attribute">#[<span class="ident">error</span>(<span class="string">&quot;Unknown forge instance specifier {}&quot;</span>, <span class="ident">_0</span>)]</span>
