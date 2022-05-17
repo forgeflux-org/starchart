@@ -43,7 +43,7 @@ clean: ## Clean all build artifacts and dependencies
 	@cargo clean
 
 coverage: migrate ## Generate coverage report in HTML format
-	cargo tarpaulin -t 1200 --out Html --skip-clean  --all-features --no-fail-fast #--workspace=database/db-sqlx-postgres,database/db-sqlx-sqlite,.
+	cargo tarpaulin -t 1200 --out Html --skip-clean  --all-features --no-fail-fast --workspace=db/db-sqlx-sqlite,forge/gitea,federate/publiccodeyml,.
 
 check: ## Check for syntax errors on all workspaces
 	cargo check --workspace --tests --all-features
@@ -100,7 +100,7 @@ test: migrate ## Run tests
 #		cargo test --no-fail-fast
 
 xml-test-coverage: migrate ## Generate cobertura.xml test coverage
-	cargo tarpaulin -t 1200 --out Xml --skip-clean --all-features --no-fail-fast #--workspace=database/db-sqlx-postgres,database/db-sqlx-sqlite,.
+	cargo tarpaulin -t 1200 --out XMl --skip-clean  --all-features --no-fail-fast --workspace=db/db-sqlx-sqlite,forge/gitea,federate/publiccodeyml,.
 
 help: ## Prints help for targets with comments
 	@cat $(MAKEFILE_LIST) | grep -E '^[a-zA-Z_-]+:.*?## .*$$' | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'
