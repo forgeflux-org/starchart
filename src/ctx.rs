@@ -31,12 +31,12 @@ lazy_static! {
 const CLIENT_TIMEOUT: u64 = 60;
 
 #[derive(Clone)]
-pub struct Data {
+pub struct Ctx {
     pub client: Client,
     pub settings: Settings,
 }
 
-impl Data {
+impl Ctx {
     pub async fn new(settings: Settings) -> Arc<Self> {
         let timeout = Duration::new(CLIENT_TIMEOUT, 0);
         let client = ClientBuilder::new()

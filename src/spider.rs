@@ -24,10 +24,10 @@ use db_core::prelude::*;
 use forge_core::prelude::*;
 use gitea::Gitea;
 
-use crate::data::Data;
+use crate::ctx::Ctx;
 use crate::db::BoxDB;
 
-impl Data {
+impl Ctx {
     pub async fn crawl(&self, instance_url: &str, db: &BoxDB) {
         let gitea = Gitea::new(Url::parse(instance_url).unwrap(), self.client.clone());
         let mut page = 1;
@@ -56,7 +56,7 @@ impl Data {
 
             for (username, u) in res.users.iter() {
                 if !db
-                    .user_exists(&username, Some(&gitea.get_hostname()))
+                    .user_exists(username, Some(gitea.get_hostname()))
                     .await
                     .unwrap()
                 {
@@ -66,8 +66,14 @@ impl Data {
             }
 
             for r in res.repos.iter() {
-                let msg = r.into();
-                db.create_repository(&msg).await.unwrap();
+                if !db
+                    .repository_exists(&r.name, &r.owner.username, r.hostname)
+                    .await
+                    .unwrap()
+                {
+                    let msg = r.into();
+                    db.create_repository(&msg).await.unwrap();
+                }
             }
 
             sleep_fut.await.unwrap();
@@ -88,8 +94,8 @@ mod tests {
 
     #[actix_rt::test]
     async fn crawl_gitea() {
-        let (db, data) = sqlx_sqlite::get_data().await;
-        let res = data.crawl(GITEA_HOST, &db).await;
+        let (db, ctx) = sqlx_sqlite::get_ctx().await;
+        ctx.crawl(GITEA_HOST, &db).await;
         let hostname = get_hostname(&Url::parse(GITEA_HOST).unwrap());
         assert!(db.forge_exists(&hostname).await.unwrap());
         assert!(db

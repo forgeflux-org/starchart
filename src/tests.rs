@@ -19,30 +19,27 @@
 use std::env;
 pub use std::sync::Arc;
 
-use serde::Serialize;
-
-use crate::data::Data;
+use crate::ctx::Ctx;
 pub use crate::db::BoxDB;
 use crate::settings::{DBType, Settings};
 
 //pub mod sqlx_postgres {
 //    use super::*;
 //
-//    pub async fn get_data() -> (BoxDB, Arc<Data>) {
+//    pub async fn get_ctx() -> (BoxDB, Arc<Ctx>) {
 //        let url = env::var("POSTGRES_DATABASE_URL").unwrap();
 //        let mut settings = Settings::new().unwrap();
 //        settings.database.url = url.clone();
 //        settings.database.database_type = DBType::Postgres;
 //        let db = pg::get_data(Some(settings.clone())).await;
-//        (db, Data::new(Some(settings)))
+//        (db, Ctx::new(Some(settings)))
 //    }
-//}
 
 pub mod sqlx_sqlite {
     use super::*;
     use crate::db::sqlite;
 
-    pub async fn get_data() -> (BoxDB, Arc<Data>) {
+    pub async fn get_ctx() -> (BoxDB, Arc<Ctx>) {
         let url = env::var("SQLITE_DATABASE_URL").unwrap();
         env::set_var("DATABASE_URL", &url);
         println!("found db url: {url}");
@@ -50,6 +47,6 @@ pub mod sqlx_sqlite {
         settings.database.url = url.clone();
         settings.database.database_type = DBType::Sqlite;
         let db = sqlite::get_data(Some(settings.clone())).await;
-        (db, Data::new(settings).await)
+        (db, Ctx::new(settings).await)
     }
 }
