@@ -1,6 +1,5 @@
 /*
- * ForgeFlux StarChart - A federated software forge spider
- * Copyright © 2022 Aravinth Manivannan <realaravinth@batsense.net>
+ * Copyright (C) 2022  Aravinth Manivannan <realaravinth@batsense.net>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -13,23 +12,16 @@
  * GNU Affero General Public License for more details.
  *
  * You should have received a copy of the GNU Affero General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-pub mod ctx;
-pub mod db;
-pub mod federate;
-pub mod forge;
-pub mod settings;
-pub mod spider;
-#[cfg(test)]
-mod tests;
-pub mod utils;
-pub mod verify;
+use crate::settings::Settings;
+use federate_core::Federate;
 
-pub const VERSION: &str = env!("CARGO_PKG_VERSION");
-pub const PKG_NAME: &str = env!("CARGO_PKG_NAME");
-pub const GIT_COMMIT_HASH: &str = env!("GIT_HASH");
-pub const DOMAIN: &str = "developer-starchart.forgeflux.org";
+use publiccodeyml::{errors::FederateErorr, PccFederate};
 
-#[actix_rt::main]
-async fn main() {}
+pub type BoxFederate = Box<dyn Federate<Error = FederateErorr>>;
+
+pub async fn get_federate(settings: Option<Settings>) -> BoxFederate {
+    let settings = settings.unwrap_or_else(|| Settings::new().unwrap());
+    Box::new(PccFederate::new(settings.repository.root).await.unwrap())
+}

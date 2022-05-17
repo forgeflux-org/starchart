@@ -65,6 +65,15 @@ path = "./forge/gitea"
 [dependencies.forge-core]
 path = "./forge/forge-core"
 
+[dependencies.federate-core]
+path = "./federate/federate-core"
+
+[dependencies.publiccodeyml]
+path = "./federate/publiccodeyml"
+
 [dependencies.sqlx]
 features = ["runtime-actix-rustls", "uuid", "postgres", "time", "offline", "sqlite"]
 version = "0.5.11"
+
+[dev-dependencies]
+mktemp = "0.4.1"
