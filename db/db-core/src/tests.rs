@@ -33,9 +33,40 @@ pub async fn adding_forge_works<'a, T: SCDatabase>(
         "forge creation failed, forge existance check failure"
     );
 
+    // add user
     db.add_user(&add_user_msg).await.unwrap();
     db.add_user(&add_user_msg2).await.unwrap();
+    // verify user exists
+    assert!(db.user_exists(add_user_msg.username, None).await.unwrap());
+    assert!(db
+        .user_exists(add_user_msg.username, Some(add_user_msg.hostname))
+        .await
+        .unwrap());
+
+    // add repository
     db.create_repository(&add_repo_msg).await.unwrap();
+    // verify repo exists
+    assert!(db
+        .repository_exists(add_repo_msg.name, add_repo_msg.owner, add_repo_msg.hostname)
+        .await
+        .unwrap());
+    // delete repository
+    db.delete_repository(add_repo_msg.owner, add_repo_msg.name, add_repo_msg.hostname)
+        .await
+        .unwrap();
+    assert!(!db
+        .repository_exists(add_repo_msg.name, add_repo_msg.owner, add_repo_msg.hostname)
+        .await
+        .unwrap());
+
+    // delete user
+    db.delete_user(add_user_msg.username, add_user_msg.hostname)
+        .await
+        .unwrap();
+    assert!(!db
+        .user_exists(add_user_msg.username, Some(add_user_msg.hostname))
+        .await
+        .unwrap());
 }
 
 /// test if all forge type implementations are loaded into DB

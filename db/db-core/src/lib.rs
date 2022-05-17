@@ -133,6 +133,12 @@ pub trait SCDatabase: std::marker::Send + std::marker::Sync + CloneSPDatabase {
     /// done only on that forge
     async fn user_exists(&self, username: &str, hostname: Option<&str>) -> DBResult<bool>;
 
+    /// delete user
+    async fn delete_user(&self, username: &str, hostname: &str) -> DBResult<()>;
+
+    /// delete repository
+    async fn delete_repository(&self, owner: &str, name: &str, hostname: &str) -> DBResult<()>;
+
     /// check if a repository exists.
     async fn repository_exists(&self, name: &str, owner: &str, hostname: &str) -> DBResult<bool>;
 
