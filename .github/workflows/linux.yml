@@ -37,15 +37,16 @@ jobs:
       #
     steps:
       - uses: actions/checkout@v2
-      - name: ⚡ Cache
-        uses: actions/cache@v3
-        with:
-          path: |
-            /var/lib/docker
-            ~/.cargo/registry
-            ~/.cargo/git
-            target
-          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+
+      #      - name: ⚡ Cache
+      #        uses: actions/cache@v3
+      #        with:
+      #          path: |
+      #            /var/lib/docker
+      #            ~/.cargo/registry
+      #            ~/.cargo/git
+      #            target
+      #          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
 
           #      - name: Login to DockerHub
           #        if: (github.ref == 'refs/heads/master' || github.event_name == 'push') && github.repository == 'forgeflux-org/starchart'
