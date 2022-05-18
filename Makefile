@@ -25,6 +25,10 @@ define test_federation
 		cargo test --no-fail-fast
 endef
 
+define cache_bust ## run cache_busting program
+	cd utils/cache-bust && cargo run
+endef
+
 define test_workspaces
 	$(call test_databases)
 	$(call test_forges)
@@ -33,7 +37,11 @@ define test_workspaces
 endef
 
 default: ## Debug build
+	$(call cache_bust)
 	cargo build
+
+cache-bust: ## Run cache buster on static assets
+	$(call cache_bust)
 
 clean: ## Clean all build artifacts and dependencies
 	@-/bin/rm -rf target/
@@ -43,6 +51,8 @@ clean: ## Clean all build artifacts and dependencies
 	@cargo clean
 
 coverage: migrate ## Generate coverage report in HTML format
+	$(call launch_test_env)
+	$(call cache_bust)
 	cargo tarpaulin -t 1200 --out Html --skip-clean  --all-features --no-fail-fast --workspace=db/db-sqlx-sqlite,forge/gitea,federate/publiccodeyml,.
 
 check: ## Check for syntax errors on all workspaces
@@ -56,6 +66,7 @@ check: ## Check for syntax errors on all workspaces
 	cd forge/gitea && cargo check --tests --all-features
 	cd federate/federate-core && cargo check --tests --all-features
 	cd federate/publiccodeyml && cargo check --tests --all-features
+	cd utils/cache-bust && cargo check --tests --all-features
 
 dev-env: ## Download development dependencies
 	$(call launch_test_env)
@@ -76,6 +87,7 @@ lint: ## Lint codebase
 	cargo clippy --workspace --tests --all-features
 
 release: ## Release build
+	$(call cache_bust)
 	cargo build --release
 
 run: default ## Run debug build
@@ -93,6 +105,7 @@ sqlx-offline-data: ## prepare sqlx offline data
 		--all-features
 test: migrate ## Run tests
 	$(call launch_test_env)
+	$(call cache_bust)
 	$(call test_workspaces)
 
 #	cd database/db-sqlx-postgres &&\
@@ -100,6 +113,8 @@ test: migrate ## Run tests
 #		cargo test --no-fail-fast
 
 xml-test-coverage: migrate ## Generate cobertura.xml test coverage
+	$(call launch_test_env)
+	$(call cache_bust)
 	cargo tarpaulin -t 1200 --out XMl --skip-clean  --all-features --no-fail-fast --workspace=db/db-sqlx-sqlite,forge/gitea,federate/publiccodeyml,.
 
 help: ## Prints help for targets with comments

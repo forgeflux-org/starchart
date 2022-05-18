@@ -3,3 +3,4 @@
 **/target/
 tmp
 tarpaulin-report.html
+src/cache_buster_data.json

@@ -10,7 +10,7 @@ license = "AGPLv3 or later version"
 build = "build.rs"
 
 [workspace]
-exclude = ["db/migrator"]
+exclude = ["db/migrator", "utils/cache-bust"]
 members = [
     ".",
     "db/db-core",
@@ -24,11 +24,12 @@ members = [
 [dependencies]
 actix-rt = "2.7"
 actix-web = "4.0.1"
-actix = "0.13"
 actix-identity = "0.4.0"
 async-trait = "0.1.51"
 config = "0.13.0"
 lazy_static = "1.4.0"
+mime = "0.3.16"
+mime_guess = "2.0.3"
 rand = "0.8.5"
 tera = "1.15"
 tokio = { version = "1.17", features = ["fs", "time"] }
@@ -37,6 +38,11 @@ validator = { version = "0.15", features = ["derive"]}
 derive_more = "0.99.17"
 log = "0.4.16"
 pretty_env_logger = "0.4"
+rust-embed = "6.3.0"
+urlencoding = "2.1.0"
+
+[dependencies.cache-buster]
+git = "https://github.com/realaravinth/cache-buster"
 
 [dependencies.reqwest]
 features = ["rustls-tls-native-roots", "gzip", "deflate", "brotli", "json"]
