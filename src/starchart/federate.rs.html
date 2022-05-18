@@ -30,6 +30,8 @@
 <span id="25">25</span>
 <span id="26">26</span>
 <span id="27">27</span>
+<span id="28">28</span>
+<span id="29">29</span>
 </pre><pre class="rust"><code><span class="comment">/*
  * Copyright (C) 2022  Aravinth Manivannan &lt;realaravinth@batsense.net&gt;
  *
@@ -46,16 +48,18 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see &lt;https://www.gnu.org/licenses/&gt;.
  */</span>
-<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::settings::Settings</span>;
-<span class="kw">use</span> <span class="ident">federate_core::Federate</span>;
+<span class="kw">use</span> <span class="ident">std::sync::Arc</span>;
 
+<span class="kw">use</span> <span class="ident">federate_core::Federate</span>;
 <span class="kw">use</span> <span class="ident">publiccodeyml</span>::{<span class="ident">errors::FederateErorr</span>, <span class="ident">PccFederate</span>};
 
-<span class="kw">pub</span> <span class="kw">type</span> <span class="ident">BoxFederate</span> <span class="op">=</span> <span class="ident">Box</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">Federate</span><span class="op">&lt;</span><span class="ident">Error</span> <span class="op">=</span> <span class="ident">FederateErorr</span><span class="op">&gt;</span><span class="op">&gt;</span>;
+<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::settings::Settings</span>;
 
-<span class="kw">pub</span> <span class="kw">async</span> <span class="kw">fn</span> <span class="ident">get_federate</span>(<span class="ident">settings</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Settings</span><span class="op">&gt;</span>) -&gt; <span class="ident">BoxFederate</span> {
+<span class="kw">pub</span> <span class="kw">type</span> <span class="ident">ArcFederate</span> <span class="op">=</span> <span class="ident">Arc</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">Federate</span><span class="op">&lt;</span><span class="ident">Error</span> <span class="op">=</span> <span class="ident">FederateErorr</span><span class="op">&gt;</span><span class="op">&gt;</span>;
+
+<span class="kw">pub</span> <span class="kw">async</span> <span class="kw">fn</span> <span class="ident">get_federate</span>(<span class="ident">settings</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Settings</span><span class="op">&gt;</span>) -&gt; <span class="ident">ArcFederate</span> {
     <span class="kw">let</span> <span class="ident">settings</span> <span class="op">=</span> <span class="ident">settings</span>.<span class="ident">unwrap_or_else</span>(<span class="op">|</span><span class="op">|</span> <span class="ident">Settings::new</span>().<span class="ident">unwrap</span>());
-    <span class="ident">Box::new</span>(<span class="ident">PccFederate::new</span>(<span class="ident">settings</span>.<span class="ident">repository</span>.<span class="ident">root</span>).<span class="kw">await</span>.<span class="ident">unwrap</span>())
+    <span class="ident">Arc::new</span>(<span class="ident">PccFederate::new</span>(<span class="ident">settings</span>.<span class="ident">repository</span>.<span class="ident">root</span>).<span class="kw">await</span>.<span class="ident">unwrap</span>())
 }
 </code></pre></div>
 </section><section id="search" class="content hidden"></section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="starchart" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.60.0 (7737e0b5c 2022-04-04)" ></div>

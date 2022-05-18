@@ -150,10 +150,10 @@
 
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::ctx::Ctx</span>;
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::db::BoxDB</span>;
-<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::federate::BoxFederate</span>;
+<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::federate::ArcFederate</span>;
 
 <span class="kw">impl</span> <span class="ident">Ctx</span> {
-    <span class="kw">pub</span> <span class="kw">async</span> <span class="kw">fn</span> <span class="ident">crawl</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">instance_url</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>, <span class="ident">db</span>: <span class="kw-2">&amp;</span><span class="ident">BoxDB</span>, <span class="ident">federate</span>: <span class="kw-2">&amp;</span><span class="ident">BoxFederate</span>) {
+    <span class="kw">pub</span> <span class="kw">async</span> <span class="kw">fn</span> <span class="ident">crawl</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">instance_url</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>, <span class="ident">db</span>: <span class="kw-2">&amp;</span><span class="ident">BoxDB</span>, <span class="ident">federate</span>: <span class="kw-2">&amp;</span><span class="ident">ArcFederate</span>) {
         <span class="kw">let</span> <span class="ident">gitea</span> <span class="op">=</span> <span class="ident">Gitea::new</span>(<span class="ident">Url::parse</span>(<span class="ident">instance_url</span>).<span class="ident">unwrap</span>(), <span class="self">self</span>.<span class="ident">client</span>.<span class="ident">clone</span>());
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">page</span> <span class="op">=</span> <span class="number">1</span>;
         <span class="kw">let</span> <span class="ident">hostname</span> <span class="op">=</span> <span class="ident">gitea</span>.<span class="ident">get_hostname</span>();

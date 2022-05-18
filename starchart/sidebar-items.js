@@ -1,1 +1,1 @@
-initSidebarItems({"constant":[["DOMAIN",""],["GIT_COMMIT_HASH",""],["PKG_NAME",""],["VERSION",""]],"fn":[["main",""]],"mod":[["ctx",""],["db",""],["federate",""],["forge",""],["settings",""],["spider",""],["utils",""],["verify",""]]});
+initSidebarItems({"constant":[["DOMAIN",""],["GIT_COMMIT_HASH",""],["PKG_NAME",""],["VERSION",""]],"fn":[["main",""],["services",""]],"mod":[["ctx",""],["db",""],["federate",""],["forge",""],["settings",""],["spider",""],["utils",""],["verify",""]],"type":[["ArcCtx",""],["WebCtx",""],["WebData",""],["WebFederate",""]]});
