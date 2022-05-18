@@ -21,7 +21,7 @@ pub use std::sync::Arc;
 
 use crate::ctx::Ctx;
 pub use crate::db::BoxDB;
-pub use crate::federate::{get_federate, BoxFederate};
+pub use crate::federate::{get_federate, ArcFederate};
 use crate::settings::{DBType, Settings};
 
 //pub mod sqlx_postgres {
@@ -41,7 +41,7 @@ pub mod sqlx_sqlite {
     use crate::db::sqlite;
     use mktemp::Temp;
 
-    pub async fn get_ctx() -> (BoxDB, Arc<Ctx>, BoxFederate, Temp) {
+    pub async fn get_ctx() -> (BoxDB, Arc<Ctx>, ArcFederate, Temp) {
         let url = env::var("SQLITE_DATABASE_URL").unwrap();
         env::set_var("DATABASE_URL", &url);
         println!("found db url: {url}");

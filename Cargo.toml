@@ -23,6 +23,9 @@ members = [
 
 [dependencies]
 actix-rt = "2.7"
+actix-web = "4.0.1"
+actix = "0.13"
+actix-identity = "0.4.0"
 async-trait = "0.1.51"
 config = "0.13.0"
 lazy_static = "1.4.0"
@@ -33,6 +36,7 @@ url = { version  = "2.2.2", features = ["serde"] }
 validator = { version = "0.15", features = ["derive"]}
 derive_more = "0.99.17"
 log = "0.4.16"
+pretty_env_logger = "0.4"
 
 [dependencies.reqwest]
 features = ["rustls-tls-native-roots", "gzip", "deflate", "brotli", "json"]
@@ -52,12 +56,8 @@ version = "0.21.1"
 [dependencies.db-core]
 path = "./db/db-core"
 
-#[dependencies.db-sqlx-postgres]
-#path = "./db/db-sqlx-postgres"
-#
 [dependencies.db-sqlx-sqlite]
 path = "./db/db-sqlx-sqlite"
-
 
 [dependencies.gitea]
 path = "./forge/gitea"

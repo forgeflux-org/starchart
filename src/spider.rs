@@ -26,10 +26,10 @@ use gitea::Gitea;
 
 use crate::ctx::Ctx;
 use crate::db::BoxDB;
-use crate::federate::BoxFederate;
+use crate::federate::ArcFederate;
 
 impl Ctx {
-    pub async fn crawl(&self, instance_url: &str, db: &BoxDB, federate: &BoxFederate) {
+    pub async fn crawl(&self, instance_url: &str, db: &BoxDB, federate: &ArcFederate) {
         let gitea = Gitea::new(Url::parse(instance_url).unwrap(), self.client.clone());
         let mut page = 1;
         let hostname = gitea.get_hostname();

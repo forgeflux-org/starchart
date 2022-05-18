@@ -14,14 +14,16 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-use crate::settings::Settings;
-use federate_core::Federate;
+use std::sync::Arc;
 
+use federate_core::Federate;
 use publiccodeyml::{errors::FederateErorr, PccFederate};
 
-pub type BoxFederate = Box<dyn Federate<Error = FederateErorr>>;
+use crate::settings::Settings;
 
-pub async fn get_federate(settings: Option<Settings>) -> BoxFederate {
+pub type ArcFederate = Arc<dyn Federate<Error = FederateErorr>>;
+
+pub async fn get_federate(settings: Option<Settings>) -> ArcFederate {
     let settings = settings.unwrap_or_else(|| Settings::new().unwrap());
-    Box::new(PccFederate::new(settings.repository.root).await.unwrap())
+    Arc::new(PccFederate::new(settings.repository.root).await.unwrap())
 }

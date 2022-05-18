@@ -15,6 +15,10 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+use std::sync::Arc;
+
+use actix_web::{middleware, web::Data, App, HttpServer};
+
 pub mod ctx;
 pub mod db;
 pub mod federate;
@@ -26,10 +30,52 @@ mod tests;
 pub mod utils;
 pub mod verify;
 
+use crate::federate::{get_federate, ArcFederate};
+use ctx::Ctx;
+use db::{sqlite, BoxDB};
+use settings::Settings;
+
 pub const VERSION: &str = env!("CARGO_PKG_VERSION");
 pub const PKG_NAME: &str = env!("CARGO_PKG_NAME");
 pub const GIT_COMMIT_HASH: &str = env!("GIT_HASH");
 pub const DOMAIN: &str = "developer-starchart.forgeflux.org";
 
+pub type ArcCtx = Arc<Ctx>;
+
+pub type WebCtx = Data<ArcCtx>;
+pub type WebData = Data<BoxDB>;
+pub type WebFederate = Data<ArcFederate>;
+
 #[actix_rt::main]
-async fn main() {}
+async fn main() {
+    let settings = Settings::new().unwrap();
+    pretty_env_logger::init();
+
+    let ctx = Ctx::new(settings.clone()).await;
+    let db = sqlite::get_data(Some(settings.clone())).await;
+    let federate = get_federate(Some(settings.clone())).await;
+
+    let socket_addr = settings.server.get_ip();
+
+    HttpServer::new(move || {
+        App::new()
+            .wrap(middleware::Logger::default())
+            .wrap(middleware::Compress::default())
+            .app_data(federate.clone())
+            .app_data(db.clone())
+            .app_data(ctx.clone())
+            .wrap(
+                middleware::DefaultHeaders::new().add(("Permissions-Policy", "interest-cohort=()")),
+            )
+            .configure(services)
+    })
+    .bind(&socket_addr)
+    .unwrap()
+    .run()
+    .await
+    .unwrap();
+}
+
+fn services(cfg: &mut actix_web::web::ServiceConfig) {
+    //    cfg.service();
+}
