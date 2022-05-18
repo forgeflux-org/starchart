@@ -21,11 +21,11 @@ use std::{env, fs};
 use config::{Config, ConfigError, Environment, File};
 use derive_more::Display;
 use log::warn;
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 use url::Url;
 use validator::Validate;
 
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct Server {
     pub port: u32,
     pub domain: String,
@@ -40,7 +40,7 @@ impl Server {
     }
 }
 
-#[derive(Deserialize, Display, Clone, Debug)]
+#[derive(Debug, Display, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "lowercase")]
 pub enum LogLevel {
     #[display(fmt = "debug")]
@@ -64,7 +64,7 @@ impl LogLevel {
     }
 }
 
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Debug, PartialEq, Clone, Deserialize, Serialize)]
 pub struct Repository {
     pub root: String,
 }
@@ -83,7 +83,7 @@ impl Repository {
     }
 }
 
-#[derive(Deserialize, Display, PartialEq, Clone, Debug)]
+#[derive(Debug, Display, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "lowercase")]
 pub enum DBType {
     #[display(fmt = "postgres")]
@@ -102,14 +102,14 @@ impl DBType {
     }
 }
 
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct Database {
     pub url: String,
     pub pool: u32,
     pub database_type: DBType,
 }
 
-#[derive(Debug, Validate, Clone, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct Crawler {
     pub ttl: u64,
     pub client_timeout: u64,
@@ -117,7 +117,7 @@ pub struct Crawler {
     pub wait_before_next_api_call: u64,
 }
 
-#[derive(Debug, Validate, Clone, Deserialize)]
+#[derive(Debug, Validate, Clone, PartialEq, Serialize, Deserialize)]
 pub struct Settings {
     pub log: LogLevel,
     pub database: Database,

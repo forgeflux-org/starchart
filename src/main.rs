@@ -18,13 +18,17 @@
 use std::sync::Arc;
 
 use actix_web::{middleware, web::Data, App, HttpServer};
+use lazy_static::lazy_static;
 
 pub mod ctx;
 pub mod db;
+pub mod errors;
 pub mod federate;
 pub mod forge;
+pub mod pages;
 pub mod settings;
 pub mod spider;
+pub mod static_assets;
 #[cfg(test)]
 mod tests;
 pub mod utils;
@@ -34,22 +38,30 @@ use crate::federate::{get_federate, ArcFederate};
 use ctx::Ctx;
 use db::{sqlite, BoxDB};
 use settings::Settings;
+use static_assets::FileMap;
 
+pub use crate::pages::routes::PAGES;
+
+pub const CACHE_AGE: u32 = 60 * 60 * 24 * 30; // one month, I think?
 pub const VERSION: &str = env!("CARGO_PKG_VERSION");
 pub const PKG_NAME: &str = env!("CARGO_PKG_NAME");
 pub const GIT_COMMIT_HASH: &str = env!("GIT_HASH");
 pub const DOMAIN: &str = "developer-starchart.forgeflux.org";
 
 pub type ArcCtx = Arc<Ctx>;
-
 pub type WebCtx = Data<ArcCtx>;
 pub type WebData = Data<BoxDB>;
 pub type WebFederate = Data<ArcFederate>;
+
+lazy_static! {
+    pub static ref FILES: FileMap = FileMap::new();
+}
 
 #[actix_rt::main]
 async fn main() {
     let settings = Settings::new().unwrap();
     pretty_env_logger::init();
+    lazy_static::initialize(&pages::TEMPLATES);
 
     let ctx = Ctx::new(settings.clone()).await;
     let db = sqlite::get_data(Some(settings.clone())).await;
