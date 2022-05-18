@@ -59,8 +59,6 @@
 <span id="54">54</span>
 <span id="55">55</span>
 <span id="56">56</span>
-<span id="57">57</span>
-<span id="58">58</span>
 </pre><pre class="rust"><code><span class="comment">/*
  * Copyright (C) 2022  Aravinth Manivannan &lt;realaravinth@batsense.net&gt;
  *
@@ -103,8 +101,6 @@
                 <span class="ident">DBError::DuplicateForgeType</span>
             } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">msg</span>.<span class="ident">contains</span>(<span class="string">&quot;starchart_users.html_url&quot;</span>) {
                 <span class="ident">DBError::DuplicateUserLink</span>
-            } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">msg</span>.<span class="ident">contains</span>(<span class="string">&quot;starchart_users.profile_photo_html_url&quot;</span>) {
-                <span class="ident">DBError::DuplicateProfilePhotoLink</span>
             } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">msg</span>.<span class="ident">contains</span>(<span class="string">&quot;starchart_project_topics.name&quot;</span>) {
                 <span class="ident">DBError::DuplicateTopic</span>
             } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">msg</span>.<span class="ident">contains</span>(<span class="string">&quot;starchart_repositories.name&quot;</span>) {
