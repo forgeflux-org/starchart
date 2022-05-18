@@ -1,0 +1,20 @@
+[package]
+name = "cache-bust"
+version = "0.1.0"
+edition = "2021"
+description = "ForgeFlux StarChart - Federated forge spider"
+homepage = "https://mcaptcha.org"
+license = "AGPLv3 or later version"
+authors = ["realaravinth <realaravinth@batsense.net>"]
+repository = "https://github.com/forgeflux-org/starchart"
+documentation = "https://forgeflux.org/"
+
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[workspace]
+
+[dependencies]
+cache-buster = { version = "0.2.0", git = "https://github.com/realaravinth/cache-buster" }
+serde = { version = "1", features  = ["derive"] }
+serde_json = "1"
