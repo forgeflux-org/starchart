@@ -44,10 +44,6 @@ pub enum DBError {
     #[error("User HTML link is already taken")]
     DuplicateUserLink,
 
-    /// User profile photo link Type is already taken
-    #[error("User profile photo link is already taken")]
-    DuplicateProfilePhotoLink,
-
     /// Topic is already taken
     #[error("Topic is already taken")]
     DuplicateTopic,

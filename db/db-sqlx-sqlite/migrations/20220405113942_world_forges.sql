@@ -24,7 +24,7 @@ CREATE TABLE IF NOT EXISTS starchart_users (
 	hostname_id INTEGER NOT NULL REFERENCES starchart_forges(ID) ON DELETE CASCADE,
 	username TEXT NOT NULL,
 	html_url TEXT NOT NULL UNIQUE,
-	profile_photo_html_url TEXT DEFAULT NULL UNIQUE,
+	profile_photo_html_url TEXT DEFAULT NULL,
 	added_on INTEGER NOT NULL,
 	last_crawl_on INTEGER NOT NULL,
 	ID INTEGER PRIMARY KEY NOT NULL

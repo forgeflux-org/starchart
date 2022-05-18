@@ -40,8 +40,6 @@ pub fn map_register_err(e: Error) -> DBError {
                 DBError::DuplicateForgeType
             } else if msg.contains("starchart_users.html_url") {
                 DBError::DuplicateUserLink
-            } else if msg.contains("starchart_users.profile_photo_html_url") {
-                DBError::DuplicateProfilePhotoLink
             } else if msg.contains("starchart_project_topics.name") {
                 DBError::DuplicateTopic
             } else if msg.contains("starchart_repositories.name") {
