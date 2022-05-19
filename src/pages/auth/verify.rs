@@ -35,7 +35,6 @@ use crate::*;
 pub use crate::pages::*;
 
 pub const TITLE: &str = "Setup spidering";
-pub const AUTH_ADD: TemplateFile = TemplateFile::new("auth_add", "pages/auth/add.html");
 pub const AUTH_CHALLENGE: TemplateFile =
     TemplateFile::new("auth_challenge", "pages/auth/challenge.html");
 
@@ -66,7 +65,9 @@ impl VerifyChallenge {
     }
 
     pub fn render(&self) -> String {
-        TEMPLATES.render(AUTH_ADD.name, &self.ctx.borrow()).unwrap()
+        TEMPLATES
+            .render(AUTH_CHALLENGE.name, &self.ctx.borrow())
+            .unwrap()
     }
 
     pub fn page(s: &Settings, payload: &Challenge) -> String {
@@ -76,7 +77,7 @@ impl VerifyChallenge {
 }
 
 #[get(path = "PAGES.auth.verify")]
-pub async fn get_add(
+pub async fn get_verify(
     ctx: WebCtx,
     db: WebDB,
     query: web::Query<VerifyChallengePayload>,
@@ -98,8 +99,8 @@ pub async fn get_add(
 }
 
 pub fn services(cfg: &mut web::ServiceConfig) {
-    cfg.service(get_add);
-    cfg.service(add_submit);
+    cfg.service(get_verify);
+    cfg.service(submit_verify);
 }
 
 async fn _get_challenge(
@@ -112,7 +113,7 @@ async fn _get_challenge(
 }
 
 #[post(path = "PAGES.auth.verify")]
-pub async fn add_submit(
+pub async fn submit_verify(
     payload: web::Form<VerifyChallengePayload>,
     ctx: WebCtx,
     db: WebDB,

@@ -29,4 +29,5 @@ pub fn register_templates(t: &mut tera::Tera) {
 
 pub fn services(cfg: &mut actix_web::web::ServiceConfig) {
     add::services(cfg);
+    verify::services(cfg);
 }
