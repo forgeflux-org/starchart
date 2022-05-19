@@ -383,30 +383,99 @@ impl SCDatabase for Database {
 
         Ok(())
     }
+
+    /// Get all repositories
+    async fn get_all_repositories(&self, page: u32, limit: u32) -> DBResult<Vec<Repository>> {
+        struct InnerRepository {
+            /// html link to the repository
+            pub html_url: String,
+            /// hostname of the forge instance: with scheme but remove trailing slash
+            /// hostname can be derived  from html_link also, but used to link to user's forge instance
+            pub hostname: String,
+            /// repository name
+            pub name: String,
+            /// repository owner
+            pub username: String,
+            /// repository description, if any
+            pub description: Option<String>,
+            /// repository website, if any
+            pub website: Option<String>,
+            pub ID: i64,
+        }
+
+        let mut db_res = sqlx::query_as!(
+            InnerRepository,
+            "            SELECT 
+		starchart_forges.hostname,
+		starchart_users.username,
+		starchart_repositories.name,
+		starchart_repositories.description,
+		starchart_repositories.html_url,
+        starchart_repositories.ID,
+		starchart_repositories.website
+FROM
+	starchart_repositories
+INNER JOIN
+	starchart_forges
+ON
+	starchart_repositories.hostname_id = starchart_forges.id
+INNER JOIN
+	starchart_users
+ON
+	starchart_repositories.owner_id =  starchart_users.id
+ORDER BY
+	starchart_repositories.ID
+LIMIT $1 OFFSET $2
+;",
+            limit,
+            page,
+        )
+        .fetch_all(&self.pool)
+        .await
+        .map_err(map_register_err)?;
+
+        let mut res = Vec::with_capacity(db_res.len());
+        struct Topics {
+            name: String,
+        }
+
+        for repo in db_res.drain(0..) {
+            let mut db_topics = sqlx::query_as!(
+                Topics,
+                "SELECT name FROM starchart_project_topics WHERE ID = (
+                SELECT topic_id FROM starchart_repository_topic_mapping WHERE repository_id = $1
+            )",
+                repo.ID
+            )
+            .fetch_all(&self.pool)
+            .await
+            .map_err(map_register_err)?;
+
+            let topics = if db_topics.is_empty() {
+                None
+            } else {
+                let mut topics = Vec::with_capacity(db_topics.len());
+                for t in db_topics.drain(0..) {
+                    topics.push(t.name);
+                }
+
+                Some(topics)
+            };
+            res.push(Repository {
+                html_url: repo.html_url,
+                hostname: repo.hostname,
+                name: repo.name,
+                username: repo.username,
+                description: repo.description,
+                website: repo.website,
+                tags: topics,
+            });
+        }
+
+        Ok(res)
+    }
 }
 
 fn now_unix_time_stamp() -> i64 {
     OffsetDateTime::now_utc().unix_timestamp()
 }
-
-//
-//#[allow(non_snake_case)]
-//struct InnerGistComment {
-//    ID: i64,
-//    owner: String,
-//    comment: Option<String>,
-//    gist_public_id: String,
-//    created: i64,
-//}
-//
-//impl From<InnerGistComment> for GistComment {
-//    fn from(g: InnerGistComment) -> Self {
-//        Self {
-//            id: g.ID,
-//            owner: g.owner,
-//            comment: g.comment.unwrap(),
-//            gist_public_id: g.gist_public_id,
-//            created: g.created,
-//        }
-//    }
-//}

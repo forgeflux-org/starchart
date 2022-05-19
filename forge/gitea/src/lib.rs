@@ -20,8 +20,10 @@ use std::sync::Arc;
 use reqwest::Client;
 use url::Url;
 
-use db_core::prelude::*;
+use db_core::ForgeImplementation;
+use db_core::SCDatabase;
 use forge_core::dev::*;
+use forge_core::Repository;
 
 pub mod schema;
 

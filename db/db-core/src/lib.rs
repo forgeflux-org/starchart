@@ -108,6 +108,26 @@ pub struct AddRepository<'a> {
 }
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+/// repository
+pub struct Repository {
+    /// html link to the repository
+    pub html_url: String,
+    /// repository topic tags
+    pub tags: Option<Vec<String>>,
+    /// hostname of the forge instance: with scheme but remove trailing slash
+    /// hostname can be derived  from html_link also, but used to link to user's forge instance
+    pub hostname: String,
+    /// repository name
+    pub name: String,
+    /// repository owner
+    pub username: String,
+    /// repository description, if any
+    pub description: Option<String>,
+    /// repository website, if any
+    pub website: Option<String>,
+}
+
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 /// represents a DNS challenge
 pub struct Challenge {
     /// hostname of the forge instance
@@ -164,6 +184,9 @@ pub trait SCDatabase: std::marker::Send + std::marker::Sync + CloneSPDatabase {
 
     /// check if a repository exists.
     async fn repository_exists(&self, name: &str, owner: &str, hostname: &str) -> DBResult<bool>;
+
+    /// Get all repositories
+    async fn get_all_repositories(&self, page: u32, limit: u32) -> DBResult<Vec<Repository>>;
 
     /// add new repository to database.
     async fn create_repository(&self, r: &AddRepository) -> DBResult<()>;
