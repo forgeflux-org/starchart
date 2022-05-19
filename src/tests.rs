@@ -24,8 +24,9 @@ pub use crate::db::BoxDB;
 pub use crate::federate::{get_federate, ArcFederate};
 use crate::settings::{DBType, Settings};
 
-
 //use actix_web::cookie::Cookie;
+use crate::errors::*;
+use crate::*;
 use actix_web::test;
 use actix_web::{
     body::{BoxBody, EitherBody},
@@ -34,8 +35,6 @@ use actix_web::{
     http::StatusCode,
 };
 use serde::Serialize;
-use crate::errors::*;
-use crate::*;
 
 //pub mod sqlx_postgres {
 //    use super::*;
@@ -70,7 +69,6 @@ pub mod sqlx_sqlite {
         (db, Ctx::new(settings).await, federate, tmp_dir)
     }
 }
-
 
 #[macro_export]
 macro_rules! get_cookie {

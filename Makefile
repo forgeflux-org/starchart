@@ -33,7 +33,8 @@ define test_workspaces
 	$(call test_databases)
 	$(call test_forges)
 	$(call test_federation)
-	cargo test --no-fail-fast
+	DATABASE_URL=${SQLITE_DATABASE_URL}\
+		cargo test --no-fail-fast
 endef
 
 default: ## Debug build

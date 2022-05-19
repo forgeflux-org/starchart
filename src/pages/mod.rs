@@ -23,11 +23,16 @@ use tera::*;
 
 use crate::settings::Settings;
 use crate::static_assets::ASSETS;
-use crate::PAGES;
 use crate::{GIT_COMMIT_HASH, VERSION};
 
+pub mod auth;
 mod errors;
 pub mod routes;
+
+pub use errors::ERROR_KEY;
+pub use routes::PAGES;
+
+pub const TITLE_KEY: &str = "title";
 
 pub struct TemplateFile {
     pub name: &'static str,
@@ -56,15 +61,15 @@ pub const PAYLOAD_KEY: &str = "payload";
 pub const BASE: TemplateFile = TemplateFile::new("base", "components/base.html");
 pub const FOOTER: TemplateFile = TemplateFile::new("footer", "components/footer.html");
 pub const PUB_NAV: TemplateFile = TemplateFile::new("pub_nav", "components/nav/pub.html");
-pub const AUTH_NAV: TemplateFile = TemplateFile::new("auth_nav", "components/nav/auth.html");
 
 lazy_static! {
     pub static ref TEMPLATES: Tera = {
         let mut tera = Tera::default();
-        for t in [BASE, FOOTER, PUB_NAV, AUTH_NAV].iter() {
+        for t in [BASE, FOOTER, PUB_NAV ].iter() {
             t.register(&mut tera).unwrap();
         }
         errors::register_templates(&mut tera);
+        auth::register_templates(&mut tera);
         tera.autoescape_on(vec![".html", ".sql"]);
         //auth::register_templates(&mut tera);
         //gists::register_templates(&mut tera);
@@ -115,7 +120,9 @@ impl<'a> Footer<'a> {
     }
 }
 
-pub fn services(cfg: &mut web::ServiceConfig) {}
+pub fn services(cfg: &mut web::ServiceConfig) {
+    auth::services(cfg);
+}
 
 #[cfg(test)]
 mod tests {
@@ -129,7 +136,8 @@ mod tests {
         let mut tera2 = Tera::default();
         for t in [
             BASE, FOOTER, PUB_NAV,
-            AUTH_NAV,
+            auth::AUTH_CHALLENGE,
+            auth::AUTH_ADD,
             //            auth::AUTH_BASE,
             //            auth::login::LOGIN,
             //            auth::register::REGISTER,
