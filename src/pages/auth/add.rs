@@ -120,12 +120,14 @@ pub async fn add_submit(
         }
     }
 
-    _add_submit(&payload, &ctx, &db)
+    let challenge = _add_submit(&payload, &ctx, &db)
         .await
         .map_err(|e| PageError::new(AddChallenge::new(&ctx.settings, Some(&payload)), e))?;
 
+    let link = PAGES.auth.verify_get(&challenge.key);
+
     Ok(HttpResponse::Found()
-        .insert_header((http::header::LOCATION, PAGES.auth.add))
+        .insert_header((http::header::LOCATION, link))
         .finish())
 }
 
