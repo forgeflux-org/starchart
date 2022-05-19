@@ -17,6 +17,7 @@
  */
 use std::sync::Arc;
 
+use actix_files::Files;
 use actix_web::{middleware, web::Data, App, HttpServer};
 use lazy_static::lazy_static;
 
@@ -81,6 +82,7 @@ async fn main() {
                 middleware::DefaultHeaders::new().add(("Permissions-Policy", "interest-cohort=()")),
             )
             .configure(routes::services)
+            .service(Files::new("/federate", &settings.repository.root).show_files_listing())
     })
     .bind(&socket_addr)
     .unwrap()
