@@ -88,6 +88,9 @@
 <span id="83">83</span>
 <span id="84">84</span>
 <span id="85">85</span>
+<span id="86">86</span>
+<span id="87">87</span>
+<span id="88">88</span>
 </pre><pre class="rust"><code><span class="comment">/*
  * ForgeFlux StarChart - A federated software forge spider
  * Copyright © 2022 Aravinth Manivannan &lt;realaravinth@batsense.net&gt;
@@ -105,72 +108,75 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see &lt;http://www.gnu.org/licenses/&gt;.
  */</span>
+<span class="kw">use</span> <span class="ident">serde</span>::{<span class="ident">Deserialize</span>, <span class="ident">Serialize</span>};
 <span class="kw">use</span> <span class="ident">trust_dns_resolver</span>::{
     <span class="ident">config</span>::{<span class="ident">ResolverConfig</span>, <span class="ident">ResolverOpts</span>},
     <span class="ident">AsyncResolver</span>,
 };
 
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::utils::get_random</span>;
+<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::ArcCtx</span>;
 
+<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Clone</span>, <span class="ident">Debug</span>, <span class="ident">PartialEq</span>, <span class="ident">Serialize</span>, <span class="ident">Deserialize</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">TXTChallenge</span> {
-    <span class="ident">key</span>: <span class="ident">String</span>,
-    <span class="ident">base_hostname</span>: <span class="ident">String</span>,
-    <span class="ident">value</span>: <span class="ident">String</span>,
+    <span class="kw">pub</span> <span class="ident">key</span>: <span class="ident">String</span>,
+    <span class="kw">pub</span> <span class="ident">value</span>: <span class="ident">String</span>,
 }
 
 <span class="kw">const</span> <span class="ident">KEY_LEN</span>: <span class="ident">usize</span> <span class="op">=</span> <span class="number">30</span>;
 <span class="kw">const</span> <span class="ident">VALUES_LEN</span>: <span class="ident">usize</span> <span class="op">=</span> <span class="number">30</span>;
 
 <span class="kw">impl</span> <span class="ident">TXTChallenge</span> {
-    <span class="kw">pub</span> <span class="kw">async</span> <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">hostname</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) -&gt; <span class="self">Self</span> {
-        <span class="kw">let</span> <span class="ident">key</span> <span class="op">=</span> <span class="ident">get_random</span>(<span class="ident">KEY_LEN</span>);
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">get_challenge_txt_key_prefix</span>(<span class="ident">ctx</span>: <span class="kw-2">&amp;</span><span class="ident">ArcCtx</span>) -&gt; <span class="ident">String</span> {
+        <span class="comment">// starchart-{{ starchart instance&#39;s hostname}}.{{ forge instance&#39;s hostname }}</span>
+        <span class="macro">format!</span>(<span class="string">&quot;starchart-{}&quot;</span>, <span class="kw-2">&amp;</span><span class="ident">ctx</span>.<span class="ident">settings</span>.<span class="ident">server</span>.<span class="ident">domain</span>)
+    }
+
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">get_challenge_txt_key</span>(<span class="ident">ctx</span>: <span class="kw-2">&amp;</span><span class="ident">ArcCtx</span>, <span class="ident">hostname</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) -&gt; <span class="ident">String</span> {
+        <span class="macro">format!</span>(<span class="string">&quot;{}.{}&quot;</span>, <span class="ident"><span class="self">Self</span>::get_challenge_txt_key_prefix</span>(<span class="ident">ctx</span>), <span class="ident">hostname</span>)
+    }
+
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">ctx</span>: <span class="kw-2">&amp;</span><span class="ident">ArcCtx</span>, <span class="ident">hostname</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) -&gt; <span class="self">Self</span> {
+        <span class="kw">let</span> <span class="ident">key</span> <span class="op">=</span> <span class="ident"><span class="self">Self</span>::get_challenge_txt_key</span>(<span class="ident">ctx</span>, <span class="ident">hostname</span>);
         <span class="kw">let</span> <span class="ident">value</span> <span class="op">=</span> <span class="ident">get_random</span>(<span class="ident">VALUES_LEN</span>);
-        <span class="self">Self</span> {
-            <span class="ident">key</span>,
-            <span class="ident">value</span>,
-            <span class="ident">base_hostname</span>: <span class="ident">hostname</span>.<span class="ident">to_string</span>(),
-        }
+        <span class="self">Self</span> { <span class="ident">key</span>, <span class="ident">value</span> }
     }
 
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">get_txt_key</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">String</span> {
-        <span class="macro">format!</span>(<span class="string">&quot;{}.{}&quot;</span>, <span class="self">self</span>.<span class="ident">key</span>, <span class="self">self</span>.<span class="ident">base_hostname</span>)
-    }
-
-    <span class="kw">pub</span> <span class="kw">async</span> <span class="kw">fn</span> <span class="ident">verify_txt</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">bool</span> {
+    <span class="kw">pub</span> <span class="kw">async</span> <span class="kw">fn</span> <span class="ident">verify_txt</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">bool</span>, <span class="ident">Box</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">std::error::Error</span><span class="op">&gt;</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="ident">conf</span> <span class="op">=</span> <span class="ident">ResolverConfig::cloudflare_tls</span>();
         <span class="kw">let</span> <span class="ident">opts</span> <span class="op">=</span> <span class="ident">ResolverOpts::default</span>();
-        <span class="kw">let</span> <span class="ident">resolver</span> <span class="op">=</span> <span class="ident">AsyncResolver::tokio</span>(<span class="ident">conf</span>, <span class="ident">opts</span>).<span class="ident">unwrap</span>();
-        <span class="kw">let</span> <span class="ident">res</span> <span class="op">=</span> <span class="ident">resolver</span>.<span class="ident">txt_lookup</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">get_txt_key</span>()).<span class="kw">await</span>.<span class="ident">unwrap</span>();
-        <span class="ident">res</span>.<span class="ident">iter</span>().<span class="ident">any</span>(<span class="op">|</span><span class="ident">r</span><span class="op">|</span> <span class="ident">r</span>.<span class="ident">to_string</span>() <span class="op">==</span> <span class="self">self</span>.<span class="ident">value</span>)
+        <span class="kw">let</span> <span class="ident">resolver</span> <span class="op">=</span> <span class="ident">AsyncResolver::tokio</span>(<span class="ident">conf</span>, <span class="ident">opts</span>)<span class="question-mark">?</span>;
+        <span class="kw">let</span> <span class="ident">res</span> <span class="op">=</span> <span class="ident">resolver</span>.<span class="ident">txt_lookup</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">key</span>).<span class="kw">await</span><span class="question-mark">?</span>;
+        <span class="prelude-val">Ok</span>(<span class="ident">res</span>.<span class="ident">iter</span>().<span class="ident">any</span>(<span class="op">|</span><span class="ident">r</span><span class="op">|</span> <span class="ident">r</span>.<span class="ident">to_string</span>() <span class="op">==</span> <span class="self">self</span>.<span class="ident">value</span>))
     }
 }
 
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">test</span>)]</span>
-<span class="kw">mod</span> <span class="ident">tests</span> {
+<span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">tests</span> {
     <span class="kw">use</span> <span class="kw">super</span>::<span class="kw-2">*</span>;
+    <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::tests::sqlx_sqlite</span>;
+    <span class="kw">pub</span> <span class="kw">const</span> <span class="ident">BASE_DOMAIN</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span> <span class="string">&quot;forge.forgeflux.org&quot;</span>;
+    <span class="kw">pub</span> <span class="kw">const</span> <span class="ident">VALUE</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span> <span class="string">&quot;ifthisvalueisretrievedbyforgefluxstarchartthenthetestshouldpass&quot;</span>;
 
     <span class="attribute">#[<span class="ident">actix_rt::test</span>]</span>
     <span class="kw">async</span> <span class="kw">fn</span> <span class="ident">verify_txt_works</span>() {
         <span class="comment">// please note that this DNS record is in prod</span>
-        <span class="kw">const</span> <span class="ident">KEY</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span> <span class="string">&quot;test-starchart-foobardontmindme&quot;</span>;
-        <span class="kw">const</span> <span class="ident">BASE_DOMAIN</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span> <span class="string">&quot;starchart.forgeflux.org&quot;</span>;
-        <span class="kw">const</span> <span class="ident">VALUE</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span> <span class="string">&quot;ifthisvalueisretrievedbyforgefluxstarchartthenthetestshouldpass&quot;</span>;
+
+        <span class="kw">let</span> (<span class="ident">_db</span>, <span class="ident">ctx</span>, <span class="ident">_federate</span>, <span class="ident">_tmp_dir</span>) <span class="op">=</span> <span class="ident">sqlx_sqlite::get_ctx</span>().<span class="kw">await</span>;
+
+        <span class="kw">let</span> <span class="ident">key</span> <span class="op">=</span> <span class="ident">TXTChallenge::get_challenge_txt_key</span>(<span class="kw-2">&amp;</span><span class="ident">ctx</span>, <span class="ident">BASE_DOMAIN</span>);
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">txt_challenge</span> <span class="op">=</span> <span class="ident">TXTChallenge</span> {
             <span class="ident">value</span>: <span class="ident">VALUE</span>.<span class="ident">to_string</span>(),
-            <span class="ident">base_hostname</span>: <span class="ident">BASE_DOMAIN</span>.<span class="ident">to_string</span>(),
-            <span class="ident">key</span>: <span class="ident">KEY</span>.<span class="ident">to_string</span>(),
+            <span class="ident">key</span>: <span class="ident">key</span>.<span class="ident">clone</span>(),
         };
-        <span class="macro">assert_eq!</span>(
-            <span class="ident">txt_challenge</span>.<span class="ident">get_txt_key</span>(),
-            <span class="string">&quot;test-starchart-foobardontmindme.starchart.forgeflux.org&quot;</span>
-        );
+        <span class="macro">assert_eq!</span>(<span class="ident">TXTChallenge::get_challenge_txt_key</span>(<span class="kw-2">&amp;</span><span class="ident">ctx</span>, <span class="ident">BASE_DOMAIN</span>), <span class="ident">key</span>,);
 
         <span class="macro">assert!</span>(
-            <span class="ident">txt_challenge</span>.<span class="ident">verify_txt</span>().<span class="kw">await</span>,
+            <span class="ident">txt_challenge</span>.<span class="ident">verify_txt</span>().<span class="kw">await</span>.<span class="ident">unwrap</span>(),
             <span class="string">&quot;TXT Challenge verification test&quot;</span>
         );
-        <span class="ident">txt_challenge</span>.<span class="ident">value</span> <span class="op">=</span> <span class="ident">KEY</span>.<span class="ident">into</span>();
-        <span class="macro">assert!</span>(<span class="op">!</span><span class="ident">txt_challenge</span>.<span class="ident">verify_txt</span>().<span class="kw">await</span>);
+        <span class="ident">txt_challenge</span>.<span class="ident">value</span> <span class="op">=</span> <span class="ident">key</span>;
+        <span class="macro">assert!</span>(<span class="op">!</span><span class="ident">txt_challenge</span>.<span class="ident">verify_txt</span>().<span class="kw">await</span>.<span class="ident">unwrap</span>());
     }
 }
 </code></pre></div>
