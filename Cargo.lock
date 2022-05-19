@@ -198,6 +198,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "actix-web-codegen-const-routes"
+version = "4.0.0"
+source = "git+https://github.com/realaravinth/actix-web-codegen-const-routes#0de7af46d50f14ab2c79b79252c03ddb3270a5e9"
+dependencies = [
+ "actix-router",
+ "proc-macro2",
+ "quote",
+ "syn",
+]
+
+[[package]]
 name = "adler"
 version = "1.0.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2736,6 +2747,7 @@ dependencies = [
  "actix-identity",
  "actix-rt",
  "actix-web",
+ "actix-web-codegen-const-routes",
  "async-trait",
  "cache-buster",
  "config",

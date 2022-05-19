@@ -42,6 +42,9 @@ pub struct Auth {
     pub logout: &'static str,
     /// login route
     pub login: &'static str,
+
+    /// verify route
+    pub verify: &'static str,
 }
 
 impl Auth {
@@ -49,7 +52,12 @@ impl Auth {
     pub const fn new() -> Auth {
         let login = "/login";
         let logout = "/logout";
-        Auth { login, logout }
+        let verify = "/verify";
+        Auth {
+            login,
+            logout,
+            verify,
+        }
     }
 }
 

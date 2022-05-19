@@ -26,6 +26,7 @@ pub mod errors;
 pub mod federate;
 pub mod forge;
 pub mod pages;
+pub mod routes;
 pub mod settings;
 pub mod spider;
 pub mod static_assets;
@@ -50,7 +51,7 @@ pub const DOMAIN: &str = "developer-starchart.forgeflux.org";
 
 pub type ArcCtx = Arc<Ctx>;
 pub type WebCtx = Data<ArcCtx>;
-pub type WebData = Data<BoxDB>;
+pub type WebDB = Data<BoxDB>;
 pub type WebFederate = Data<ArcFederate>;
 
 lazy_static! {
@@ -79,15 +80,11 @@ async fn main() {
             .wrap(
                 middleware::DefaultHeaders::new().add(("Permissions-Policy", "interest-cohort=()")),
             )
-            .configure(services)
+            .configure(routes::services)
     })
     .bind(&socket_addr)
     .unwrap()
     .run()
     .await
     .unwrap();
-}
-
-fn services(cfg: &mut actix_web::web::ServiceConfig) {
-    //    cfg.service();
 }

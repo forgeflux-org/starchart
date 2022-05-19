@@ -67,27 +67,17 @@ mod tests {
     use actix_web::http::StatusCode;
     use actix_web::test;
 
-    use crate::data::Data;
     use crate::db::BoxDB;
     use crate::tests::*;
+    use crate::ArcCtx;
     use crate::*;
 
     use super::assets::CSS;
 
     #[actix_rt::test]
-    async fn postgrest_static_files_works() {
-        let (db, data) = sqlx_postgres::get_data().await;
-        static_assets_work(data, db).await;
-    }
-
-    #[actix_rt::test]
-    async fn sqlite_static_files_works() {
-        let (db, data) = sqlx_sqlite::get_data().await;
-        static_assets_work(data, db).await;
-    }
-
-    async fn static_assets_work(data: Arc<Data>, db: BoxDB) {
-        let app = get_app!(data, db).await;
+    async fn static_assets_work() {
+        let (db, ctx, federate, _tmpdir) = sqlx_sqlite::get_ctx().await;
+        let app = get_app!(ctx, db, federate).await;
 
         let file = *CSS;
         let resp = get_request!(&app, file);

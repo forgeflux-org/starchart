@@ -44,6 +44,9 @@ urlencoding = "2.1.0"
 [dependencies.cache-buster]
 git = "https://github.com/realaravinth/cache-buster"
 
+[dependencies.actix-web-codegen-const-routes]
+git = "https://github.com/realaravinth/actix-web-codegen-const-routes"
+
 [dependencies.reqwest]
 features = ["rustls-tls-native-roots", "gzip", "deflate", "brotli", "json"]
 version = "0.11.10"
