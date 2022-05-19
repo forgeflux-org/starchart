@@ -15,19 +15,19 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+use serde::{Deserialize, Serialize};
 use trust_dns_resolver::{
     config::{ResolverConfig, ResolverOpts},
     AsyncResolver,
 };
-use lazy_static::lazy_static;
 
 use crate::utils::get_random;
 use crate::ArcCtx;
 
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub struct TXTChallenge {
-    key: String,
-    _base_hostname: String,
-    value: String,
+    pub key: String,
+    pub value: String,
 }
 
 const KEY_LEN: usize = 30;
@@ -43,16 +43,10 @@ impl TXTChallenge {
         format!("{}.{}", Self::get_challenge_txt_key_prefix(ctx), hostname)
     }
 
-
-
-    pub async fn new(ctx: &ArcCtx, hostname: &str) -> Self {
+    pub fn new(ctx: &ArcCtx, hostname: &str) -> Self {
         let key = Self::get_challenge_txt_key(ctx, hostname);
         let value = get_random(VALUES_LEN);
-        Self {
-            key,
-            value,
-            _base_hostname: hostname.to_string(),
-        }
+        Self { key, value }
     }
 
     pub async fn verify_txt(&self) -> Result<bool, Box<dyn std::error::Error>> {
@@ -65,28 +59,24 @@ impl TXTChallenge {
 }
 
 #[cfg(test)]
-mod tests {
+pub mod tests {
     use super::*;
     use crate::tests::sqlx_sqlite;
+    pub const BASE_DOMAIN: &str = "forge.forgeflux.org";
+    pub const VALUE: &str = "ifthisvalueisretrievedbyforgefluxstarchartthenthetestshouldpass";
 
     #[actix_rt::test]
     async fn verify_txt_works() {
         // please note that this DNS record is in prod
-        const BASE_DOMAIN: &str = "forge.forgeflux.org";
-        const VALUE: &str = "ifthisvalueisretrievedbyforgefluxstarchartthenthetestshouldpass";
 
         let (_db, ctx, _federate, _tmp_dir) = sqlx_sqlite::get_ctx().await;
 
-        let key =  TXTChallenge::get_challenge_txt_key(&ctx, BASE_DOMAIN);
+        let key = TXTChallenge::get_challenge_txt_key(&ctx, BASE_DOMAIN);
         let mut txt_challenge = TXTChallenge {
             value: VALUE.to_string(),
-            _base_hostname: BASE_DOMAIN.to_string(),
             key: key.clone(),
         };
-        assert_eq!(
-            TXTChallenge::get_challenge_txt_key(&ctx, BASE_DOMAIN),
-            key,
-        );
+        assert_eq!(TXTChallenge::get_challenge_txt_key(&ctx, BASE_DOMAIN), key,);
 
         assert!(
             txt_challenge.verify_txt().await.unwrap(),

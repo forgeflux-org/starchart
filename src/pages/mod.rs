@@ -135,7 +135,9 @@ mod tests {
         let mut tera = Tera::default();
         let mut tera2 = Tera::default();
         for t in [
-            BASE, FOOTER, PUB_NAV,
+            BASE,
+            FOOTER,
+            PUB_NAV,
             auth::AUTH_CHALLENGE,
             auth::AUTH_ADD,
             //            auth::AUTH_BASE,

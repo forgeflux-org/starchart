@@ -64,7 +64,7 @@ async fn main() {
     pretty_env_logger::init();
     lazy_static::initialize(&pages::TEMPLATES);
 
-    let ctx = WebCtx::new(  Ctx::new(settings.clone()).await);
+    let ctx = WebCtx::new(Ctx::new(settings.clone()).await);
     let db = WebDB::new(sqlite::get_data(Some(settings.clone())).await);
     let federate = WebFederate::new(get_federate(Some(settings.clone())).await);
 

@@ -1,0 +1,18 @@
+{% extends 'base' %} 
+{% block title %} {{ title }} {% endblock %}
+{% block nav %} {% include "pub_nav" %} {% endblock %}
+
+{% block main %}
+<section class="main">
+  <h2>Add forge instance for spidering</h2>
+  <p>Please not that only forge administratior or parties with access the forge's DNS server can register for spidering</p>
+  <form action="{{ page.auth.add }}" method="post">
+    {% include "error_comp" %}
+    <label for="hostname">Hostname
+    </label>
+    <input type="text" required name="hostname" id="hostname" value="" />
+    <button type="submit">Add</button>
+
+  </form>
+</section>
+{% endblock %}
