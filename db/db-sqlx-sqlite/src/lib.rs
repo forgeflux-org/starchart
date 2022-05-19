@@ -331,10 +331,10 @@ impl SCDatabase for Database {
         Ok(())
     }
 
-    async fn dns_challenge_exists(&self, hostname: &str) -> DBResult<bool> {
+    async fn dns_challenge_exists(&self, key: &str) -> DBResult<bool> {
         match sqlx::query!(
-            "SELECT ID FROM starchart_dns_challenges WHERE hostname = $1",
-            hostname
+            "SELECT ID FROM starchart_dns_challenges WHERE key = $1",
+            key
         )
         .fetch_one(&self.pool)
         .await
@@ -345,42 +345,36 @@ impl SCDatabase for Database {
         }
     }
 
-    async fn get_dns_challenge_solution(&self, hostname: &str) -> DBResult<String> {
-        struct Challenge {
-            challenge: String,
-        }
-
+    async fn get_dns_challenge(&self, key: &str) -> DBResult<Challenge> {
         let res = sqlx::query_as!(
             Challenge,
-            "SELECT challenge FROM starchart_dns_challenges WHERE hostname = $1",
-            hostname
+            "SELECT key, value, hostname FROM starchart_dns_challenges WHERE key = $1",
+            key
         )
         .fetch_one(&self.pool)
         .await
         .map_err(|e| DBError::DBError(Box::new(e)))?;
-        Ok(res.challenge)
+        Ok(res)
     }
 
-    async fn delete_dns_challenge(&self, hostname: &str) -> DBResult<()> {
-        sqlx::query!(
-            "DELETE FROM starchart_dns_challenges WHERE hostname = $1",
-            hostname
-        )
-        .execute(&self.pool)
-        .await
-        .map_err(map_register_err)?;
+    async fn delete_dns_challenge(&self, key: &str) -> DBResult<()> {
+        sqlx::query!("DELETE FROM starchart_dns_challenges WHERE key = $1", key)
+            .execute(&self.pool)
+            .await
+            .map_err(map_register_err)?;
         Ok(())
     }
 
     /// create DNS challenge
-    async fn create_dns_challenge(&self, hostname: &str, challenge: &str) -> DBResult<()> {
+    async fn create_dns_challenge(&self, challenge: &Challenge) -> DBResult<()> {
         let now = now_unix_time_stamp();
         sqlx::query!(
             "INSERT INTO
-            starchart_dns_challenges (hostname, challenge, created ) 
-        VALUES ($1, $2, $3);",
-            hostname,
-            challenge,
+            starchart_dns_challenges (hostname, value, key, created ) 
+        VALUES ($1, $2, $3, $4);",
+            challenge.hostname,
+            challenge.value,
+            challenge.key,
             now,
         )
         .execute(&self.pool)

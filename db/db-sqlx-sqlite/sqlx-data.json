@@ -64,16 +64,6 @@
     },
     "query": " DELETE FROM starchart_users WHERE username = $1 AND \n                hostname_id = (SELECT ID FROM starchart_forges WHERE hostname = $2)"
   },
-  "645e4910364f2593792c43948c0a3dc29ccae3e7906dee0e1c416d3109bde3d3": {
-    "describe": {
-      "columns": [],
-      "nullable": [],
-      "parameters": {
-        "Right": 3
-      }
-    },
-    "query": "INSERT INTO\n            starchart_dns_challenges (hostname, challenge, created ) \n        VALUES ($1, $2, $3);"
-  },
   "6f5ca3d71a541eb6f33e37a5889c048536ab6ad7e81a6236d73aa71433c13717": {
     "describe": {
       "columns": [],
@@ -83,24 +73,6 @@
       }
     },
     "query": "INSERT OR IGNORE INTO starchart_project_topics ( name ) VALUES ( $1 );"
-  },
-  "70cc631c5a46082a3ee9beaca94efed4fd55669a511f81480a7204c1de2886db": {
-    "describe": {
-      "columns": [
-        {
-          "name": "ID",
-          "ordinal": 0,
-          "type_info": "Int64"
-        }
-      ],
-      "nullable": [
-        false
-      ],
-      "parameters": {
-        "Right": 1
-      }
-    },
-    "query": "SELECT ID FROM starchart_dns_challenges WHERE hostname = $1"
   },
   "71079442588dfaece04582acdb14d2c8928c695d4eab5332d09b82cefc880d54": {
     "describe": {
@@ -120,23 +92,45 @@
     },
     "query": "SELECT ID FROM starchart_repositories\n                    WHERE \n                        name = $1\n                    AND\n                        owner_id = ( SELECT ID FROM starchart_users WHERE username = $2)\n                    AND\n                        hostname_id = (SELECT ID FROM starchart_forges WHERE hostname = $3)"
   },
-  "75b058c72afe36c68ae85235e98b098bb5e1a9e7e87bcb7d8d7840a7b235ff23": {
+  "76f49b3e5e0c6d16daeb09afca427cbf29cd477bd647fee04c2067f7f898721a": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Right": 1
+      }
+    },
+    "query": "DELETE FROM starchart_dns_challenges WHERE key = $1"
+  },
+  "891a09656a04fdabfbf51b15204e224221cea8d30782170d3d8503c9275b3d58": {
     "describe": {
       "columns": [
         {
-          "name": "challenge",
+          "name": "key",
           "ordinal": 0,
+          "type_info": "Text"
+        },
+        {
+          "name": "value",
+          "ordinal": 1,
+          "type_info": "Text"
+        },
+        {
+          "name": "hostname",
+          "ordinal": 2,
           "type_info": "Text"
         }
       ],
       "nullable": [
+        false,
+        false,
         false
       ],
       "parameters": {
         "Right": 1
       }
     },
-    "query": "SELECT challenge FROM starchart_dns_challenges WHERE hostname = $1"
+    "query": "SELECT key, value, hostname FROM starchart_dns_challenges WHERE key = $1"
   },
   "8c78e074d78291f9d3c4ef3526bae00cb356591edad79a7fb1f20aa7bb681216": {
     "describe": {
@@ -148,15 +142,33 @@
     },
     "query": "INSERT INTO\n            starchart_forges (hostname, verified_on, forge_type ) \n        VALUES ($1, $2, (SELECT ID FROM starchart_forge_type WHERE name = $3))"
   },
-  "a048298cb2223f3eb300b1998dbf6a2a2758e3eb0464330e448dc8d53b9a1644": {
+  "a75419ce6d1248944a7bdd63ddadd6f1017a27b8490fb2746a0f7a5d35ce889a": {
     "describe": {
       "columns": [],
       "nullable": [],
       "parameters": {
+        "Right": 4
+      }
+    },
+    "query": "INSERT INTO\n            starchart_dns_challenges (hostname, value, key, created ) \n        VALUES ($1, $2, $3, $4);"
+  },
+  "a77477b2f3c383c2c3e849e8aef47dab411f6c8f9cfe5cb6f850e28314eb1a47": {
+    "describe": {
+      "columns": [
+        {
+          "name": "ID",
+          "ordinal": 0,
+          "type_info": "Int64"
+        }
+      ],
+      "nullable": [
+        false
+      ],
+      "parameters": {
         "Right": 1
       }
     },
-    "query": "DELETE FROM starchart_dns_challenges WHERE hostname = $1"
+    "query": "SELECT ID FROM starchart_dns_challenges WHERE key = $1"
   },
   "a81dd4b5df666e22fac211092e7b8425d838dd9023aa2b17659352f30831944d": {
     "describe": {

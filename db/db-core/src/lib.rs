@@ -107,6 +107,17 @@ pub struct AddRepository<'a> {
     pub website: Option<&'a str>,
 }
 
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+/// represents a DNS challenge
+pub struct Challenge {
+    /// hostname of the forge instance
+    pub hostname: String,
+    /// key of TXT record
+    pub key: String,
+    /// value of TXT record
+    pub value: String,
+}
+
 #[async_trait]
 /// Starchart's database requirements. To implement support for $Database, kindly implement this
 /// trait.
@@ -115,16 +126,16 @@ pub trait SCDatabase: std::marker::Send + std::marker::Sync + CloneSPDatabase {
     async fn ping(&self) -> bool;
 
     /// check if a DNS challenge exists
-    async fn dns_challenge_exists(&self, hostname: &str) -> DBResult<bool>;
+    async fn dns_challenge_exists(&self, key: &str) -> DBResult<bool>;
 
     /// create DNS challenge
-    async fn create_dns_challenge(&self, hostname: &str, challenge: &str) -> DBResult<()>;
+    async fn create_dns_challenge(&self, challenge: &Challenge) -> DBResult<()>;
 
     /// get DNS challenge
-    async fn get_dns_challenge_solution(&self, hostname: &str) -> DBResult<String>;
+    async fn get_dns_challenge(&self, key: &str) -> DBResult<Challenge>;
 
     /// delete DNS challenge
-    async fn delete_dns_challenge(&self, hostname: &str) -> DBResult<()>;
+    async fn delete_dns_challenge(&self, key: &str) -> DBResult<()>;
 
     /// create forge isntance
     async fn create_forge_isntance(&self, f: &CreateForge) -> DBResult<()>;
