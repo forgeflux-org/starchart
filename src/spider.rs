@@ -17,6 +17,7 @@
  */
 use std::time::Duration;
 
+use log::info;
 use tokio::time;
 use url::Url;
 
@@ -34,6 +35,7 @@ impl Ctx {
         let mut page = 1;
         let hostname = gitea.get_hostname();
         if !db.forge_exists(hostname).await.unwrap() {
+            info!("[crawl][{hostname}] Creating forge");
             let msg = CreateForge {
                 hostname,
                 forge_type: gitea.forge_type(),
@@ -43,10 +45,12 @@ impl Ctx {
         }
 
         loop {
+            info!("[crawl][{hostname}] Crawling. page: {page}");
             let res = gitea
                 .crawl(self.settings.crawler.items_per_api_call, page)
                 .await;
             if res.repos.is_empty() {
+                info!("[crawl][{hostname}] Finished crawling. pages: {}", page - 1);
                 break;
             }
 
@@ -62,6 +66,7 @@ impl Ctx {
                     .await
                     .unwrap()
                 {
+                    info!("[crawl][{hostname}] Creating user: {username}");
                     let msg = u.as_ref().into();
                     db.add_user(&msg).await.unwrap();
                     federate.create_user(&msg).await.unwrap();
@@ -74,6 +79,7 @@ impl Ctx {
                     .await
                     .unwrap()
                 {
+                    info!("[crawl][{hostname}] Creating repository: {}", r.name);
                     let msg = r.into();
                     db.create_repository(&msg).await.unwrap();
                     federate.create_repository(&msg).await.unwrap();
