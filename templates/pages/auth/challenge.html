@@ -1,0 +1,24 @@
+{% extends 'base' %} 
+{% block title %} {{ title }} {% endblock %}
+{% block nav %} {% include "pub_nav" %} {% endblock %}
+
+{% block main %}
+<section class="main">
+    <h1>Configure DNS To Prove ownership</h1>
+    <ol>
+      <li>
+        <p>Create the following record on DNS<br>
+        <code>TXT {{ payload.key }} {{ payload.value }}</code>
+        </p>
+      </li>
+      <li>
+          <p>Click verify to verify challenge
+		  <form action="{{ page.auth.verify }}" method="POST">
+            <input type="hidden" name="hostname" id="hostname" value="{{ payload.key }}">
+            <button type="submit">Verify</button>
+          </form>
+          </p>
+      </li>
+    </ol>
+</section>
+{% endblock %}
