@@ -89,6 +89,7 @@ impl Ctx {
             sleep_fut.await.unwrap();
             page += 1;
         }
+        federate.tar().await.unwrap();
     }
 }
 
