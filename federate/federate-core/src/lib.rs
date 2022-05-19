@@ -16,6 +16,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 use std::path::Path;
+use std::path::PathBuf;
 use std::result::Result;
 
 use async_trait::async_trait;
@@ -57,4 +58,7 @@ pub trait Federate: Sync + Send {
         name: &str,
         hostname: &str,
     ) -> Result<(), Self::Error>;
+
+    /// publish results in tar ball
+    async fn tar(&self) -> Result<PathBuf, Self::Error>;
 }

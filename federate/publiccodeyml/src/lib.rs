@@ -36,6 +36,8 @@ pub const INSTANCE_INFO_FILE: &str = "instance.yml";
 pub const USER_INFO_FILE: &str = "user.yml";
 pub const REPO_INFO_FILE: &str = "publiccode.yml";
 
+pub const CONTENTS_DIR: &str = "uncompressed";
+
 #[derive(Clone)]
 pub struct PccFederate {
     pub base_dir: String,
@@ -43,15 +45,21 @@ pub struct PccFederate {
 
 impl PccFederate {
     pub async fn new(base_dir: String) -> FResult<Self> {
-        let path = Path::new(&base_dir);
-        if !path.exists() {
-            fs::create_dir_all(&path).await?;
+        let x = Self { base_dir };
+        x.get_content_path(true).await?;
+        Ok(x)
+    }
+
+    pub async fn get_content_path(&self, create_dirs: bool) -> FResult<PathBuf> {
+        let path = Path::new(&self.base_dir).join(CONTENTS_DIR);
+        if create_dirs {
+            self.create_dir_if_not_exists(&path).await?;
         }
-        Ok(Self { base_dir })
+        Ok(path)
     }
 
     pub async fn get_instance_path(&self, hostname: &str, create_dirs: bool) -> FResult<PathBuf> {
-        let path = Path::new(&self.base_dir).join(hostname);
+        let path = self.get_content_path(false).await?.join(hostname);
         if create_dirs {
             self.create_dir_if_not_exists(&path).await?;
         }
@@ -165,5 +173,25 @@ impl Federate for PccFederate {
     ) -> Result<(), Self::Error> {
         let path = self.get_repo_path(name, owner, hostname, false).await?;
         self.rm_util(&path).await
+    }
+
+    async fn tar(&self) -> Result<PathBuf, Self::Error> {
+        use std::fs::File;
+        use std::time::{SystemTime, UNIX_EPOCH};
+
+        use tar::Builder;
+
+        let now = SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .unwrap()
+            .as_secs();
+
+        let path = Path::new(&self.base_dir).join(format!("{now}.tar"));
+        let file = File::create(&path)?;
+        let mut a = Builder::new(file);
+        a.append_dir_all(".", self.get_content_path(false).await?)
+            .unwrap();
+        a.finish().unwrap();
+        Ok(path)
     }
 }

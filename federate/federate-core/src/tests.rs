@@ -32,6 +32,10 @@ pub async fn adding_forge_works<'a, T: Federate>(
 
     // add repository
     ff.create_repository(&add_repo_msg).await.unwrap();
+
+    // tar()
+    ff.tar().await.unwrap();
+
     // delete repository
     ff.delete_repository(add_repo_msg.owner, add_repo_msg.name, add_repo_msg.hostname)
         .await
