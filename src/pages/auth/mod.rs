@@ -16,12 +16,11 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 pub mod add;
+pub mod verify;
 pub use add::AUTH_ADD;
+pub use verify::AUTH_CHALLENGE;
 
 pub use super::{ctx, TemplateFile, ERROR_KEY, PAGES, PAYLOAD_KEY, TITLE_KEY};
-
-pub const AUTH_CHALLENGE: TemplateFile =
-    TemplateFile::new("auth_challenge", "pages/auth/challenge.html");
 
 pub fn register_templates(t: &mut tera::Tera) {
     AUTH_ADD.register(t).expect(AUTH_ADD.name);

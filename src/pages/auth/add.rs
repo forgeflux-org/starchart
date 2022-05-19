@@ -100,12 +100,22 @@ pub async fn add_submit(
         let hostname = get_hostname(&url_hostname);
         let key = TXTChallenge::get_challenge_txt_key(&ctx, &hostname);
         if db.dns_challenge_exists(&key).await? {
-            let value = db.get_dns_challenge_solution(&key).await?;
+            let value = db.get_dns_challenge(&key).await?.value;
             Ok(TXTChallenge { key, value })
         } else {
             let challenge = TXTChallenge::new(ctx, &hostname);
-            db.create_dns_challenge(&challenge.key, &challenge.value)
-                .await?;
+
+            let c = Challenge {
+                key: challenge.key,
+                value: challenge.value,
+                hostname: url_hostname.to_string(),
+            };
+            db.create_dns_challenge(&c).await?;
+
+            let challenge = TXTChallenge {
+                key: c.key,
+                value: c.value,
+            };
             Ok(challenge)
         }
     }
@@ -188,7 +198,7 @@ mod tests {
 
         assert!(db.dns_challenge_exists(&key).await.unwrap());
 
-        let challenge = db.get_dns_challenge_solution(&key).await.unwrap();
+        let challenge = db.get_dns_challenge(&key).await.unwrap().value;
 
         // replay config
         let resp = test::call_service(
@@ -200,9 +210,6 @@ mod tests {
         assert_eq!(resp.status(), StatusCode::FOUND);
 
         assert!(db.dns_challenge_exists(&key).await.unwrap());
-        assert_eq!(
-            challenge,
-            db.get_dns_challenge_solution(&key).await.unwrap()
-        );
+        assert_eq!(challenge, db.get_dns_challenge(&key).await.unwrap().value);
     }
 }

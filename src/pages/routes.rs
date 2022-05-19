@@ -62,6 +62,10 @@ impl Auth {
             verify,
         }
     }
+
+    pub fn verify_get(&self, hostname: &str) -> String {
+        format!("{}?hostname={hostname}", self.verify)
+    }
 }
 
 //#[cfg(test)]
