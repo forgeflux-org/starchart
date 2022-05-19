@@ -1,0 +1,3 @@
+(function() {var implementors = {};
+implementors["starchart"] = [{"text":"impl RustEmbed for <a class=\"struct\" href=\"starchart/pages/struct.Templates.html\" title=\"struct starchart::pages::Templates\">Templates</a>","synthetic":false,"types":["starchart::pages::Templates"]},{"text":"impl RustEmbed for <a class=\"struct\" href=\"starchart/static_assets/static_files/struct.Asset.html\" title=\"struct starchart::static_assets::static_files::Asset\">Asset</a>","synthetic":false,"types":["starchart::static_assets::static_files::Asset"]}];
+if (window.register_implementors) {window.register_implementors(implementors);} else {window.pending_implementors = implementors;}})()

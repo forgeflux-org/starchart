@@ -1,0 +1,3 @@
+(function() {var implementors = {};
+implementors["starchart"] = [{"text":"impl HttpServiceFactory for <a class=\"struct\" href=\"starchart/static_assets/static_files/struct.static_files.html\" title=\"struct starchart::static_assets::static_files::static_files\">static_files</a>","synthetic":false,"types":["starchart::static_assets::static_files::static_files"]}];
+if (window.register_implementors) {window.register_implementors(implementors);} else {window.pending_implementors = implementors;}})()

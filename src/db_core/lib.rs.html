@@ -202,6 +202,18 @@
 <span id="197">197</span>
 <span id="198">198</span>
 <span id="199">199</span>
+<span id="200">200</span>
+<span id="201">201</span>
+<span id="202">202</span>
+<span id="203">203</span>
+<span id="204">204</span>
+<span id="205">205</span>
+<span id="206">206</span>
+<span id="207">207</span>
+<span id="208">208</span>
+<span id="209">209</span>
+<span id="210">210</span>
+<span id="211">211</span>
 </pre><pre class="rust"><code><span class="comment">/*
  * ForgeFlux StarChart - A federated software forge spider
  * Copyright (C) 2022  Aravinth Manivannan &lt;realaravinth@batsense.net&gt;
@@ -317,6 +329,18 @@
 <span class="kw">pub</span> <span class="kw">trait</span> <span class="ident">SCDatabase</span>: <span class="ident">std::marker::Send</span> <span class="op">+</span> <span class="ident">std::marker::Sync</span> <span class="op">+</span> <span class="ident">CloneSPDatabase</span> {
     <span class="doccomment">/// ping DB</span>
     <span class="kw">async</span> <span class="kw">fn</span> <span class="ident">ping</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">bool</span>;
+
+    <span class="doccomment">/// check if a DNS challenge exists</span>
+    <span class="kw">async</span> <span class="kw">fn</span> <span class="ident">dns_challenge_exists</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">hostname</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) -&gt; <span class="ident">DBResult</span><span class="op">&lt;</span><span class="ident">bool</span><span class="op">&gt;</span>;
+
+    <span class="doccomment">/// create DNS challenge</span>
+    <span class="kw">async</span> <span class="kw">fn</span> <span class="ident">create_dns_challenge</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">hostname</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>, <span class="ident">challenge</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) -&gt; <span class="ident">DBResult</span><span class="op">&lt;</span>()<span class="op">&gt;</span>;
+
+    <span class="doccomment">/// get DNS challenge</span>
+    <span class="kw">async</span> <span class="kw">fn</span> <span class="ident">get_dns_challenge_solution</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">hostname</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) -&gt; <span class="ident">DBResult</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>;
+
+    <span class="doccomment">/// delete DNS challenge</span>
+    <span class="kw">async</span> <span class="kw">fn</span> <span class="ident">delete_dns_challenge</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">hostname</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) -&gt; <span class="ident">DBResult</span><span class="op">&lt;</span>()<span class="op">&gt;</span>;
 
     <span class="doccomment">/// create forge isntance</span>
     <span class="kw">async</span> <span class="kw">fn</span> <span class="ident">create_forge_isntance</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">f</span>: <span class="kw-2">&amp;</span><span class="ident">CreateForge</span>) -&gt; <span class="ident">DBResult</span><span class="op">&lt;</span>()<span class="op">&gt;</span>;

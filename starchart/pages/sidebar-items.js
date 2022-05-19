@@ -1,0 +1,1 @@
+initSidebarItems({"constant":[["AUTH_NAV",""],["BASE",""],["FOOTER",""],["PAYLOAD_KEY",""],["PUB_NAV",""]],"fn":[["ctx",""],["services",""]],"mod":[["errors",""],["routes",""]],"struct":[["Footer",""],["TEMPLATES",""],["TemplateFile",""],["Templates",""]]});
