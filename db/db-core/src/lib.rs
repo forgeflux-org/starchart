@@ -114,6 +114,18 @@ pub trait SCDatabase: std::marker::Send + std::marker::Sync + CloneSPDatabase {
     /// ping DB
     async fn ping(&self) -> bool;
 
+    /// check if a DNS challenge exists
+    async fn dns_challenge_exists(&self, hostname: &str) -> DBResult<bool>;
+
+    /// create DNS challenge
+    async fn create_dns_challenge(&self, hostname: &str, challenge: &str) -> DBResult<()>;
+
+    /// get DNS challenge
+    async fn get_dns_challenge_solution(&self, hostname: &str) -> DBResult<String>;
+
+    /// delete DNS challenge
+    async fn delete_dns_challenge(&self, hostname: &str) -> DBResult<()>;
+
     /// create forge isntance
     async fn create_forge_isntance(&self, f: &CreateForge) -> DBResult<()>;
 
