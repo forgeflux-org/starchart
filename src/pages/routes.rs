@@ -36,6 +36,10 @@ impl Pages {
         let auth = Auth::new();
         Pages { home, auth }
     }
+
+    pub fn home_next(&self, page: u32) -> String {
+        format!("{}?page={page}", self.home)
+    }
 }
 
 #[derive(Serialize)]

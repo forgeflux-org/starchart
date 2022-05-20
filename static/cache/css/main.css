@@ -253,3 +253,32 @@ button {
   border-radius: none;
   border: none;
 }
+
+
+
+
+/* Inline #1 | http://localhost:7000/ */
+
+.repository__container {
+  width: 100%;
+  margin: 20px auto;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  border-bottom: 1px grey dotted;
+}
+
+.repository__tags {
+}
+
+.repository_tags > a {
+  background: lightgreen;
+}
+
+.repository__tags > a {
+  background: lightgreen;
+  margin: 15px 2px;
+  padding: 1px;
+  border-radius: 5px;
+}
+

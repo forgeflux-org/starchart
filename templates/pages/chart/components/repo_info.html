@@ -1,0 +1,22 @@
+{% set name = repository.hostname ~ "/" ~ repository.username ~ "/" ~ repository.name %}
+<div class="repository__container">
+
+  <h3><a href="/{{ name }}">{{ name }}</a></h3>
+
+  {% if repository.description %}
+    <p>{{ repository.description }}</p>
+  {% endif %}
+
+  <div class="repository__tags">
+    {% if repository.tags %}
+      {% for tag in repository.tags %}
+        <a class="repository__tag" href="/tag/{{ tag }}" >{{ tag }}</a>
+      {% endfor %}
+    {% endif %}
+  </div>
+
+  <a class="" href="{{ repository.html_url }}" target="_blank">On {{ repository.hostname }}</a>
+  {% if repository.website %}
+    <a href="{{ repository.website }}" target="_blank">Homeage</a>
+  {% endif %}
+</div>

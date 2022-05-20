@@ -26,6 +26,7 @@ use crate::static_assets::ASSETS;
 use crate::{GIT_COMMIT_HASH, VERSION};
 
 pub mod auth;
+pub mod chart;
 mod errors;
 pub mod routes;
 
@@ -70,6 +71,7 @@ lazy_static! {
         }
         errors::register_templates(&mut tera);
         auth::register_templates(&mut tera);
+        chart::register_templates(&mut tera);
         tera.autoescape_on(vec![".html", ".sql"]);
         //auth::register_templates(&mut tera);
         //gists::register_templates(&mut tera);
@@ -122,6 +124,7 @@ impl<'a> Footer<'a> {
 
 pub fn services(cfg: &mut web::ServiceConfig) {
     auth::services(cfg);
+    chart::services(cfg);
 }
 
 #[cfg(test)]
@@ -140,6 +143,7 @@ mod tests {
             PUB_NAV,
             auth::AUTH_CHALLENGE,
             auth::AUTH_ADD,
+            chart::HOME,
             //            auth::AUTH_BASE,
             //            auth::login::LOGIN,
             //            auth::register::REGISTER,
