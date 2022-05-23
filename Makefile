@@ -76,12 +76,12 @@ dev-env: ## Download development dependencies
 doc: ## Prepare documentation
 	cargo doc --no-deps --workspace --all-features
 
-#docker: ## Build docker images
-#	docker build -t realaravinth/gitpad:master -t realaravinth/gitpad:latest .
-#
-#docker-publish: docker ## Build and publish docker images
-#	docker push realaravinth/gitpad:master 
-#	docker push realaravinth/gitpad:latest
+docker: ## Build docker images
+	docker build -t forgedfed/starchart:master -t forgedfed/starchart:latest .
+
+docker-publish: docker ## Build and publish docker images
+	docker push forgedfed/starchart:master 
+	docker push forgedfed/starchart:latest
 
 lint: ## Lint codebase
 	cargo fmt -v --all -- --emit files
