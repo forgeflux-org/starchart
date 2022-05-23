@@ -188,6 +188,10 @@
 <span id="183">183</span>
 <span id="184">184</span>
 <span id="185">185</span>
+<span id="186">186</span>
+<span id="187">187</span>
+<span id="188">188</span>
+<span id="189">189</span>
 </pre><pre class="rust"><code><span class="comment">/*
  * ForgeFlux StarChart - A federated software forge spider
  * Copyright (C) 2022  Aravinth Manivannan &lt;realaravinth@batsense.net&gt;
@@ -216,6 +220,7 @@
 <span class="kw">use</span> <span class="kw">crate</span>::{<span class="ident">GIT_COMMIT_HASH</span>, <span class="ident">VERSION</span>};
 
 <span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">auth</span>;
+<span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">chart</span>;
 <span class="kw">mod</span> <span class="ident">errors</span>;
 <span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">routes</span>;
 
@@ -260,6 +265,7 @@
         }
         <span class="ident">errors::register_templates</span>(<span class="kw-2">&amp;mut</span> <span class="ident">tera</span>);
         <span class="ident">auth::register_templates</span>(<span class="kw-2">&amp;mut</span> <span class="ident">tera</span>);
+        <span class="ident">chart::register_templates</span>(<span class="kw-2">&amp;mut</span> <span class="ident">tera</span>);
         <span class="ident">tera</span>.<span class="ident">autoescape_on</span>(<span class="macro">vec!</span>[<span class="string">&quot;.html&quot;</span>, <span class="string">&quot;.sql&quot;</span>]);
         <span class="comment">//auth::register_templates(&amp;mut tera);</span>
         <span class="comment">//gists::register_templates(&amp;mut tera);</span>
@@ -312,6 +318,7 @@
 
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">services</span>(<span class="ident">cfg</span>: <span class="kw-2">&amp;mut</span> <span class="ident">web::ServiceConfig</span>) {
     <span class="ident">auth::services</span>(<span class="ident">cfg</span>);
+    <span class="ident">chart::services</span>(<span class="ident">cfg</span>);
 }
 
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">test</span>)]</span>
@@ -330,6 +337,7 @@
             <span class="ident">PUB_NAV</span>,
             <span class="ident">auth::AUTH_CHALLENGE</span>,
             <span class="ident">auth::AUTH_ADD</span>,
+            <span class="ident">chart::HOME</span>,
             <span class="comment">//            auth::AUTH_BASE,</span>
             <span class="comment">//            auth::login::LOGIN,</span>
             <span class="comment">//            auth::register::REGISTER,</span>
