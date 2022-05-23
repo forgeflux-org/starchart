@@ -1,0 +1,15 @@
+**/target
+tarpaulin-report.html
+.env
+cobertura.xml
+prod/
+node_modules/
+/static-assets/bundle
+./templates/**/*.js
+/static/cache/bundle/*
+src/cache_buster_data.json
+
+browser/target
+browser/cobertura.xml
+browser/docs
+**/tmp/
