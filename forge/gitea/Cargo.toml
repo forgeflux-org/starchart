@@ -8,6 +8,9 @@ edition = "2021"
 license = "AGPLv3 or later version"
 
 
+[lib]
+name = "gitea"
+path = "src/lib.rs"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 

@@ -9,6 +9,10 @@ readme = "https://github.com/forgeflux-org/starchart/blob/master/README.md"
 license = "AGPLv3 or later version"
 authors = ["Aravinth Manivannan <realaravinth@batsense.net>"]
 
+[lib]
+name = "db_core"
+path = "src/lib.rs"
+
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 

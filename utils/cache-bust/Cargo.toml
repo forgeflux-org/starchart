@@ -8,7 +8,11 @@ license = "AGPLv3 or later version"
 authors = ["realaravinth <realaravinth@batsense.net>"]
 repository = "https://github.com/forgeflux-org/starchart"
 documentation = "https://forgeflux.org/"
+default-run = "cache-bust"
 
+[[bin]]
+name = "cache-bust"
+path = "./src/main.rs"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
