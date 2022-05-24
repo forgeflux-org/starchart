@@ -30,11 +30,11 @@ WORKDIR /src
 COPY . /src/
 RUN make release
 
-FROM debian:bullseye
+FROM debian:bullseye-slim
 LABEL org.opencontainers.image.source https://github.com/forgeflux-org/starchart
-RUN useradd -ms /bin/bash -u 1001 starchart
-WORKDIR /home/mcaptcha
+RUN apt-get update && apt-get install -y ca-certificates
 COPY --from=rust /src/target/release/starchart /usr/local/bin/
 COPY --from=rust /src/config/default.toml /etc/starchart/config.toml
-USER starchart
-CMD [ "/usr/local/bin/starchart" ]
+COPY scripts/entrypoint.sh /usr/local/bin
+RUN chmod +x /usr/local/bin/entrypoint.sh
+CMD [ "/usr/local/bin/entrypoint.sh" ]
