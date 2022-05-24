@@ -34,8 +34,8 @@ pub struct Repository {
     pub is_based_on: Option<String>,
     #[serde(skip_serializing_if = "HashMap::is_empty")]
     pub description: HashMap<String, Description>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub legal: Option<Legal>,
+    #[serde(skip_serializing_if = "Legal::is_none")]
+    pub legal: Legal,
 }
 
 #[derive(Serialize, Deserialize)]
@@ -54,6 +54,13 @@ pub struct Description {
 pub struct Legal {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub license: Option<String>,
+}
+
+impl Legal {
+    /// global is_none, to skip_serializing_if
+    pub fn is_none(&self) -> bool {
+        self.license.is_none()
+    }
 }
 
 #[derive(Serialize, Deserialize)]
@@ -85,7 +92,7 @@ impl From<&db_core::AddRepository<'_>> for Repository {
             },
         );
 
-        let legal = Some(Legal { license: None });
+        let legal = Legal { license: None };
 
         Self {
             publiccode_yml_version: PUBLIC_CODE_VERSION.into(),
