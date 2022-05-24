@@ -63,10 +63,18 @@ pub mod prelude {
 impl Connect for ConnectionOptions {
     type Pool = Database;
     async fn connect(self) -> DBResult<Self::Pool> {
+        use sqlx::sqlite::SqliteConnectOptions;
+        use std::str::FromStr;
+
         let pool = match self {
             Self::Fresh(fresh) => fresh
                 .pool_options
-                .connect(&fresh.url)
+                .connect_with(
+                    SqliteConnectOptions::from_str(&fresh.url)
+                        .unwrap()
+                        .create_if_missing(true)
+                        .read_only(false),
+                )
                 .await
                 .map_err(|e| DBError::DBError(Box::new(e)))?,
             Self::Existing(conn) => conn.0,

@@ -61,6 +61,7 @@ async fn everything_works() {
     let pool_options = SqlitePoolOptions::new().max_connections(2);
     let connection_options = ConnectionOptions::Fresh(Fresh { pool_options, url });
     let db = connection_options.connect().await.unwrap();
+    db.migrate().await.unwrap();
 
     let add_repo_msg = AddRepository {
         html_link: HTML_REPO_URL,
