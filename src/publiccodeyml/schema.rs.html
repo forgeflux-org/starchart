@@ -103,6 +103,13 @@
 <span id="98">98</span>
 <span id="99">99</span>
 <span id="100">100</span>
+<span id="101">101</span>
+<span id="102">102</span>
+<span id="103">103</span>
+<span id="104">104</span>
+<span id="105">105</span>
+<span id="106">106</span>
+<span id="107">107</span>
 </pre><pre class="rust"><code><span class="comment">/*
  * ForgeFlux StarChart - A federated software forge spider
  * Copyright (C) 2022  Aravinth Manivannan &lt;realaravinth@batsense.net&gt;
@@ -139,8 +146,8 @@
     <span class="kw">pub</span> <span class="ident">is_based_on</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>,
     <span class="attribute">#[<span class="ident">serde</span>(<span class="ident">skip_serializing_if</span> <span class="op">=</span> <span class="string">&quot;HashMap::is_empty&quot;</span>)]</span>
     <span class="kw">pub</span> <span class="ident">description</span>: <span class="ident">HashMap</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">Description</span><span class="op">&gt;</span>,
-    <span class="attribute">#[<span class="ident">serde</span>(<span class="ident">skip_serializing_if</span> <span class="op">=</span> <span class="string">&quot;Option::is_none&quot;</span>)]</span>
-    <span class="kw">pub</span> <span class="ident">legal</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Legal</span><span class="op">&gt;</span>,
+    <span class="attribute">#[<span class="ident">serde</span>(<span class="ident">skip_serializing_if</span> <span class="op">=</span> <span class="string">&quot;Legal::is_none&quot;</span>)]</span>
+    <span class="kw">pub</span> <span class="ident">legal</span>: <span class="ident">Legal</span>,
 }
 
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Serialize</span>, <span class="ident">Deserialize</span>)]</span>
@@ -159,6 +166,13 @@
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">Legal</span> {
     <span class="attribute">#[<span class="ident">serde</span>(<span class="ident">skip_serializing_if</span> <span class="op">=</span> <span class="string">&quot;Option::is_none&quot;</span>)]</span>
     <span class="kw">pub</span> <span class="ident">license</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>,
+}
+
+<span class="kw">impl</span> <span class="ident">Legal</span> {
+    <span class="doccomment">/// global is_none, to skip_serializing_if</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">is_none</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">bool</span> {
+        <span class="self">self</span>.<span class="ident">license</span>.<span class="ident">is_none</span>()
+    }
 }
 
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Serialize</span>, <span class="ident">Deserialize</span>)]</span>
@@ -190,7 +204,7 @@
             },
         );
 
-        <span class="kw">let</span> <span class="ident">legal</span> <span class="op">=</span> <span class="prelude-val">Some</span>(<span class="ident">Legal</span> { <span class="ident">license</span>: <span class="prelude-val">None</span> });
+        <span class="kw">let</span> <span class="ident">legal</span> <span class="op">=</span> <span class="ident">Legal</span> { <span class="ident">license</span>: <span class="prelude-val">None</span> };
 
         <span class="self">Self</span> {
             <span class="ident">publiccode_yml_version</span>: <span class="ident">PUBLIC_CODE_VERSION</span>.<span class="ident">into</span>(),
