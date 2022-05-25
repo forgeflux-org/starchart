@@ -15,21 +15,18 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-use actix_web::http::{self, header::ContentType};
+use actix_web::http::header::ContentType;
 use actix_web::{HttpResponse, Responder};
-use actix_web_codegen_const_routes::{get, post};
-use log::info;
+use actix_web_codegen_const_routes::get;
 use serde::{Deserialize, Serialize};
 use std::cell::RefCell;
 use tera::Context;
-use url::Url;
 
 use db_core::prelude::*;
 
 use crate::errors::ServiceResult;
 use crate::pages::errors::*;
 use crate::settings::Settings;
-use crate::verify::TXTChallenge;
 use crate::*;
 
 pub use crate::pages::*;
@@ -92,7 +89,7 @@ pub struct OptionalPage {
 impl From<OptionalPage> for Page {
     fn from(o: OptionalPage) -> Self {
         match o.page {
-            Some(page) => Self { page },
+            Some(page) => Self { page: page + 1 },
             None => Page { page: 2 },
         }
     }
@@ -105,7 +102,7 @@ pub async fn home(
     db: WebDB,
 ) -> PageResult<impl Responder, HomePage> {
     let q = q.into_inner();
-    async fn _home(ctx: &ArcCtx, db: &BoxDB, p: &Page) -> ServiceResult<Vec<db_core::Repository>> {
+    async fn _home(_ctx: &ArcCtx, db: &BoxDB, p: &Page) -> ServiceResult<Vec<db_core::Repository>> {
         const LIMIT: u32 = 10;
         let responses = db.get_all_repositories(p.page, LIMIT).await?;
         Ok(responses)
@@ -121,11 +118,60 @@ pub async fn home(
 
     let payload = HomePagePayload {
         repos,
-        next_page: PAGES.home_next(q.page + 1),
+        next_page: PAGES.home_next(q.page),
         prev_page: PAGES.home_next(prev),
     };
     let page = HomePage::page(&ctx.settings, &payload);
 
     let html = ContentType::html();
     Ok(HttpResponse::Ok().content_type(html).body(page))
+}
+
+#[cfg(test)]
+mod tests {
+
+    #[test]
+    fn page_counter_increases() {
+        use super::*;
+
+        #[derive(Debug)]
+        struct TestPage {
+            // input
+            current: u32,
+            expected_next: u32,
+        }
+
+        impl TestPage {
+            fn new(current: u32) -> Self {
+                Self {
+                    current,
+                    expected_next: current + 1,
+                }
+            }
+        }
+
+        impl From<&TestPage> for OptionalPage {
+            fn from(p: &TestPage) -> Self {
+                Self {
+                    page: Some(p.current),
+                }
+            }
+        }
+
+        let mut res = Vec::with_capacity(100);
+        for i in 0..100 {
+            res.push(TestPage::new(i));
+        }
+
+        let op = OptionalPage { page: None };
+        let p: Page = op.into();
+        assert_eq!(p.page, 2);
+
+        for i in res.iter() {
+            let op: OptionalPage = i.into();
+            let p: Page = op.into();
+            println!("Checking test case {:?}", i);
+            assert_eq!(p.page, i.expected_next);
+        }
+    }
 }
