@@ -48,6 +48,10 @@ jobs:
       #            target
       #          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
 
+
+      - name: Cache
+        uses: Swatinem/rust-cache@v1
+
       - name: Login to DockerHub
         if: (github.ref == 'refs/heads/master' || github.event_name == 'push') && github.repository == 'forgeflux-org/starchart'
         uses: docker/login-action@v1
