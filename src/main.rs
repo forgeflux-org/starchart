@@ -23,6 +23,7 @@ use lazy_static::lazy_static;
 
 pub mod ctx;
 pub mod db;
+pub mod dns;
 pub mod errors;
 pub mod federate;
 pub mod forge;
