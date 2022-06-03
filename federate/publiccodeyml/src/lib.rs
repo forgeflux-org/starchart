@@ -141,6 +141,17 @@ impl Federate for PccFederate {
         self.rm_util(&path).await
     }
 
+    /// check if a forge instance exists
+    async fn forge_exists(&self, hostname: &str) -> Result<bool, Self::Error> {
+        let path = self.get_instance_path(hostname, false).await?;
+        if path.exists() && path.is_dir() {
+            let instance = path.join(INSTANCE_INFO_FILE);
+            Ok(instance.exists() && instance.is_file())
+        } else {
+            Ok(false)
+        }
+    }
+
     /// create user isntance
     async fn create_user(&self, f: &AddUser<'_>) -> Result<(), Self::Error> {
         let path = self.get_user_path(f.username, f.hostname, true).await?;
