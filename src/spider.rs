@@ -41,7 +41,15 @@ impl Ctx {
                 forge_type: gitea.forge_type(),
             };
             db.create_forge_isntance(&msg).await.unwrap();
-            federate.create_forge_isntance(&msg).await.unwrap();
+        } else {
+            if !federate.forge_exists(hostname).await.unwrap() {
+                let forge = db.get_forge(hostname).await.unwrap();
+                let msg = CreateForge {
+                    hostname,
+                    forge_type: forge.forge_type,
+                };
+                federate.create_forge_isntance(&msg).await.unwrap();
+            }
         }
 
         loop {
