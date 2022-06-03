@@ -42,6 +42,9 @@ pub trait Federate: Sync + Send {
     /// delete forge isntance
     async fn delete_forge_instance(&self, hostname: &str) -> Result<(), Self::Error>;
 
+    /// check if a forge instance exists
+    async fn forge_exists(&self, hostname: &str) -> Result<bool, Self::Error>;
+
     /// create user isntance
     async fn create_user(&self, f: &AddUser<'_>) -> Result<(), Self::Error>;
 
