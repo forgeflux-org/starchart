@@ -108,6 +108,17 @@ pub struct AddRepository<'a> {
 }
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+/// data representing a forge instance
+pub struct Forge {
+    /// hostname of the forge
+    pub hostname: String,
+    /// type of the forge
+    pub forge_type: ForgeImplementation,
+    /// last crawl
+    pub last_crawl_on: Option<i64>,
+}
+
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 /// repository
 pub struct Repository {
     /// html link to the repository
@@ -159,6 +170,9 @@ pub trait SCDatabase: std::marker::Send + std::marker::Sync + CloneSPDatabase {
 
     /// create forge isntance
     async fn create_forge_isntance(&self, f: &CreateForge) -> DBResult<()>;
+
+    /// get forge isntance data
+    async fn get_forge(&self, hostname: &str) -> DBResult<Forge>;
 
     /// delete forge isntance
     async fn delete_forge_instance(&self, hostname: &str) -> DBResult<()>;

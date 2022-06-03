@@ -33,6 +33,12 @@ pub async fn adding_forge_works<'a, T: SCDatabase>(
         "forge creation failed, forge existance check failure"
     );
 
+    {
+        let forge = db.get_forge(create_forge_msg.hostname).await.unwrap();
+        assert_eq!(forge.hostname, create_forge_msg.hostname);
+        assert_eq!(forge.forge_type, create_forge_msg.forge_type);
+    }
+
     // add user
     db.add_user(&add_user_msg).await.unwrap();
     db.add_user(&add_user_msg2).await.unwrap();
