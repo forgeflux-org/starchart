@@ -15,6 +15,8 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
+use std::str::FromStr;
+
 use db_core::dev::*;
 
 use sqlx::sqlite::SqlitePool;
@@ -138,6 +140,43 @@ impl SCDatabase for Database {
         .map_err(map_register_err)?;
 
         Ok(())
+    }
+
+    /// get forge isntance data
+    async fn get_forge(&self, hostname: &str) -> DBResult<Forge> {
+        struct InnerForge {
+            hostname: String,
+            last_crawl_on: Option<i64>,
+            name: String,
+        }
+        let f = sqlx::query_as!(
+            InnerForge,
+            "SELECT 
+		hostname,
+		last_crawl_on,
+		starchart_forge_type.name
+        FROM
+            starchart_forges
+        INNER JOIN
+            starchart_forge_type
+        ON
+            starchart_forges.forge_type = starchart_forge_type.id
+        WHERE
+            hostname = $1;
+            ",
+            hostname,
+        )
+        .fetch_one(&self.pool)
+        .await
+        .map_err(|e| DBError::DBError(Box::new(e)))?;
+
+        let f = Forge {
+            hostname: f.hostname,
+            last_crawl_on: f.last_crawl_on,
+            forge_type: ForgeImplementation::from_str(&f.name).unwrap(),
+        };
+
+        Ok(f)
     }
 
     /// check if a forge instance exists

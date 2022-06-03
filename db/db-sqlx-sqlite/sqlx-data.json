@@ -196,6 +196,36 @@
     },
     "query": "INSERT INTO\n            starchart_forges (hostname, verified_on, forge_type ) \n        VALUES ($1, $2, (SELECT ID FROM starchart_forge_type WHERE name = $3))"
   },
+  "a4e02e0fafe95a6e21347607f5f69a06f592c3624775feadaaf5fa5b4285815d": {
+    "describe": {
+      "columns": [
+        {
+          "name": "hostname",
+          "ordinal": 0,
+          "type_info": "Text"
+        },
+        {
+          "name": "last_crawl_on",
+          "ordinal": 1,
+          "type_info": "Int64"
+        },
+        {
+          "name": "name",
+          "ordinal": 2,
+          "type_info": "Text"
+        }
+      ],
+      "nullable": [
+        false,
+        true,
+        false
+      ],
+      "parameters": {
+        "Right": 1
+      }
+    },
+    "query": "SELECT \n\t\thostname,\n\t\tlast_crawl_on,\n\t\tstarchart_forge_type.name\n        FROM\n            starchart_forges\n        INNER JOIN\n            starchart_forge_type\n        ON\n            starchart_forges.forge_type = starchart_forge_type.id\n        WHERE\n            hostname = $1;\n            "
+  },
   "a75419ce6d1248944a7bdd63ddadd6f1017a27b8490fb2746a0f7a5d35ce889a": {
     "describe": {
       "columns": [],
