@@ -15,10 +15,7 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-use std::time::Duration;
-
 use log::info;
-use tokio::time;
 use url::Url;
 
 use db_core::prelude::*;
@@ -55,18 +52,16 @@ impl Ctx {
         loop {
             info!("[crawl][{hostname}] Crawling. page: {page}");
             let res = gitea
-                .crawl(self.settings.crawler.items_per_api_call, page)
+                .crawl(
+                    self.settings.crawler.items_per_api_call,
+                    page,
+                    self.settings.crawler.wait_before_next_api_call,
+                )
                 .await;
             if res.repos.is_empty() {
                 info!("[crawl][{hostname}] Finished crawling. pages: {}", page - 1);
                 break;
             }
-
-            let sleep_fut = time::sleep(Duration::new(
-                self.settings.crawler.wait_before_next_api_call,
-                0,
-            ));
-            let sleep_fut = tokio::spawn(sleep_fut);
 
             for (username, u) in res.users.iter() {
                 if !db
@@ -94,7 +89,7 @@ impl Ctx {
                 }
             }
 
-            sleep_fut.await.unwrap();
+            //            sleep_fut.await.unwrap();
             page += 1;
         }
         federate.tar().await.unwrap();
