@@ -179,6 +179,22 @@ impl Federate for PccFederate {
         self.write_util(&publiccode, &path).await
     }
 
+    /// check if a repository exists.
+    async fn repository_exists(
+        &self,
+        name: &str,
+        owner: &str,
+        hostname: &str,
+    ) -> Result<bool, Self::Error> {
+        let path = self.get_repo_path(name, owner, hostname, false).await?;
+        if path.exists() && path.is_dir() {
+            let repo = path.join(REPO_INFO_FILE);
+            Ok(repo.exists() && repo.is_file())
+        } else {
+            Ok(false)
+        }
+    }
+
     /// delete user
     async fn delete_user(&self, username: &str, hostname: &str) -> Result<(), Self::Error> {
         let path = self.get_user_path(username, hostname, false).await?;
