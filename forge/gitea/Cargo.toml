@@ -17,6 +17,7 @@ path = "src/lib.rs"
 [dependencies]
 async-trait = "0.1.51"
 url = { version  = "2.2.2", features = ["serde"] }
+tokio = { version = "1.17", features = ["time"] }
 
 [dependencies.forge-core]
 path = "../forge-core"

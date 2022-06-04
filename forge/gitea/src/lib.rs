@@ -16,8 +16,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 use std::sync::Arc;
+use std::time::Duration;
 
 use reqwest::Client;
+use tokio::task::JoinHandle;
 use url::Url;
 
 use db_core::ForgeImplementation;
@@ -86,7 +88,7 @@ impl SCForge for Gitea {
         ForgeImplementation::Gitea
     }
 
-    async fn crawl(&self, limit: u64, page: u64) -> CrawlResp {
+    async fn crawl(&self, limit: u64, page: u64, rate_limit: u64) -> CrawlResp {
         fn empty_is_none(s: &str) -> Option<String> {
             let s = s.trim();
             if s.is_empty() {
@@ -127,6 +129,8 @@ impl SCForge for Gitea {
             })
         }
 
+        let mut sleep_fut: Option<JoinHandle<()>> = None;
+
         for repo in res.data.drain(0..) {
             let user = if !users.contains_key(&repo.owner.username) {
                 let u = to_user(repo.owner, self);
@@ -143,6 +147,10 @@ impl SCForge for Gitea {
                 &user.username, repo.name
             ));
 
+            if let Some(sleep_fut) = sleep_fut {
+                sleep_fut.await.unwrap();
+            }
+
             let mut topics: schema::Topics = self
                 .client
                 .get(url)
@@ -152,6 +160,9 @@ impl SCForge for Gitea {
                 .json()
                 .await
                 .unwrap();
+            sleep_fut = Some(tokio::spawn(tokio::time::sleep(Duration::new(
+                rate_limit, 0,
+            ))));
 
             let mut rtopics = Vec::with_capacity(topics.topics.len());
             for t in topics.topics.drain(0..) {
@@ -194,7 +205,7 @@ mod tests {
         let steps = NET_REPOSITORIES / PER_CRAWL;
 
         for i in 0..steps {
-            let res = ctx.crawl(PER_CRAWL, i).await;
+            let res = ctx.crawl(PER_CRAWL, i, 1).await;
             assert_eq!(res.repos.len() as u64, PER_CRAWL);
         }
     }
