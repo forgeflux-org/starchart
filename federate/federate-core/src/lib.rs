@@ -45,6 +45,9 @@ pub trait Federate: Sync + Send {
     /// check if a forge instance exists
     async fn forge_exists(&self, hostname: &str) -> Result<bool, Self::Error>;
 
+    /// check if an user exists.
+    async fn user_exists(&self, username: &str, hostname: &str) -> Result<bool, Self::Error>;
+
     /// create user isntance
     async fn create_user(&self, f: &AddUser<'_>) -> Result<(), Self::Error>;
 
