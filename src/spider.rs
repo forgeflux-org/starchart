@@ -73,6 +73,15 @@ impl Ctx {
                     let msg = u.as_ref().into();
                     db.add_user(&msg).await.unwrap();
                     federate.create_user(&msg).await.unwrap();
+                } else {
+                    if !federate
+                        .user_exists(username, gitea.get_hostname())
+                        .await
+                        .unwrap()
+                    {
+                        let msg = u.as_ref().into();
+                        federate.create_user(&msg).await.unwrap();
+                    }
                 }
             }
 
