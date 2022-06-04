@@ -54,6 +54,14 @@ pub trait Federate: Sync + Send {
     /// add repository isntance
     async fn create_repository(&self, f: &AddRepository<'_>) -> Result<(), Self::Error>;
 
+    /// check if a repository exists.
+    async fn repository_exists(
+        &self,
+        name: &str,
+        owner: &str,
+        hostname: &str,
+    ) -> Result<bool, Self::Error>;
+
     /// delete user
     async fn delete_user(&self, username: &str, hostname: &str) -> Result<(), Self::Error>;
 

@@ -42,7 +42,15 @@ pub async fn adding_forge_works<'a, T: Federate>(
         .unwrap());
 
     // add repository
+    assert!(!ff
+        .repository_exists(add_repo_msg.name, add_repo_msg.owner, add_repo_msg.hostname)
+        .await
+        .unwrap());
     ff.create_repository(&add_repo_msg).await.unwrap();
+    assert!(ff
+        .repository_exists(add_repo_msg.name, add_repo_msg.owner, add_repo_msg.hostname)
+        .await
+        .unwrap());
 
     // tar()
     ff.tar().await.unwrap();
