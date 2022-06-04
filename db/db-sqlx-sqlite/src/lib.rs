@@ -234,6 +234,30 @@ impl SCDatabase for Database {
         Ok(())
     }
 
+    /// get user data
+    async fn get_user(&self, username: &str, hostname: &str) -> DBResult<User> {
+        struct InnerUser {
+            profile_photo_html_url: Option<String>,
+            html_url: String,
+        }
+        let res = sqlx::query_as!(
+            InnerUser,
+            "SELECT html_url, profile_photo_html_url FROM starchart_users WHERE username = $1 AND 
+                hostname_id = (SELECT ID FROM starchart_forges WHERE hostname = $2)",
+            username,
+            hostname,
+        )
+        .fetch_one(&self.pool)
+        .await
+        .map_err(|e| DBError::DBError(Box::new(e)))?;
+        Ok(User {
+            username: username.into(),
+            hostname: hostname.into(),
+            profile_photo: res.profile_photo_html_url,
+            html_link: res.html_url,
+        })
+    }
+
     /// check if an user exists. When hostname of a forge instace is provided, username search is
     /// done only on that forge
     async fn user_exists(&self, username: &str, hostname: Option<&str>) -> DBResult<bool> {

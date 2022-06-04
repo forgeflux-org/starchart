@@ -339,5 +339,29 @@
       }
     },
     "query": "DELETE FROM starchart_forges WHERE hostname = ($1)"
+  },
+  "fbf6dd6bc2bc6121e080903fc9d6d9031b177acacf64fa92b7b52bd79f8fe89c": {
+    "describe": {
+      "columns": [
+        {
+          "name": "html_url",
+          "ordinal": 0,
+          "type_info": "Text"
+        },
+        {
+          "name": "profile_photo_html_url",
+          "ordinal": 1,
+          "type_info": "Text"
+        }
+      ],
+      "nullable": [
+        false,
+        true
+      ],
+      "parameters": {
+        "Right": 2
+      }
+    },
+    "query": "SELECT html_url, profile_photo_html_url FROM starchart_users WHERE username = $1 AND \n                hostname_id = (SELECT ID FROM starchart_forges WHERE hostname = $2)"
   }
 }
