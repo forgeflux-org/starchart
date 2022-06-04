@@ -74,6 +74,20 @@ pub fn get_hostname(url: &Url) -> String {
 }
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+/// user data
+pub struct User {
+    /// hostname of the forge instance: with scheme but remove trailing slash
+    /// hostname can be derived  from html_link also, but used to link to user's forge instance
+    pub hostname: String,
+    /// username of the user
+    pub username: String,
+    /// html link to the user profile
+    pub html_link: String,
+    /// OPTIONAL: html link to the user's profile photo
+    pub profile_photo: Option<String>,
+}
+
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 /// add new user to database
 pub struct AddUser<'a> {
     /// hostname of the forge instance: with scheme but remove trailing slash
@@ -185,6 +199,9 @@ pub trait SCDatabase: std::marker::Send + std::marker::Sync + CloneSPDatabase {
 
     /// add new user to database
     async fn add_user(&self, u: &AddUser) -> DBResult<()>;
+
+    /// get user data
+    async fn get_user(&self, username: &str, hostname: &str) -> DBResult<User>;
 
     /// check if an user exists. When hostname of a forge instace is provided, username search is
     /// done only on that forge

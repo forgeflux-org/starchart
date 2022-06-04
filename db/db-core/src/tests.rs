@@ -42,6 +42,19 @@ pub async fn adding_forge_works<'a, T: SCDatabase>(
     // add user
     db.add_user(&add_user_msg).await.unwrap();
     db.add_user(&add_user_msg2).await.unwrap();
+    {
+        let db_user = db
+            .get_user(add_user_msg.username, add_user_msg.hostname)
+            .await
+            .unwrap();
+        assert_eq!(db_user.hostname, add_user_msg.hostname);
+        assert_eq!(db_user.username, add_user_msg.username);
+        assert_eq!(db_user.html_link, add_user_msg.html_link);
+        assert_eq!(
+            db_user.profile_photo,
+            add_user_msg.profile_photo.map(|s| s.to_owned())
+        );
+    }
     // verify user exists
     assert!(db.user_exists(add_user_msg.username, None).await.unwrap());
     assert!(db
