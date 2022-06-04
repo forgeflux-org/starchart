@@ -205,7 +205,7 @@ mod tests {
         let steps = NET_REPOSITORIES / PER_CRAWL;
 
         for i in 0..steps {
-            let res = ctx.crawl(PER_CRAWL, i, 1).await;
+            let res = ctx.crawl(PER_CRAWL, i, 0).await;
             assert_eq!(res.repos.len() as u64, PER_CRAWL);
         }
     }
