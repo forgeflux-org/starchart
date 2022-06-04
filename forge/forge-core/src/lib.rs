@@ -112,7 +112,7 @@ pub struct CrawlResp<'a> {
 #[async_trait]
 pub trait SCForge: std::marker::Send + std::marker::Sync + CloneSPForge {
     async fn is_forge(&self) -> bool;
-    async fn crawl(&self, limit: u64, page: u64) -> CrawlResp;
+    async fn crawl(&self, limit: u64, page: u64, rate_limit: u64) -> CrawlResp;
     fn get_hostname(&self) -> &str;
     fn forge_type(&self) -> ForgeImplementation;
 }
