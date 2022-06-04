@@ -152,6 +152,17 @@ impl Federate for PccFederate {
         }
     }
 
+    /// check if an user exists.
+    async fn user_exists(&self, username: &str, hostname: &str) -> Result<bool, Self::Error> {
+        let path = self.get_user_path(username, hostname, false).await?;
+        if path.exists() && path.is_dir() {
+            let user = path.join(USER_INFO_FILE);
+            Ok(user.exists() && user.is_file())
+        } else {
+            Ok(false)
+        }
+    }
+
     /// create user isntance
     async fn create_user(&self, f: &AddUser<'_>) -> Result<(), Self::Error> {
         let path = self.get_user_path(f.username, f.hostname, true).await?;
