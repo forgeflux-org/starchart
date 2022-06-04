@@ -117,11 +117,11 @@ impl SCForge for Gitea {
             .await
             .unwrap();
 
-        fn to_user(u: schema::User, g: &Gitea) -> Arc<User<'_>> {
+        fn to_user(u: schema::User, g: &Gitea) -> Arc<forge_core::User> {
             let mut profile_url = g.instance_url.clone();
             profile_url.set_path(&u.username);
             let username = Arc::new(u.username);
-            Arc::new(User {
+            Arc::new(forge_core::User {
                 username,
                 html_link: profile_url.to_string(),
                 profile_photo: Some(u.avatar_url),
