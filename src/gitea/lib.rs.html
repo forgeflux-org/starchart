@@ -204,6 +204,17 @@
 <span id="199">199</span>
 <span id="200">200</span>
 <span id="201">201</span>
+<span id="202">202</span>
+<span id="203">203</span>
+<span id="204">204</span>
+<span id="205">205</span>
+<span id="206">206</span>
+<span id="207">207</span>
+<span id="208">208</span>
+<span id="209">209</span>
+<span id="210">210</span>
+<span id="211">211</span>
+<span id="212">212</span>
 </pre><pre class="rust"><code><span class="comment">/*
  * ForgeFlux StarChart - A federated software forge spider
  * Copyright © 2022 Aravinth Manivannan &lt;realaravinth@batsense.net&gt;
@@ -222,8 +233,10 @@
  * along with this program.  If not, see &lt;http://www.gnu.org/licenses/&gt;.
  */</span>
 <span class="kw">use</span> <span class="ident">std::sync::Arc</span>;
+<span class="kw">use</span> <span class="ident">std::time::Duration</span>;
 
 <span class="kw">use</span> <span class="ident">reqwest::Client</span>;
+<span class="kw">use</span> <span class="ident">tokio::task::JoinHandle</span>;
 <span class="kw">use</span> <span class="ident">url::Url</span>;
 
 <span class="kw">use</span> <span class="ident">db_core::ForgeImplementation</span>;
@@ -292,7 +305,7 @@
         <span class="ident">ForgeImplementation::Gitea</span>
     }
 
-    <span class="kw">async</span> <span class="kw">fn</span> <span class="ident">crawl</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">limit</span>: <span class="ident">u64</span>, <span class="ident">page</span>: <span class="ident">u64</span>) -&gt; <span class="ident">CrawlResp</span> {
+    <span class="kw">async</span> <span class="kw">fn</span> <span class="ident">crawl</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">limit</span>: <span class="ident">u64</span>, <span class="ident">page</span>: <span class="ident">u64</span>, <span class="ident">rate_limit</span>: <span class="ident">u64</span>) -&gt; <span class="ident">CrawlResp</span> {
         <span class="kw">fn</span> <span class="ident">empty_is_none</span>(<span class="ident">s</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) -&gt; <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span> {
             <span class="kw">let</span> <span class="ident">s</span> <span class="op">=</span> <span class="ident">s</span>.<span class="ident">trim</span>();
             <span class="kw">if</span> <span class="ident">s</span>.<span class="ident">is_empty</span>() {
@@ -333,6 +346,8 @@
             })
         }
 
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">sleep_fut</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">JoinHandle</span><span class="op">&lt;</span>()<span class="op">&gt;</span><span class="op">&gt;</span> <span class="op">=</span> <span class="prelude-val">None</span>;
+
         <span class="kw">for</span> <span class="ident">repo</span> <span class="kw">in</span> <span class="ident">res</span>.<span class="ident">data</span>.<span class="ident">drain</span>(<span class="number">0</span>..) {
             <span class="kw">let</span> <span class="ident">user</span> <span class="op">=</span> <span class="kw">if</span> <span class="op">!</span><span class="ident">users</span>.<span class="ident">contains_key</span>(<span class="kw-2">&amp;</span><span class="ident">repo</span>.<span class="ident">owner</span>.<span class="ident">username</span>) {
                 <span class="kw">let</span> <span class="ident">u</span> <span class="op">=</span> <span class="ident">to_user</span>(<span class="ident">repo</span>.<span class="ident">owner</span>, <span class="self">self</span>);
@@ -349,6 +364,10 @@
                 <span class="kw-2">&amp;</span><span class="ident">user</span>.<span class="ident">username</span>, <span class="ident">repo</span>.<span class="ident">name</span>
             ));
 
+            <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">sleep_fut</span>) <span class="op">=</span> <span class="ident">sleep_fut</span> {
+                <span class="ident">sleep_fut</span>.<span class="kw">await</span>.<span class="ident">unwrap</span>();
+            }
+
             <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">topics</span>: <span class="ident">schema::Topics</span> <span class="op">=</span> <span class="self">self</span>
                 .<span class="ident">client</span>
                 .<span class="ident">get</span>(<span class="ident">url</span>)
@@ -358,6 +377,9 @@
                 .<span class="ident">json</span>()
                 .<span class="kw">await</span>
                 .<span class="ident">unwrap</span>();
+            <span class="ident">sleep_fut</span> <span class="op">=</span> <span class="prelude-val">Some</span>(<span class="ident">tokio::spawn</span>(<span class="ident">tokio::time::sleep</span>(<span class="ident">Duration::new</span>(
+                <span class="ident">rate_limit</span>, <span class="number">0</span>,
+            ))));
 
             <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">rtopics</span> <span class="op">=</span> <span class="ident">Vec::with_capacity</span>(<span class="ident">topics</span>.<span class="ident">topics</span>.<span class="ident">len</span>());
             <span class="kw">for</span> <span class="ident">t</span> <span class="kw">in</span> <span class="ident">topics</span>.<span class="ident">topics</span>.<span class="ident">drain</span>(<span class="number">0</span>..) {
@@ -400,7 +422,7 @@
         <span class="kw">let</span> <span class="ident">steps</span> <span class="op">=</span> <span class="ident">NET_REPOSITORIES</span> <span class="op">/</span> <span class="ident">PER_CRAWL</span>;
 
         <span class="kw">for</span> <span class="ident">i</span> <span class="kw">in</span> <span class="number">0</span>..<span class="ident">steps</span> {
-            <span class="kw">let</span> <span class="ident">res</span> <span class="op">=</span> <span class="ident">ctx</span>.<span class="ident">crawl</span>(<span class="ident">PER_CRAWL</span>, <span class="ident">i</span>).<span class="kw">await</span>;
+            <span class="kw">let</span> <span class="ident">res</span> <span class="op">=</span> <span class="ident">ctx</span>.<span class="ident">crawl</span>(<span class="ident">PER_CRAWL</span>, <span class="ident">i</span>, <span class="number">1</span>).<span class="kw">await</span>;
             <span class="macro">assert_eq!</span>(<span class="ident">res</span>.<span class="ident">repos</span>.<span class="ident">len</span>() <span class="kw">as</span> <span class="ident">u64</span>, <span class="ident">PER_CRAWL</span>);
         }
     }

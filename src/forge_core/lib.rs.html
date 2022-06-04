@@ -256,7 +256,7 @@
 <span class="attribute">#[<span class="ident">async_trait</span>]</span>
 <span class="kw">pub</span> <span class="kw">trait</span> <span class="ident">SCForge</span>: <span class="ident">std::marker::Send</span> <span class="op">+</span> <span class="ident">std::marker::Sync</span> <span class="op">+</span> <span class="ident">CloneSPForge</span> {
     <span class="kw">async</span> <span class="kw">fn</span> <span class="ident">is_forge</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">bool</span>;
-    <span class="kw">async</span> <span class="kw">fn</span> <span class="ident">crawl</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">limit</span>: <span class="ident">u64</span>, <span class="ident">page</span>: <span class="ident">u64</span>) -&gt; <span class="ident">CrawlResp</span>;
+    <span class="kw">async</span> <span class="kw">fn</span> <span class="ident">crawl</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">limit</span>: <span class="ident">u64</span>, <span class="ident">page</span>: <span class="ident">u64</span>, <span class="ident">rate_limit</span>: <span class="ident">u64</span>) -&gt; <span class="ident">CrawlResp</span>;
     <span class="kw">fn</span> <span class="ident">get_hostname</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span><span class="ident">str</span>;
     <span class="kw">fn</span> <span class="ident">forge_type</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">ForgeImplementation</span>;
 }
