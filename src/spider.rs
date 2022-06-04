@@ -95,10 +95,18 @@ impl Ctx {
                     let msg = r.into();
                     db.create_repository(&msg).await.unwrap();
                     federate.create_repository(&msg).await.unwrap();
+                } else {
+                    if !federate
+                        .repository_exists(&r.name, &r.owner.username, r.hostname)
+                        .await
+                        .unwrap()
+                    {
+                        let msg = r.into();
+                        federate.create_repository(&msg).await.unwrap();
+                    }
                 }
             }
 
-            //            sleep_fut.await.unwrap();
             page += 1;
         }
         federate.tar().await.unwrap();
