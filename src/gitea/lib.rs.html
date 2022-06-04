@@ -422,7 +422,7 @@
         <span class="kw">let</span> <span class="ident">steps</span> <span class="op">=</span> <span class="ident">NET_REPOSITORIES</span> <span class="op">/</span> <span class="ident">PER_CRAWL</span>;
 
         <span class="kw">for</span> <span class="ident">i</span> <span class="kw">in</span> <span class="number">0</span>..<span class="ident">steps</span> {
-            <span class="kw">let</span> <span class="ident">res</span> <span class="op">=</span> <span class="ident">ctx</span>.<span class="ident">crawl</span>(<span class="ident">PER_CRAWL</span>, <span class="ident">i</span>, <span class="number">1</span>).<span class="kw">await</span>;
+            <span class="kw">let</span> <span class="ident">res</span> <span class="op">=</span> <span class="ident">ctx</span>.<span class="ident">crawl</span>(<span class="ident">PER_CRAWL</span>, <span class="ident">i</span>, <span class="number">0</span>).<span class="kw">await</span>;
             <span class="macro">assert_eq!</span>(<span class="ident">res</span>.<span class="ident">repos</span>.<span class="ident">len</span>() <span class="kw">as</span> <span class="ident">u64</span>, <span class="ident">PER_CRAWL</span>);
         }
     }
