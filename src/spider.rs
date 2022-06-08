@@ -28,14 +28,21 @@ use crate::federate::ArcFederate;
 
 impl Ctx {
     pub async fn crawl(&self, instance_url: &str, db: &BoxDB, federate: &ArcFederate) {
-        let gitea = Gitea::new(Url::parse(instance_url).unwrap(), self.client.clone());
+        let forge: Box<dyn SCForge> = Box::new(Gitea::new(
+            Url::parse(instance_url).unwrap(),
+            self.client.clone(),
+        ));
+        if !forge.is_forge().await {
+            unimplemented!("Forge type unimplemented");
+        }
+
         let mut page = 1;
-        let hostname = gitea.get_hostname();
+        let hostname = forge.get_hostname();
         if !db.forge_exists(hostname).await.unwrap() {
             info!("[crawl][{hostname}] Creating forge");
             let msg = CreateForge {
                 hostname,
-                forge_type: gitea.forge_type(),
+                forge_type: forge.forge_type(),
             };
             db.create_forge_isntance(&msg).await.unwrap();
         } else {
@@ -51,7 +58,7 @@ impl Ctx {
 
         loop {
             info!("[crawl][{hostname}] Crawling. page: {page}");
-            let res = gitea
+            let res = forge
                 .crawl(
                     self.settings.crawler.items_per_api_call,
                     page,
@@ -65,7 +72,7 @@ impl Ctx {
 
             for (username, u) in res.users.iter() {
                 if !db
-                    .user_exists(username, Some(gitea.get_hostname()))
+                    .user_exists(username, Some(forge.get_hostname()))
                     .await
                     .unwrap()
                 {
@@ -75,7 +82,7 @@ impl Ctx {
                     federate.create_user(&msg).await.unwrap();
                 } else {
                     if !federate
-                        .user_exists(username, gitea.get_hostname())
+                        .user_exists(username, forge.get_hostname())
                         .await
                         .unwrap()
                     {
