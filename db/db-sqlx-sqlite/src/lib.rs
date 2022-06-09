@@ -144,11 +144,6 @@ impl SCDatabase for Database {
 
     /// get forge isntance data
     async fn get_forge(&self, hostname: &str) -> DBResult<Forge> {
-        struct InnerForge {
-            hostname: String,
-            last_crawl_on: Option<i64>,
-            name: String,
-        }
         let f = sqlx::query_as!(
             InnerForge,
             "SELECT 
@@ -170,13 +165,38 @@ impl SCDatabase for Database {
         .await
         .map_err(|e| DBError::DBError(Box::new(e)))?;
 
-        let f = Forge {
-            hostname: f.hostname,
-            last_crawl_on: f.last_crawl_on,
-            forge_type: ForgeImplementation::from_str(&f.name).unwrap(),
-        };
+        Ok(f.into())
+    }
 
-        Ok(f)
+    /// Get all forges
+    async fn get_all_forges(&self, offset: u32, limit: u32) -> DBResult<Vec<Forge>> {
+        let mut inter_forges = sqlx::query_as!(
+            InnerForge,
+            "SELECT
+		hostname,
+		last_crawl_on,
+		starchart_forge_type.name
+        FROM
+            starchart_forges
+        INNER JOIN
+            starchart_forge_type
+        ON
+            starchart_forges.forge_type = starchart_forge_type.id
+    ORDER BY
+        starchart_forges.ID
+    LIMIT $1 OFFSET $2;
+        ",
+            limit,
+            offset
+        )
+        .fetch_all(&self.pool)
+        .await
+        .map_err(|e| DBError::DBError(Box::new(e)))?;
+
+        let mut forges: Vec<Forge> = Vec::with_capacity(inter_forges.len());
+        inter_forges.drain(0..).for_each(|f| forges.push(f.into()));
+
+        Ok(forges)
     }
 
     /// check if a forge instance exists
@@ -456,7 +476,7 @@ impl SCDatabase for Database {
     }
 
     /// Get all repositories
-    async fn get_all_repositories(&self, page: u32, limit: u32) -> DBResult<Vec<Repository>> {
+    async fn get_all_repositories(&self, offset: u32, limit: u32) -> DBResult<Vec<Repository>> {
         struct InnerRepository {
             /// html link to the repository
             pub html_url: String,
@@ -499,7 +519,7 @@ ORDER BY
 LIMIT $1 OFFSET $2
 ;",
             limit,
-            page,
+            offset,
         )
         .fetch_all(&self.pool)
         .await
@@ -549,4 +569,20 @@ LIMIT $1 OFFSET $2
 
 fn now_unix_time_stamp() -> i64 {
     OffsetDateTime::now_utc().unix_timestamp()
+}
+
+struct InnerForge {
+    hostname: String,
+    last_crawl_on: Option<i64>,
+    name: String,
+}
+
+impl From<InnerForge> for Forge {
+    fn from(f: InnerForge) -> Self {
+        Self {
+            hostname: f.hostname,
+            last_crawl_on: f.last_crawl_on,
+            forge_type: ForgeImplementation::from_str(&f.name).unwrap(),
+        }
+    }
 }

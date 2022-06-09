@@ -282,6 +282,36 @@
     },
     "query": "INSERT INTO \n                    starchart_users (\n                        hostname_id, username, html_url,\n                        profile_photo_html_url, added_on, last_crawl_on\n                    ) \n            VALUES (\n                    (SELECT ID FROM starchart_forges WHERE hostname = $1), $2, $3, $4, $5, $6)"
   },
+  "c0439c4b2d683c516bd29780cd1e39a7bc75adaebdb450b864eb0b424f401b0c": {
+    "describe": {
+      "columns": [
+        {
+          "name": "hostname",
+          "ordinal": 0,
+          "type_info": "Text"
+        },
+        {
+          "name": "last_crawl_on",
+          "ordinal": 1,
+          "type_info": "Int64"
+        },
+        {
+          "name": "name",
+          "ordinal": 2,
+          "type_info": "Text"
+        }
+      ],
+      "nullable": [
+        false,
+        true,
+        false
+      ],
+      "parameters": {
+        "Right": 2
+      }
+    },
+    "query": "SELECT\n\t\thostname,\n\t\tlast_crawl_on,\n\t\tstarchart_forge_type.name\n        FROM\n            starchart_forges\n        INNER JOIN\n            starchart_forge_type\n        ON\n            starchart_forges.forge_type = starchart_forge_type.id\n    ORDER BY\n        starchart_forges.ID\n    LIMIT $1 OFFSET $2;\n        "
+  },
   "e00c8a8b0dbeb4a89a673864055c137365c2ae7bc5daf677bdacb20f21d0fcb2": {
     "describe": {
       "columns": [],
