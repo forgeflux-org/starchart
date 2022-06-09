@@ -100,6 +100,18 @@
 <span id="95">95</span>
 <span id="96">96</span>
 <span id="97">97</span>
+<span id="98">98</span>
+<span id="99">99</span>
+<span id="100">100</span>
+<span id="101">101</span>
+<span id="102">102</span>
+<span id="103">103</span>
+<span id="104">104</span>
+<span id="105">105</span>
+<span id="106">106</span>
+<span id="107">107</span>
+<span id="108">108</span>
+<span id="109">109</span>
 </pre><pre class="rust"><code><span class="comment">/*
  * ForgeFlux StarChart - A federated software forge spider
  * Copyright (C) 2022  Aravinth Manivannan &lt;realaravinth@batsense.net&gt;
@@ -137,6 +149,18 @@
 
     {
         <span class="kw">let</span> <span class="ident">forge</span> <span class="op">=</span> <span class="ident">db</span>.<span class="ident">get_forge</span>(<span class="ident">create_forge_msg</span>.<span class="ident">hostname</span>).<span class="kw">await</span>.<span class="ident">unwrap</span>();
+        <span class="kw">let</span> <span class="ident">forges</span> <span class="op">=</span> <span class="ident">db</span>.<span class="ident">get_all_forges</span>(<span class="number">0</span>, <span class="number">10</span>).<span class="kw">await</span>.<span class="ident">unwrap</span>();
+        <span class="macro">assert_eq!</span>(<span class="ident">forges</span>.<span class="ident">len</span>(), <span class="number">1</span>);
+
+        <span class="macro">assert_eq!</span>(
+            <span class="ident">forges</span>.<span class="ident">get</span>(<span class="number">0</span>).<span class="ident">as_ref</span>().<span class="ident">unwrap</span>().<span class="ident">forge_type</span>,
+            <span class="ident">create_forge_msg</span>.<span class="ident">forge_type</span>
+        );
+        <span class="macro">assert_eq!</span>(
+            <span class="ident">forges</span>.<span class="ident">get</span>(<span class="number">0</span>).<span class="ident">as_ref</span>().<span class="ident">unwrap</span>().<span class="ident">hostname</span>,
+            <span class="ident">create_forge_msg</span>.<span class="ident">hostname</span>
+        );
+
         <span class="macro">assert_eq!</span>(<span class="ident">forge</span>.<span class="ident">hostname</span>, <span class="ident">create_forge_msg</span>.<span class="ident">hostname</span>);
         <span class="macro">assert_eq!</span>(<span class="ident">forge</span>.<span class="ident">forge_type</span>, <span class="ident">create_forge_msg</span>.<span class="ident">forge_type</span>);
     }
