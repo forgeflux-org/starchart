@@ -35,6 +35,18 @@ pub async fn adding_forge_works<'a, T: SCDatabase>(
 
     {
         let forge = db.get_forge(create_forge_msg.hostname).await.unwrap();
+        let forges = db.get_all_forges(0, 10).await.unwrap();
+        assert_eq!(forges.len(), 1);
+
+        assert_eq!(
+            forges.get(0).as_ref().unwrap().forge_type,
+            create_forge_msg.forge_type
+        );
+        assert_eq!(
+            forges.get(0).as_ref().unwrap().hostname,
+            create_forge_msg.hostname
+        );
+
         assert_eq!(forge.hostname, create_forge_msg.hostname);
         assert_eq!(forge.forge_type, create_forge_msg.forge_type);
     }
