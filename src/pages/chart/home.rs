@@ -81,6 +81,20 @@ pub struct Page {
     pub page: u32,
 }
 
+impl Page {
+    pub fn next(&self) -> u32 {
+        self.page + 2
+    }
+
+    pub fn prev(&self) -> u32 {
+        if self.page == 0 {
+            1
+        } else {
+            self.page
+        }
+    }
+}
+
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct OptionalPage {
     pub page: Option<u32>,
@@ -89,8 +103,8 @@ pub struct OptionalPage {
 impl From<OptionalPage> for Page {
     fn from(o: OptionalPage) -> Self {
         match o.page {
-            Some(page) => Self { page: page + 1 },
-            None => Page { page: 2 },
+            Some(page) => Self { page: page - 1 },
+            None => Page { page: 0 },
         }
     }
 }
@@ -104,7 +118,8 @@ pub async fn home(
     let q = q.into_inner();
     async fn _home(_ctx: &ArcCtx, db: &BoxDB, p: &Page) -> ServiceResult<Vec<db_core::Repository>> {
         const LIMIT: u32 = 10;
-        let responses = db.get_all_repositories(p.page, LIMIT).await?;
+        let offset = p.page * LIMIT;
+        let responses = db.get_all_repositories(offset, LIMIT).await?;
         Ok(responses)
     }
     let q: Page = q.into();
@@ -114,12 +129,10 @@ pub async fn home(
         PageError::new(HomePage::new(&ctx.settings, &x), e)
     })?;
 
-    let prev = if q.page == 2 { 1 } else { q.page - 1 };
-
     let payload = HomePagePayload {
         repos,
-        next_page: PAGES.home_next(q.page),
-        prev_page: PAGES.home_next(prev),
+        next_page: PAGES.home_next(q.next()),
+        prev_page: PAGES.home_next(q.prev()),
     };
     let page = HomePage::page(&ctx.settings, &payload);
 
@@ -134,44 +147,17 @@ mod tests {
     fn page_counter_increases() {
         use super::*;
 
-        #[derive(Debug)]
-        struct TestPage {
-            // input
-            current: u32,
-            expected_next: u32,
-        }
+        let mut page = Page { page: 0 };
 
-        impl TestPage {
-            fn new(current: u32) -> Self {
-                Self {
-                    current,
-                    expected_next: current + 1,
-                }
-            }
-        }
+        assert_eq!(page.next(), 2);
+        assert_eq!(page.prev(), 1);
 
-        impl From<&TestPage> for OptionalPage {
-            fn from(p: &TestPage) -> Self {
-                Self {
-                    page: Some(p.current),
-                }
-            }
-        }
-
-        let mut res = Vec::with_capacity(100);
-        for i in 0..100 {
-            res.push(TestPage::new(i));
-        }
+        page.page = 1;
+        assert_eq!(page.next(), 3);
+        assert_eq!(page.prev(), 1);
 
         let op = OptionalPage { page: None };
         let p: Page = op.into();
-        assert_eq!(p.page, 2);
-
-        for i in res.iter() {
-            let op: OptionalPage = i.into();
-            let p: Page = op.into();
-            println!("Checking test case {:?}", i);
-            assert_eq!(p.page, i.expected_next);
-        }
+        assert_eq!(p.page, 0);
     }
 }

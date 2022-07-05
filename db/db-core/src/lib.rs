@@ -197,6 +197,9 @@ pub trait SCDatabase: std::marker::Send + std::marker::Sync + CloneSPDatabase {
     /// check if forge type exists
     async fn forge_type_exists(&self, forge_type: &ForgeImplementation) -> DBResult<bool>;
 
+    /// Get all forges
+    async fn get_all_forges(&self, offset: u32, limit: u32) -> DBResult<Vec<Forge>>;
+
     /// add new user to database
     async fn add_user(&self, u: &AddUser) -> DBResult<()>;
 
@@ -217,7 +220,7 @@ pub trait SCDatabase: std::marker::Send + std::marker::Sync + CloneSPDatabase {
     async fn repository_exists(&self, name: &str, owner: &str, hostname: &str) -> DBResult<bool>;
 
     /// Get all repositories
-    async fn get_all_repositories(&self, page: u32, limit: u32) -> DBResult<Vec<Repository>>;
+    async fn get_all_repositories(&self, offset: u32, limit: u32) -> DBResult<Vec<Repository>>;
 
     /// add new repository to database.
     async fn create_repository(&self, r: &AddRepository) -> DBResult<()>;

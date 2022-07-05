@@ -26,7 +26,6 @@ pub mod db;
 pub mod dns;
 pub mod errors;
 pub mod federate;
-pub mod forge;
 pub mod pages;
 pub mod routes;
 pub mod settings;
