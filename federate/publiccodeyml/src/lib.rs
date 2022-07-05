@@ -128,14 +128,14 @@ impl Federate for PccFederate {
         Ok(())
     }
 
-    /// create forge isntance
-    async fn create_forge_isntance(&self, f: &CreateForge<'_>) -> FResult<()> {
+    /// create forge instance
+    async fn create_forge_instance(&self, f: &CreateForge<'_>) -> FResult<()> {
         let path = self.get_instance_path(f.hostname, true).await?;
         self.write_util(f, &path.join(INSTANCE_INFO_FILE)).await?;
         Ok(())
     }
 
-    /// delete forge isntance
+    /// delete forge instance
     async fn delete_forge_instance(&self, hostname: &str) -> FResult<()> {
         let path = self.get_instance_path(hostname, false).await?;
         self.rm_util(&path).await
@@ -163,13 +163,13 @@ impl Federate for PccFederate {
         }
     }
 
-    /// create user isntance
+    /// create user instance
     async fn create_user(&self, f: &AddUser<'_>) -> Result<(), Self::Error> {
         let path = self.get_user_path(f.username, f.hostname, true).await?;
         self.write_util(f, &path.join(USER_INFO_FILE)).await
     }
 
-    /// add repository isntance
+    /// add repository instance
     async fn create_repository(&self, f: &AddRepository<'_>) -> Result<(), Self::Error> {
         let path = self
             .get_repo_path(f.name, f.owner, f.hostname, true)

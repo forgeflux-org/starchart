@@ -193,11 +193,11 @@ def add_tag(repo: str, client: HTMLClient):
 
 if __name__ == "__main__":
     for i in range(TOTAL_NUM_REPOS):
-        REPOS.append(f"reopsitory_{i}")
+        REPOS.append(f"repository_{i}")
     check_online()
-    print("Instace online")
+    print("Instance online")
     install()
-    print("Instace configured and installed")
+    print("Instance configured and installed")
     client = HTMLClient()
     count = 0
     while True:

@@ -31,6 +31,7 @@ pub mod routes;
 pub mod settings;
 pub mod spider;
 pub mod static_assets;
+
 #[cfg(test)]
 mod tests;
 pub mod utils;

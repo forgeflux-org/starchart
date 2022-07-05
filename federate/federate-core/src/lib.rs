@@ -36,10 +36,10 @@ pub trait Federate: Sync + Send {
     /// utility method to remove file/dir
     async fn rm_util(&self, path: &Path) -> Result<(), Self::Error>;
 
-    /// create forge isntance
-    async fn create_forge_isntance(&self, f: &CreateForge<'_>) -> Result<(), Self::Error>;
+    /// create forge instance
+    async fn create_forge_instance(&self, f: &CreateForge<'_>) -> Result<(), Self::Error>;
 
-    /// delete forge isntance
+    /// delete forge instance
     async fn delete_forge_instance(&self, hostname: &str) -> Result<(), Self::Error>;
 
     /// check if a forge instance exists
@@ -48,10 +48,10 @@ pub trait Federate: Sync + Send {
     /// check if an user exists.
     async fn user_exists(&self, username: &str, hostname: &str) -> Result<bool, Self::Error>;
 
-    /// create user isntance
+    /// create user instance
     async fn create_user(&self, f: &AddUser<'_>) -> Result<(), Self::Error>;
 
-    /// add repository isntance
+    /// add repository instance
     async fn create_repository(&self, f: &AddRepository<'_>) -> Result<(), Self::Error>;
 
     /// check if a repository exists.
