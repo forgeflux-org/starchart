@@ -32,9 +32,38 @@ project.**
 curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
 ```
 
+### Setting up the workspace
+After installing rust, the database schema needs to be migrated,
+we use `sqlx` in this project to handle this. However, before running
+this application you might end up finding yourself stuck, here are a 
+few things that you might come across.
+
+#### Environment variables
+> thread 'main' panicked at 'called `Result::unwrap()` on an `Err`
+> value: missing field `url`'
+
+Please ensure that you have the `.env` stored in the root of the 
+repository, you can copy this from the `.env-sample` present in 
+the root of the repository.
+
+[temporary fix] There is also a need for the `DATABASE_URL` to 
+be defined, so add that in too.
+
+Next up, run the following commands to have the project compile and run,
+```bash
+source .env
+make migrate
+make
+```
+
+This should ideally get your instance of Starchart running, and if
+you face any issues at this point, it's a good idea to check your
+environment variables once more, and review the dependencies for 
+the project.
+
 ## Implementing Support for $FORGE
 
-> In future, Starchart will be modified to talk forge federation
+> In the future, Starchart will be modified to talk forge federation
 > ActivityPub protocol(general term, not referring to
 > [forgefed](https://forgefed.peers.community/)), so implementing support
 > for $FORGE would mean implementing that protocol for $FORGE.
