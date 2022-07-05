@@ -111,7 +111,7 @@ impl SCDatabase for Database {
         }
     }
 
-    /// delete forge isntance
+    /// delete forge instance
     async fn delete_forge_instance(&self, hostname: &str) -> DBResult<()> {
         sqlx::query!(
             "DELETE FROM starchart_forges WHERE hostname = ($1)",
@@ -123,8 +123,8 @@ impl SCDatabase for Database {
         Ok(())
     }
 
-    /// create forge isntance DB
-    async fn create_forge_isntance(&self, f: &CreateForge) -> DBResult<()> {
+    /// create forge instance DB
+    async fn create_forge_instance(&self, f: &CreateForge) -> DBResult<()> {
         let now = now_unix_time_stamp();
         let forge_type = f.forge_type.to_str();
         sqlx::query!(
@@ -142,7 +142,7 @@ impl SCDatabase for Database {
         Ok(())
     }
 
-    /// get forge isntance data
+    /// get forge instance data
     async fn get_forge(&self, hostname: &str) -> DBResult<Forge> {
         struct InnerForge {
             hostname: String,

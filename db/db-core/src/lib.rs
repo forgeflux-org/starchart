@@ -182,13 +182,13 @@ pub trait SCDatabase: std::marker::Send + std::marker::Sync + CloneSPDatabase {
     /// delete DNS challenge
     async fn delete_dns_challenge(&self, key: &str) -> DBResult<()>;
 
-    /// create forge isntance
-    async fn create_forge_isntance(&self, f: &CreateForge) -> DBResult<()>;
+    /// create forge instance
+    async fn create_forge_instance(&self, f: &CreateForge) -> DBResult<()>;
 
-    /// get forge isntance data
+    /// get forge instance data
     async fn get_forge(&self, hostname: &str) -> DBResult<Forge>;
 
-    /// delete forge isntance
+    /// delete forge instance
     async fn delete_forge_instance(&self, hostname: &str) -> DBResult<()>;
 
     /// check if a forge instance exists

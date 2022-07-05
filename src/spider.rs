@@ -37,7 +37,7 @@ impl Ctx {
                 hostname,
                 forge_type: gitea.forge_type(),
             };
-            db.create_forge_isntance(&msg).await.unwrap();
+            db.create_forge_instance(&msg).await.unwrap();
         } else {
             if !federate.forge_exists(hostname).await.unwrap() {
                 let forge = db.get_forge(hostname).await.unwrap();
@@ -45,7 +45,7 @@ impl Ctx {
                     hostname,
                     forge_type: forge.forge_type,
                 };
-                federate.create_forge_isntance(&msg).await.unwrap();
+                federate.create_forge_instance(&msg).await.unwrap();
             }
         }
 
@@ -135,7 +135,7 @@ mod tests {
             .unwrap());
         assert!(db.user_exists(GITEA_USERNAME, None).await.unwrap());
         for i in 0..100 {
-            let repo = format!("reopsitory_{i}");
+            let repo = format!("repository_{i}");
             assert!(db
                 .repository_exists(&repo, GITEA_USERNAME, hostname.as_str())
                 .await

@@ -27,7 +27,7 @@ pub async fn adding_forge_works<'a, T: Federate>(
 ) {
     let _ = ff.delete_forge_instance(create_forge_msg.hostname).await;
     assert!(!ff.forge_exists(&create_forge_msg.hostname).await.unwrap());
-    ff.create_forge_isntance(&create_forge_msg).await.unwrap();
+    ff.create_forge_instance(&create_forge_msg).await.unwrap();
     assert!(ff.forge_exists(&create_forge_msg.hostname).await.unwrap());
 
     // add user
