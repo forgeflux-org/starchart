@@ -1,4 +1,4 @@
-var N = null;var sourcesIndex = {};
+var sourcesIndex = {};
 sourcesIndex["db_core"] = {"name":"","files":["errors.rs","lib.rs","ops.rs","tests.rs"]};
 sourcesIndex["db_sqlx_sqlite"] = {"name":"","files":["errors.rs","lib.rs"]};
 sourcesIndex["federate_core"] = {"name":"","files":["lib.rs","tests.rs"]};

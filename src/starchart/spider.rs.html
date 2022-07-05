@@ -202,7 +202,7 @@
                 <span class="ident">hostname</span>,
                 <span class="ident">forge_type</span>: <span class="ident">forge</span>.<span class="ident">forge_type</span>(),
             };
-            <span class="ident">db</span>.<span class="ident">create_forge_isntance</span>(<span class="kw-2">&amp;</span><span class="ident">msg</span>).<span class="kw">await</span>.<span class="ident">unwrap</span>();
+            <span class="ident">db</span>.<span class="ident">create_forge_instance</span>(<span class="kw-2">&amp;</span><span class="ident">msg</span>).<span class="kw">await</span>.<span class="ident">unwrap</span>();
         } <span class="kw">else</span> {
             <span class="kw">if</span> <span class="op">!</span><span class="ident">federate</span>.<span class="ident">forge_exists</span>(<span class="ident">hostname</span>).<span class="kw">await</span>.<span class="ident">unwrap</span>() {
                 <span class="kw">let</span> <span class="ident">forge</span> <span class="op">=</span> <span class="ident">db</span>.<span class="ident">get_forge</span>(<span class="ident">hostname</span>).<span class="kw">await</span>.<span class="ident">unwrap</span>();
@@ -210,7 +210,7 @@
                     <span class="ident">hostname</span>,
                     <span class="ident">forge_type</span>: <span class="ident">forge</span>.<span class="ident">forge_type</span>,
                 };
-                <span class="ident">federate</span>.<span class="ident">create_forge_isntance</span>(<span class="kw-2">&amp;</span><span class="ident">msg</span>).<span class="kw">await</span>.<span class="ident">unwrap</span>();
+                <span class="ident">federate</span>.<span class="ident">create_forge_instance</span>(<span class="kw-2">&amp;</span><span class="ident">msg</span>).<span class="kw">await</span>.<span class="ident">unwrap</span>();
             }
         }
 
@@ -300,7 +300,7 @@
             .<span class="ident">unwrap</span>());
         <span class="macro">assert!</span>(<span class="ident">db</span>.<span class="ident">user_exists</span>(<span class="ident">GITEA_USERNAME</span>, <span class="prelude-val">None</span>).<span class="kw">await</span>.<span class="ident">unwrap</span>());
         <span class="kw">for</span> <span class="ident">i</span> <span class="kw">in</span> <span class="number">0</span>..<span class="number">100</span> {
-            <span class="kw">let</span> <span class="ident">repo</span> <span class="op">=</span> <span class="macro">format!</span>(<span class="string">&quot;reopsitory_{i}&quot;</span>);
+            <span class="kw">let</span> <span class="ident">repo</span> <span class="op">=</span> <span class="macro">format!</span>(<span class="string">&quot;repository_{i}&quot;</span>);
             <span class="macro">assert!</span>(<span class="ident">db</span>
                 .<span class="ident">repository_exists</span>(<span class="kw-2">&amp;</span><span class="ident">repo</span>, <span class="ident">GITEA_USERNAME</span>, <span class="ident">hostname</span>.<span class="ident">as_str</span>())
                 .<span class="kw">await</span>
@@ -310,5 +310,5 @@
     }
 }
 </code></pre></div>
-</section><section id="search" class="content hidden"></section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="starchart" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.61.0 (fe5b13d68 2022-05-18)" ></div>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="starchart" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.62.0 (a8314ef7d 2022-06-27)" ></div>
 </body></html>
