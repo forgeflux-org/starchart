@@ -25,7 +25,7 @@ use db_core::tests::*;
 
 #[actix_rt::test]
 async fn everything_works() {
-    const HOSTNAME: &str = "https://test-gitea.example.com";
+    const URL: &str = "https://test-gitea.example.com";
     const HTML_PROFILE_URL: &str = "https://test-gitea.example.com/user1";
     const HTML_PROFILE_PHOTO_URL_2: &str = "https://test-gitea.example.com/profile-photo/user2";
     const USERNAME: &str = "user1";
@@ -35,33 +35,35 @@ async fn everything_works() {
     const HTML_REPO_URL: &str = "https://test-gitea.example.com/user1/starchart";
     const TAGS: [&str; 3] = ["test", "starchart", "spider"];
 
-    let hostname = Url::parse(HOSTNAME).unwrap();
-    let hostname = get_hostname(&hostname);
+    let url = Url::parse(URL).unwrap();
 
     let create_forge_msg = CreateForge {
-        hostname: &hostname,
+        url: url.clone(),
         forge_type: ForgeImplementation::Gitea,
     };
 
     let add_user_msg = AddUser {
-        hostname: &hostname,
+        url: url.clone(),
         html_link: HTML_PROFILE_URL,
         profile_photo: None,
         username: USERNAME,
     };
 
     let add_user_msg_2 = AddUser {
-        hostname: &hostname,
+        url: url.clone(),
         html_link: HTML_PROFILE_PHOTO_URL_2,
         profile_photo: Some(HTML_PROFILE_PHOTO_URL_2),
         username: USERNAME2,
     };
 
-    let url = env::var("SQLITE_DATABASE_URL").expect("Set SQLITE_DATABASE_URL env var");
-    let pool_options = SqlitePoolOptions::new().max_connections(2);
-    let connection_options = ConnectionOptions::Fresh(Fresh { pool_options, url });
-    let db = connection_options.connect().await.unwrap();
-    db.migrate().await.unwrap();
+    let db = {
+        let url = env::var("SQLITE_DATABASE_URL").expect("Set SQLITE_DATABASE_URL env var");
+        let pool_options = SqlitePoolOptions::new().max_connections(2);
+        let connection_options = ConnectionOptions::Fresh(Fresh { pool_options, url });
+        let db = connection_options.connect().await.unwrap();
+        db.migrate().await.unwrap();
+        db
+    };
 
     let add_repo_msg = AddRepository {
         html_link: HTML_REPO_URL,
@@ -70,7 +72,7 @@ async fn everything_works() {
         owner: USERNAME,
         website: None,
         description: None,
-        hostname: &hostname,
+        url,
     };
 
     adding_forge_works(

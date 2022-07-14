@@ -97,18 +97,17 @@ pub async fn add_submit(
         db: &BoxDB,
     ) -> ServiceResult<TXTChallenge> {
         let url_hostname = Url::parse(&payload.hostname).unwrap();
-        let hostname = get_hostname(&url_hostname);
-        let key = TXTChallenge::get_challenge_txt_key(&ctx, &hostname);
+        let key = TXTChallenge::get_challenge_txt_key(&ctx, &url_hostname);
         if db.dns_challenge_exists(&key).await? {
             let value = db.get_dns_challenge(&key).await?.value;
             Ok(TXTChallenge { key, value })
         } else {
-            let challenge = TXTChallenge::new(ctx, &hostname);
+            let challenge = TXTChallenge::new(ctx, &url_hostname);
 
             let c = Challenge {
                 key: challenge.key,
                 value: challenge.value,
-                hostname: url_hostname.to_string(),
+                url: url_hostname.to_string(),
             };
             db.create_dns_challenge(&c).await?;
 
@@ -180,8 +179,7 @@ mod tests {
         };
 
         println!("{}", payload.hostname);
-
-        let hostname = get_hostname(&Url::parse(&payload.hostname).unwrap());
+        let hostname = Url::parse(&payload.hostname).unwrap();
         let key = TXTChallenge::get_challenge_txt_key(&ctx, &hostname);
 
         db.delete_dns_challenge(&key).await.unwrap();

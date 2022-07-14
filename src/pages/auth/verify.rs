@@ -87,7 +87,7 @@ pub async fn get_verify(
         let challenge = Challenge {
             key: payload.hostname,
             value: "".into(),
-            hostname: "".into(),
+            url: "".into(),
         };
 
         PageError::new(VerifyChallenge::new(&ctx.settings, &challenge), e)
@@ -124,7 +124,7 @@ pub async fn submit_verify(
         let challenge = Challenge {
             key: payload.hostname.clone(),
             value: "".into(),
-            hostname: "".into(),
+            url: "".into(),
         };
 
         PageError::new(VerifyChallenge::new(&ctx.settings, &challenge), e)
@@ -143,7 +143,8 @@ pub async fn submit_verify(
             let federate = federate.clone();
             let db = db.clone();
             let fut = async move {
-                ctx.crawl(&value.hostname, &db, &federate).await;
+                ctx.crawl(&Url::parse(&value.url).unwrap(), &db, &federate)
+                    .await;
             };
 
             tokio::spawn(fut);

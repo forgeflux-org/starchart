@@ -20,6 +20,7 @@ path = "src/lib.rs"
 sqlx = { version = "0.5.11", features = [ "sqlite", "time", "offline", "runtime-actix-rustls" ] }
 db-core = {path = "../db-core"}
 async-trait = "0.1.51"
+url = { version  = "2.2.2", features = ["serde"] }
 
 [dev-dependencies]
 actix-rt = "2"

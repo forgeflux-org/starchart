@@ -17,6 +17,7 @@ path = "src/lib.rs"
 
 [dependencies]
 async-trait = "0.1.51"
+url = { version  = "2.2.2", features = ["serde"] }
 
 [dependencies.db-core]
 path = "../../db/db-core"

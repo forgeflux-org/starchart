@@ -23,7 +23,6 @@ use tokio::task::JoinHandle;
 use url::Url;
 
 use db_core::ForgeImplementation;
-use db_core::SCDatabase;
 use forge_core::dev::*;
 use forge_core::Repository;
 
@@ -37,24 +36,24 @@ const GITEA_IDENTIFIER: &str = "gitea";
 pub struct Gitea {
     pub instance_url: Url,
     pub client: Client,
-    hostname: String,
+    url: Url,
 }
 
 impl Gitea {
     pub fn new(instance_url: Url, client: Client) -> Self {
-        let hostname = db_core::get_hostname(&instance_url);
+        let url = Url::parse(&db_core::clean_url(&instance_url)).unwrap();
 
         Self {
             instance_url,
             client,
-            hostname,
+            url,
         }
     }
 }
 
 impl PartialEq for Gitea {
     fn eq(&self, other: &Self) -> bool {
-        self.hostname == other.hostname && self.instance_url == other.instance_url
+        self.url == other.url && self.instance_url == other.instance_url
     }
 }
 
@@ -80,8 +79,8 @@ impl SCForge for Gitea {
         }
     }
 
-    fn get_hostname(&self) -> &str {
-        &self.hostname
+    fn get_url(&self) -> &Url {
+        &self.url
     }
 
     fn forge_type(&self) -> ForgeImplementation {
@@ -125,7 +124,7 @@ impl SCForge for Gitea {
                 username,
                 html_link: profile_url.to_string(),
                 profile_photo: Some(u.avatar_url),
-                hostname: &g.hostname,
+                url: g.url.clone(),
             })
         }
 
@@ -174,7 +173,7 @@ impl SCForge for Gitea {
             }
 
             let frepo = Repository {
-                hostname: &self.hostname,
+                url: self.url.clone(),
                 website: empty_is_none(&repo.website),
                 name: repo.name,
                 owner: user,
