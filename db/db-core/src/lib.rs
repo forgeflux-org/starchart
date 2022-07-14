@@ -210,7 +210,7 @@ pub trait SCDatabase: std::marker::Send + std::marker::Sync + CloneSPDatabase {
     /// get user data
     async fn get_user(&self, username: &str, url: &Url) -> DBResult<User>;
 
-    /// check if an user exists. When url of a forge instace is provided, username search is
+    /// check if an user exists. When url of a forge instance is provided, username search is
     /// done only on that forge
     async fn user_exists(&self, username: &str, url: Option<&Url>) -> DBResult<bool>;
 

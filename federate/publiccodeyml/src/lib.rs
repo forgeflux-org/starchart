@@ -161,7 +161,6 @@ impl Federate for PccFederate {
             Ok(false)
         }
     }
-
     /// create user instance
     async fn create_user(&self, f: &AddUser<'_>) -> Result<(), Self::Error> {
         let path = self.get_user_path(f.username, &f.url, true).await?;
