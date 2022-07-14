@@ -20,6 +20,7 @@ use trust_dns_resolver::{
     config::{ResolverConfig, ResolverOpts},
     AsyncResolver,
 };
+use url::Url;
 
 use crate::utils::get_random;
 use crate::ArcCtx;
@@ -39,11 +40,15 @@ impl TXTChallenge {
         format!("starchart-{}", &ctx.settings.server.domain)
     }
 
-    pub fn get_challenge_txt_key(ctx: &ArcCtx, hostname: &str) -> String {
-        format!("{}.{}", Self::get_challenge_txt_key_prefix(ctx), hostname)
+    pub fn get_challenge_txt_key(ctx: &ArcCtx, hostname: &Url) -> String {
+        format!(
+            "{}.{}",
+            Self::get_challenge_txt_key_prefix(ctx),
+            hostname.host_str().unwrap()
+        )
     }
 
-    pub fn new(ctx: &ArcCtx, hostname: &str) -> Self {
+    pub fn new(ctx: &ArcCtx, hostname: &Url) -> Self {
         let key = Self::get_challenge_txt_key(ctx, hostname);
         let value = get_random(VALUES_LEN);
         Self { key, value }
@@ -62,7 +67,7 @@ impl TXTChallenge {
 pub mod tests {
     use super::*;
     use crate::tests::sqlx_sqlite;
-    pub const BASE_DOMAIN: &str = "forge.forgeflux.org";
+    pub const BASE_DOMAIN: &str = "https://forge.forgeflux.org";
     pub const VALUE: &str = "ifthisvalueisretrievedbyforgefluxstarchartthenthetestshouldpass";
 
     #[actix_rt::test]
@@ -71,12 +76,17 @@ pub mod tests {
 
         let (_db, ctx, _federate, _tmp_dir) = sqlx_sqlite::get_ctx().await;
 
-        let key = TXTChallenge::get_challenge_txt_key(&ctx, BASE_DOMAIN);
+        let base_hostname = Url::parse(BASE_DOMAIN).unwrap();
+
+        let key = TXTChallenge::get_challenge_txt_key(&ctx, &base_hostname);
         let mut txt_challenge = TXTChallenge {
             value: VALUE.to_string(),
             key: key.clone(),
         };
-        assert_eq!(TXTChallenge::get_challenge_txt_key(&ctx, BASE_DOMAIN), key,);
+        assert_eq!(
+            TXTChallenge::get_challenge_txt_key(&ctx, &base_hostname),
+            key,
+        );
 
         assert!(
             txt_challenge.verify_txt().await.unwrap(),

@@ -21,34 +21,34 @@ use crate::*;
 /// adding forge works
 pub async fn adding_forge_works<'a, T: Federate>(
     ff: &T,
-    create_forge_msg: CreateForge<'a>,
+    create_forge_msg: CreateForge,
     create_user_msg: AddUser<'a>,
     add_repo_msg: AddRepository<'a>,
 ) {
-    let _ = ff.delete_forge_instance(create_forge_msg.hostname).await;
-    assert!(!ff.forge_exists(&create_forge_msg.hostname).await.unwrap());
+    let _ = ff.delete_forge_instance(&create_forge_msg.url).await;
+    assert!(!ff.forge_exists(&create_forge_msg.url).await.unwrap());
     ff.create_forge_instance(&create_forge_msg).await.unwrap();
-    assert!(ff.forge_exists(&create_forge_msg.hostname).await.unwrap());
+    assert!(ff.forge_exists(&create_forge_msg.url).await.unwrap());
 
     // add user
     assert!(!ff
-        .user_exists(&create_user_msg.username, &create_user_msg.hostname)
+        .user_exists(&create_user_msg.username, &create_user_msg.url)
         .await
         .unwrap());
     ff.create_user(&create_user_msg).await.unwrap();
     assert!(ff
-        .user_exists(&create_user_msg.username, &create_user_msg.hostname)
+        .user_exists(&create_user_msg.username, &create_user_msg.url)
         .await
         .unwrap());
 
     // add repository
     assert!(!ff
-        .repository_exists(add_repo_msg.name, add_repo_msg.owner, add_repo_msg.hostname)
+        .repository_exists(add_repo_msg.name, add_repo_msg.owner, &add_repo_msg.url)
         .await
         .unwrap());
     ff.create_repository(&add_repo_msg).await.unwrap();
     assert!(ff
-        .repository_exists(add_repo_msg.name, add_repo_msg.owner, add_repo_msg.hostname)
+        .repository_exists(add_repo_msg.name, add_repo_msg.owner, &add_repo_msg.url)
         .await
         .unwrap());
 
@@ -56,17 +56,17 @@ pub async fn adding_forge_works<'a, T: Federate>(
     ff.tar().await.unwrap();
 
     // delete repository
-    ff.delete_repository(add_repo_msg.owner, add_repo_msg.name, add_repo_msg.hostname)
+    ff.delete_repository(add_repo_msg.owner, add_repo_msg.name, &add_repo_msg.url)
         .await
         .unwrap();
 
     // delete user
-    ff.delete_user(create_user_msg.username, create_user_msg.hostname)
+    ff.delete_user(create_user_msg.username, &create_user_msg.url)
         .await
         .unwrap();
 
     // delete user
-    ff.delete_forge_instance(create_forge_msg.hostname)
+    ff.delete_forge_instance(&create_forge_msg.url)
         .await
         .unwrap();
 }

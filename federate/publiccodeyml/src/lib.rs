@@ -20,6 +20,7 @@ use std::path::{Path, PathBuf};
 use async_trait::async_trait;
 use serde::Serialize;
 use tokio::fs;
+use url::Url;
 
 use db_core::prelude::*;
 
@@ -58,7 +59,8 @@ impl PccFederate {
         Ok(path)
     }
 
-    pub async fn get_instance_path(&self, hostname: &str, create_dirs: bool) -> FResult<PathBuf> {
+    pub async fn get_instance_path(&self, url: &Url, create_dirs: bool) -> FResult<PathBuf> {
+        let hostname = federate_core::get_hostname(url);
         let path = self.get_content_path(false).await?.join(hostname);
         if create_dirs {
             self.create_dir_if_not_exists(&path).await?;
@@ -69,13 +71,10 @@ impl PccFederate {
     pub async fn get_user_path(
         &self,
         username: &str,
-        hostname: &str,
+        url: &Url,
         create_dirs: bool,
     ) -> FResult<PathBuf> {
-        let path = self
-            .get_instance_path(hostname, false)
-            .await?
-            .join(username);
+        let path = self.get_instance_path(url, false).await?.join(username);
         if create_dirs {
             self.create_dir_if_not_exists(&path).await?;
         }
@@ -86,10 +85,10 @@ impl PccFederate {
         &self,
         name: &str,
         owner: &str,
-        hostname: &str,
+        url: &Url,
         create_dirs: bool,
     ) -> FResult<PathBuf> {
-        let path = self.get_user_path(owner, hostname, false).await?.join(name);
+        let path = self.get_user_path(owner, url, false).await?.join(name);
         if create_dirs {
             self.create_dir_if_not_exists(&path).await?;
         }
@@ -129,21 +128,21 @@ impl Federate for PccFederate {
     }
 
     /// create forge instance
-    async fn create_forge_instance(&self, f: &CreateForge<'_>) -> FResult<()> {
-        let path = self.get_instance_path(f.hostname, true).await?;
+    async fn create_forge_instance(&self, f: &CreateForge) -> FResult<()> {
+        let path = self.get_instance_path(&f.url, true).await?;
         self.write_util(f, &path.join(INSTANCE_INFO_FILE)).await?;
         Ok(())
     }
 
     /// delete forge instance
-    async fn delete_forge_instance(&self, hostname: &str) -> FResult<()> {
-        let path = self.get_instance_path(hostname, false).await?;
+    async fn delete_forge_instance(&self, url: &Url) -> FResult<()> {
+        let path = self.get_instance_path(&url, false).await?;
         self.rm_util(&path).await
     }
 
     /// check if a forge instance exists
-    async fn forge_exists(&self, hostname: &str) -> Result<bool, Self::Error> {
-        let path = self.get_instance_path(hostname, false).await?;
+    async fn forge_exists(&self, url: &Url) -> Result<bool, Self::Error> {
+        let path = self.get_instance_path(url, false).await?;
         if path.exists() && path.is_dir() {
             let instance = path.join(INSTANCE_INFO_FILE);
             Ok(instance.exists() && instance.is_file())
@@ -153,8 +152,8 @@ impl Federate for PccFederate {
     }
 
     /// check if an user exists.
-    async fn user_exists(&self, username: &str, hostname: &str) -> Result<bool, Self::Error> {
-        let path = self.get_user_path(username, hostname, false).await?;
+    async fn user_exists(&self, username: &str, url: &Url) -> Result<bool, Self::Error> {
+        let path = self.get_user_path(username, url, false).await?;
         if path.exists() && path.is_dir() {
             let user = path.join(USER_INFO_FILE);
             Ok(user.exists() && user.is_file())
@@ -165,14 +164,14 @@ impl Federate for PccFederate {
 
     /// create user instance
     async fn create_user(&self, f: &AddUser<'_>) -> Result<(), Self::Error> {
-        let path = self.get_user_path(f.username, f.hostname, true).await?;
+        let path = self.get_user_path(f.username, &f.url, true).await?;
         self.write_util(f, &path.join(USER_INFO_FILE)).await
     }
 
     /// add repository instance
     async fn create_repository(&self, f: &AddRepository<'_>) -> Result<(), Self::Error> {
         let path = self
-            .get_repo_path(f.name, f.owner, f.hostname, true)
+            .get_repo_path(f.name, f.owner, &f.url, true)
             .await?
             .join(REPO_INFO_FILE);
         let publiccode: schema::Repository = f.into();
@@ -184,9 +183,9 @@ impl Federate for PccFederate {
         &self,
         name: &str,
         owner: &str,
-        hostname: &str,
+        url: &Url,
     ) -> Result<bool, Self::Error> {
-        let path = self.get_repo_path(name, owner, hostname, false).await?;
+        let path = self.get_repo_path(name, owner, url, false).await?;
         if path.exists() && path.is_dir() {
             let repo = path.join(REPO_INFO_FILE);
             Ok(repo.exists() && repo.is_file())
@@ -196,8 +195,8 @@ impl Federate for PccFederate {
     }
 
     /// delete user
-    async fn delete_user(&self, username: &str, hostname: &str) -> Result<(), Self::Error> {
-        let path = self.get_user_path(username, hostname, false).await?;
+    async fn delete_user(&self, username: &str, url: &Url) -> Result<(), Self::Error> {
+        let path = self.get_user_path(username, url, false).await?;
         self.rm_util(&path).await?;
         Ok(())
     }
@@ -207,9 +206,9 @@ impl Federate for PccFederate {
         &self,
         owner: &str,
         name: &str,
-        hostname: &str,
+        url: &Url,
     ) -> Result<(), Self::Error> {
-        let path = self.get_repo_path(name, owner, hostname, false).await?;
+        let path = self.get_repo_path(name, owner, url, false).await?;
         self.rm_util(&path).await
     }
 

@@ -20,6 +20,7 @@ use std::sync::Arc;
 
 use async_trait::async_trait;
 use db_core::prelude::*;
+use url::Url;
 
 pub mod prelude {
     pub use super::*;
@@ -33,10 +34,10 @@ pub mod dev {
 }
 
 #[derive(Clone, Debug)]
-pub struct User<'a> {
-    /// hostname of the forge instance: with scheme but remove trailing slash
-    /// hostname can be derived  from html_link also, but used to link to user's forge instance
-    pub hostname: &'a str,
+pub struct User {
+    /// url of the forge instance: with scheme but remove trailing slash
+    /// url can be derived  from html_link also, but used to link to user's forge instance
+    pub url: Url,
     /// username of the user
     pub username: Arc<String>,
     /// html link to the user profile
@@ -45,10 +46,10 @@ pub struct User<'a> {
     pub profile_photo: Option<String>,
 }
 
-impl<'a> From<&'a User<'a>> for AddUser<'a> {
+impl<'a> From<&'a User> for AddUser<'a> {
     fn from(u: &'a User) -> Self {
         Self {
-            hostname: u.hostname,
+            url: u.url.clone(),
             username: u.username.as_str(),
             html_link: &u.html_link,
             profile_photo: u.profile_photo.as_deref(),
@@ -58,25 +59,25 @@ impl<'a> From<&'a User<'a>> for AddUser<'a> {
 
 #[derive(Clone, Debug)]
 /// add new repository to database
-pub struct Repository<'a> {
+pub struct Repository {
     /// html link to the repository
     pub html_link: String,
     /// repository topic tags
     pub tags: Option<Vec<Arc<String>>>,
-    /// hostname of the forge instance: with scheme but remove trailing slash
-    /// hostname can be deras_ref().map(|p| p.as_str()),ived  from html_link also, but used to link to user's forge instance
-    pub hostname: &'a str,
+    /// url of the forge instance: with scheme but remove trailing slash
+    /// url can be deras_ref().map(|p| p.as_str()),ived  from html_link also, but used to link to user's forge instance
+    pub url: Url,
     /// repository name
     pub name: String,
     /// repository owner
-    pub owner: Arc<User<'a>>,
+    pub owner: Arc<User>,
     /// repository description, if any
     pub description: Option<String>,
     /// repository website, if any
     pub website: Option<String>,
 }
 
-impl<'a> From<&'a Repository<'a>> for AddRepository<'a> {
+impl<'a> From<&'a Repository> for AddRepository<'a> {
     fn from(r: &'a Repository) -> Self {
         let tags = if let Some(rtags) = &r.tags {
             let mut tags = Vec::with_capacity(rtags.len());
@@ -88,7 +89,7 @@ impl<'a> From<&'a Repository<'a>> for AddRepository<'a> {
             None
         };
         Self {
-            hostname: r.hostname,
+            url: r.url.clone(),
             name: &r.name,
             description: r.description.as_deref(),
             owner: r.owner.username.as_str(),
@@ -99,21 +100,21 @@ impl<'a> From<&'a Repository<'a>> for AddRepository<'a> {
     }
 }
 
-pub type UserMap<'a> = HashMap<Arc<String>, Arc<User<'a>>>;
+pub type UserMap = HashMap<Arc<String>, Arc<User>>;
 pub type Tags = HashSet<Arc<String>>;
-pub type Repositories<'a> = Vec<Repository<'a>>;
+pub type Repositories = Vec<Repository>;
 
-pub struct CrawlResp<'a> {
-    pub repos: Repositories<'a>,
+pub struct CrawlResp {
+    pub repos: Repositories,
     pub tags: Tags,
-    pub users: UserMap<'a>,
+    pub users: UserMap,
 }
 
 #[async_trait]
 pub trait SCForge: std::marker::Send + std::marker::Sync + CloneSPForge {
     async fn is_forge(&self) -> bool;
     async fn crawl(&self, limit: u64, page: u64, rate_limit: u64) -> CrawlResp;
-    fn get_hostname(&self) -> &str;
+    fn get_url(&self) -> &Url;
     fn forge_type(&self) -> ForgeImplementation;
 }
 

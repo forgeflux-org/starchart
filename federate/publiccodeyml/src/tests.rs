@@ -22,7 +22,7 @@ use federate_core::tests;
 
 #[actix_rt::test]
 async fn everything_works() {
-    const HOSTNAME: &str = "https://test-gitea.example.com";
+    const URL: &str = "https://test-gitea.example.com";
     const HTML_PROFILE_URL: &str = "https://test-gitea.example.com/user1";
     const USERNAME: &str = "user1";
 
@@ -32,16 +32,15 @@ async fn everything_works() {
 
     let tmp_dir = Temp::new_dir().unwrap();
 
-    let hostname = Url::parse(HOSTNAME).unwrap();
-    let hostname = get_hostname(&hostname);
+    let url = Url::parse(URL).unwrap();
 
     let create_forge_msg = CreateForge {
-        hostname: &hostname,
+        url: url.clone(),
         forge_type: ForgeImplementation::Gitea,
     };
 
     let add_user_msg = AddUser {
-        hostname: &hostname,
+        url: url.clone(),
         html_link: HTML_PROFILE_URL,
         profile_photo: None,
         username: USERNAME,
@@ -54,7 +53,7 @@ async fn everything_works() {
         owner: USERNAME,
         website: None,
         description: None,
-        hostname: &hostname,
+        url: url.clone(),
     };
 
     let pcc = PccFederate::new(tmp_dir.to_str().unwrap().to_string())

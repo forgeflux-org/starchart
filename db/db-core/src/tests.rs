@@ -21,20 +21,20 @@ use crate::prelude::*;
 /// adding forge works
 pub async fn adding_forge_works<'a, T: SCDatabase>(
     db: &T,
-    create_forge_msg: CreateForge<'a>,
+    create_forge_msg: CreateForge,
     add_user_msg: AddUser<'a>,
     add_user_msg2: AddUser<'a>,
     add_repo_msg: AddRepository<'a>,
 ) {
-    let _ = db.delete_forge_instance(create_forge_msg.hostname).await;
+    let _ = db.delete_forge_instance(&create_forge_msg.url).await;
     db.create_forge_instance(&create_forge_msg).await.unwrap();
     assert!(
-        db.forge_exists(create_forge_msg.hostname).await.unwrap(),
-        "forge creation failed, forge exinstance check failure"
+        db.forge_exists(&create_forge_msg.url).await.unwrap(),
+        "forge creation failed, forge existence check failure"
     );
 
     {
-        let forge = db.get_forge(create_forge_msg.hostname).await.unwrap();
+        let forge = db.get_forge(&create_forge_msg.url).await.unwrap();
         let forges = db.get_all_forges(0, 10).await.unwrap();
         assert_eq!(forges.len(), 1);
 
@@ -43,11 +43,11 @@ pub async fn adding_forge_works<'a, T: SCDatabase>(
             create_forge_msg.forge_type
         );
         assert_eq!(
-            forges.get(0).as_ref().unwrap().hostname,
-            create_forge_msg.hostname
+            forges.get(0).as_ref().unwrap().url,
+            crate::clean_url(&create_forge_msg.url)
         );
 
-        assert_eq!(forge.hostname, create_forge_msg.hostname);
+        assert_eq!(forge.url, crate::clean_url(&create_forge_msg.url));
         assert_eq!(forge.forge_type, create_forge_msg.forge_type);
     }
 
@@ -56,10 +56,10 @@ pub async fn adding_forge_works<'a, T: SCDatabase>(
     db.add_user(&add_user_msg2).await.unwrap();
     {
         let db_user = db
-            .get_user(add_user_msg.username, add_user_msg.hostname)
+            .get_user(add_user_msg.username, &add_user_msg.url)
             .await
             .unwrap();
-        assert_eq!(db_user.hostname, add_user_msg.hostname);
+        assert_eq!(db_user.url, crate::clean_url(&add_user_msg.url));
         assert_eq!(db_user.username, add_user_msg.username);
         assert_eq!(db_user.html_link, add_user_msg.html_link);
         assert_eq!(
@@ -70,7 +70,7 @@ pub async fn adding_forge_works<'a, T: SCDatabase>(
     // verify user exists
     assert!(db.user_exists(add_user_msg.username, None).await.unwrap());
     assert!(db
-        .user_exists(add_user_msg.username, Some(add_user_msg.hostname))
+        .user_exists(add_user_msg.username, Some(&add_user_msg.url))
         .await
         .unwrap());
 
@@ -78,24 +78,24 @@ pub async fn adding_forge_works<'a, T: SCDatabase>(
     db.create_repository(&add_repo_msg).await.unwrap();
     // verify repo exists
     assert!(db
-        .repository_exists(add_repo_msg.name, add_repo_msg.owner, add_repo_msg.hostname)
+        .repository_exists(add_repo_msg.name, add_repo_msg.owner, &add_repo_msg.url)
         .await
         .unwrap());
     // delete repository
-    db.delete_repository(add_repo_msg.owner, add_repo_msg.name, add_repo_msg.hostname)
+    db.delete_repository(add_repo_msg.owner, add_repo_msg.name, &add_repo_msg.url)
         .await
         .unwrap();
     assert!(!db
-        .repository_exists(add_repo_msg.name, add_repo_msg.owner, add_repo_msg.hostname)
+        .repository_exists(add_repo_msg.name, add_repo_msg.owner, &add_repo_msg.url)
         .await
         .unwrap());
 
     // delete user
-    db.delete_user(add_user_msg.username, add_user_msg.hostname)
+    db.delete_user(add_user_msg.username, &add_user_msg.url)
         .await
         .unwrap();
     assert!(!db
-        .user_exists(add_user_msg.username, Some(add_user_msg.hostname))
+        .user_exists(add_user_msg.username, Some(&add_user_msg.url))
         .await
         .unwrap());
 }

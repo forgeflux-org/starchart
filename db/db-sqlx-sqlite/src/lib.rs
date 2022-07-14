@@ -22,6 +22,7 @@ use db_core::dev::*;
 use sqlx::sqlite::SqlitePool;
 use sqlx::sqlite::SqlitePoolOptions;
 use sqlx::types::time::OffsetDateTime;
+use url::Url;
 
 pub mod errors;
 #[cfg(test)]
@@ -112,26 +113,25 @@ impl SCDatabase for Database {
     }
 
     /// delete forge instance
-    async fn delete_forge_instance(&self, hostname: &str) -> DBResult<()> {
-        sqlx::query!(
-            "DELETE FROM starchart_forges WHERE hostname = ($1)",
-            hostname,
-        )
-        .execute(&self.pool)
-        .await
-        .map_err(|e| DBError::DBError(Box::new(e)))?;
+    async fn delete_forge_instance(&self, url: &Url) -> DBResult<()> {
+        let url = db_core::clean_url(url);
+        sqlx::query!("DELETE FROM starchart_forges WHERE hostname = ($1)", url,)
+            .execute(&self.pool)
+            .await
+            .map_err(|e| DBError::DBError(Box::new(e)))?;
         Ok(())
     }
 
     /// create forge instance DB
     async fn create_forge_instance(&self, f: &CreateForge) -> DBResult<()> {
         let now = now_unix_time_stamp();
+        let url = db_core::clean_url(&f.url);
         let forge_type = f.forge_type.to_str();
         sqlx::query!(
             "INSERT INTO
             starchart_forges (hostname, verified_on, forge_type ) 
         VALUES ($1, $2, (SELECT ID FROM starchart_forge_type WHERE name = $3))",
-            f.hostname,
+            url,
             now,
             forge_type,
         )
@@ -143,7 +143,8 @@ impl SCDatabase for Database {
     }
 
     /// get forge instance data
-    async fn get_forge(&self, hostname: &str) -> DBResult<Forge> {
+    async fn get_forge(&self, url: &Url) -> DBResult<Forge> {
+        let url = db_core::clean_url(url);
         let f = sqlx::query_as!(
             InnerForge,
             "SELECT 
@@ -159,7 +160,7 @@ impl SCDatabase for Database {
         WHERE
             hostname = $1;
             ",
-            hostname,
+            url,
         )
         .fetch_one(&self.pool)
         .await
@@ -200,13 +201,11 @@ impl SCDatabase for Database {
     }
 
     /// check if a forge instance exists
-    async fn forge_exists(&self, hostname: &str) -> DBResult<bool> {
-        match sqlx::query!(
-            "SELECT ID FROM starchart_forges WHERE hostname = $1",
-            hostname
-        )
-        .fetch_one(&self.pool)
-        .await
+    async fn forge_exists(&self, url: &Url) -> DBResult<bool> {
+        let url = db_core::clean_url(url);
+        match sqlx::query!("SELECT ID FROM starchart_forges WHERE hostname = $1", url)
+            .fetch_one(&self.pool)
+            .await
         {
             Ok(_) => Ok(true),
             Err(Error::RowNotFound) => Ok(false),
@@ -232,6 +231,7 @@ impl SCDatabase for Database {
     /// add new user to database
     async fn add_user(&self, u: &AddUser) -> DBResult<()> {
         let now = now_unix_time_stamp();
+        let url = db_core::clean_url(&u.url);
         sqlx::query!(
             "INSERT INTO 
                     starchart_users (
@@ -240,7 +240,7 @@ impl SCDatabase for Database {
                     ) 
             VALUES (
                     (SELECT ID FROM starchart_forges WHERE hostname = $1), $2, $3, $4, $5, $6)",
-            u.hostname,
+            url,
             u.username,
             u.html_link,
             u.profile_photo,
@@ -255,46 +255,51 @@ impl SCDatabase for Database {
     }
 
     /// get user data
-    async fn get_user(&self, username: &str, hostname: &str) -> DBResult<User> {
+    async fn get_user(&self, username: &str, url: &Url) -> DBResult<User> {
         struct InnerUser {
             profile_photo_html_url: Option<String>,
             html_url: String,
         }
+
+        let url = db_core::clean_url(url);
         let res = sqlx::query_as!(
             InnerUser,
             "SELECT html_url, profile_photo_html_url FROM starchart_users WHERE username = $1 AND 
                 hostname_id = (SELECT ID FROM starchart_forges WHERE hostname = $2)",
             username,
-            hostname,
+            url,
         )
         .fetch_one(&self.pool)
         .await
         .map_err(|e| DBError::DBError(Box::new(e)))?;
         Ok(User {
             username: username.into(),
-            hostname: hostname.into(),
+            url: url.into(),
             profile_photo: res.profile_photo_html_url,
             html_link: res.html_url,
         })
     }
 
-    /// check if an user exists. When hostname of a forge instace is provided, username search is
+    /// check if an user exists. When url of a forge instace is provided, username search is
     /// done only on that forge
-    async fn user_exists(&self, username: &str, hostname: Option<&str>) -> DBResult<bool> {
-        match hostname {
-            Some(hostname) => match sqlx::query!(
-                "SELECT ID FROM starchart_users WHERE username = $1 AND 
+    async fn user_exists(&self, username: &str, url: Option<&Url>) -> DBResult<bool> {
+        match url {
+            Some(url) => {
+                let url = db_core::clean_url(url);
+                match sqlx::query!(
+                    "SELECT ID FROM starchart_users WHERE username = $1 AND 
                 hostname_id = (SELECT ID FROM starchart_forges WHERE hostname = $2)",
-                username,
-                hostname,
-            )
-            .fetch_one(&self.pool)
-            .await
-            {
-                Ok(_) => Ok(true),
-                Err(Error::RowNotFound) => Ok(false),
-                Err(e) => Err(DBError::DBError(Box::new(e).into())),
-            },
+                    username,
+                    url,
+                )
+                .fetch_one(&self.pool)
+                .await
+                {
+                    Ok(_) => Ok(true),
+                    Err(Error::RowNotFound) => Ok(false),
+                    Err(e) => Err(DBError::DBError(Box::new(e).into())),
+                }
+            }
             None => match sqlx::query!(
                 "SELECT ID FROM starchart_users WHERE username = $1",
                 username
@@ -310,7 +315,8 @@ impl SCDatabase for Database {
     }
 
     /// check if a repo exists.
-    async fn repository_exists(&self, name: &str, owner: &str, hostname: &str) -> DBResult<bool> {
+    async fn repository_exists(&self, name: &str, owner: &str, url: &Url) -> DBResult<bool> {
+        let url = db_core::clean_url(url);
         match sqlx::query!(
             "SELECT ID FROM starchart_repositories
                     WHERE 
@@ -321,7 +327,7 @@ impl SCDatabase for Database {
                         hostname_id = (SELECT ID FROM starchart_forges WHERE hostname = $3)",
             name,
             owner,
-            hostname,
+            url,
         )
         .fetch_one(&self.pool)
         .await
@@ -336,6 +342,7 @@ impl SCDatabase for Database {
     async fn create_repository(&self, r: &AddRepository) -> DBResult<()> {
         //        unimplemented!()
         let now = now_unix_time_stamp();
+        let url = db_core::clean_url(&r.url);
         sqlx::query!(
             "INSERT INTO 
                 starchart_repositories (
@@ -346,7 +353,7 @@ impl SCDatabase for Database {
                     (SELECT ID FROM starchart_users WHERE username = $2),
                     $3, $4, $5, $6, $7, $8
                 );",
-            r.hostname,
+            url,
             r.owner,
             r.name,
             r.description,
@@ -389,12 +396,13 @@ impl SCDatabase for Database {
     }
 
     /// delete user
-    async fn delete_user(&self, username: &str, hostname: &str) -> DBResult<()> {
+    async fn delete_user(&self, username: &str, url: &Url) -> DBResult<()> {
+        let url = db_core::clean_url(url);
         sqlx::query!(
             " DELETE FROM starchart_users WHERE username = $1 AND 
                 hostname_id = (SELECT ID FROM starchart_forges WHERE hostname = $2)",
             username,
-            hostname
+            url
         )
         .execute(&self.pool)
         .await
@@ -403,7 +411,8 @@ impl SCDatabase for Database {
     }
 
     /// delete repository
-    async fn delete_repository(&self, owner: &str, name: &str, hostname: &str) -> DBResult<()> {
+    async fn delete_repository(&self, owner: &str, name: &str, url: &Url) -> DBResult<()> {
+        let url = db_core::clean_url(url);
         sqlx::query!(
             " DELETE FROM starchart_repositories
                     WHERE 
@@ -414,7 +423,7 @@ impl SCDatabase for Database {
                         hostname_id = (SELECT ID FROM starchart_forges WHERE hostname = $3)",
             name,
             owner,
-            hostname
+            url
         )
         .execute(&self.pool)
         .await
@@ -437,14 +446,24 @@ impl SCDatabase for Database {
     }
 
     async fn get_dns_challenge(&self, key: &str) -> DBResult<Challenge> {
+        struct InnerChallenge {
+            hostname: String,
+            key: String,
+            value: String,
+        }
         let res = sqlx::query_as!(
-            Challenge,
+            InnerChallenge,
             "SELECT key, value, hostname FROM starchart_dns_challenges WHERE key = $1",
             key
         )
         .fetch_one(&self.pool)
         .await
         .map_err(|e| DBError::DBError(Box::new(e)))?;
+        let res = Challenge {
+            url: res.hostname,
+            key: res.key,
+            value: res.value,
+        };
         Ok(res)
     }
 
@@ -463,7 +482,7 @@ impl SCDatabase for Database {
             "INSERT INTO
             starchart_dns_challenges (hostname, value, key, created ) 
         VALUES ($1, $2, $3, $4);",
-            challenge.hostname,
+            challenge.url,
             challenge.value,
             challenge.key,
             now,
@@ -480,8 +499,8 @@ impl SCDatabase for Database {
         struct InnerRepository {
             /// html link to the repository
             pub html_url: String,
-            /// hostname of the forge instance: with scheme but remove trailing slash
-            /// hostname can be derived  from html_link also, but used to link to user's forge instance
+            /// url of the forge instance: with scheme but remove trailing slash
+            /// url can be derived  from html_link also, but used to link to user's forge instance
             pub hostname: String,
             /// repository name
             pub name: String,
@@ -554,7 +573,7 @@ LIMIT $1 OFFSET $2
             };
             res.push(Repository {
                 html_url: repo.html_url,
-                hostname: repo.hostname,
+                url: repo.hostname,
                 name: repo.name,
                 username: repo.username,
                 description: repo.description,
@@ -580,7 +599,7 @@ struct InnerForge {
 impl From<InnerForge> for Forge {
     fn from(f: InnerForge) -> Self {
         Self {
-            hostname: f.hostname,
+            url: f.hostname,
             last_crawl_on: f.last_crawl_on,
             forge_type: ForgeImplementation::from_str(&f.name).unwrap(),
         }

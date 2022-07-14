@@ -20,6 +20,7 @@ use std::path::PathBuf;
 use std::result::Result;
 
 use async_trait::async_trait;
+use url::Url;
 
 use db_core::prelude::*;
 
@@ -37,16 +38,16 @@ pub trait Federate: Sync + Send {
     async fn rm_util(&self, path: &Path) -> Result<(), Self::Error>;
 
     /// create forge instance
-    async fn create_forge_instance(&self, f: &CreateForge<'_>) -> Result<(), Self::Error>;
+    async fn create_forge_instance(&self, f: &CreateForge) -> Result<(), Self::Error>;
 
     /// delete forge instance
-    async fn delete_forge_instance(&self, hostname: &str) -> Result<(), Self::Error>;
+    async fn delete_forge_instance(&self, url: &Url) -> Result<(), Self::Error>;
 
     /// check if a forge instance exists
-    async fn forge_exists(&self, hostname: &str) -> Result<bool, Self::Error>;
+    async fn forge_exists(&self, url: &Url) -> Result<bool, Self::Error>;
 
     /// check if an user exists.
-    async fn user_exists(&self, username: &str, hostname: &str) -> Result<bool, Self::Error>;
+    async fn user_exists(&self, username: &str, url: &Url) -> Result<bool, Self::Error>;
 
     /// create user instance
     async fn create_user(&self, f: &AddUser<'_>) -> Result<(), Self::Error>;
@@ -59,20 +60,24 @@ pub trait Federate: Sync + Send {
         &self,
         name: &str,
         owner: &str,
-        hostname: &str,
+        url: &Url,
     ) -> Result<bool, Self::Error>;
 
     /// delete user
-    async fn delete_user(&self, username: &str, hostname: &str) -> Result<(), Self::Error>;
+    async fn delete_user(&self, username: &str, url: &Url) -> Result<(), Self::Error>;
 
     /// delete repository
     async fn delete_repository(
         &self,
         owner: &str,
         name: &str,
-        hostname: &str,
+        url: &Url,
     ) -> Result<(), Self::Error>;
 
     /// publish results in tar ball
     async fn tar(&self) -> Result<PathBuf, Self::Error>;
+}
+
+pub fn get_hostname(url: &Url) -> &str {
+    url.host_str().unwrap()
 }

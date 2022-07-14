@@ -60,25 +60,29 @@ pub mod dev {
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 /// create a new forge on the database
-pub struct CreateForge<'a> {
-    /// hostname of the forge instance: with scheme but remove trailing slash
-    pub hostname: &'a str,
+pub struct CreateForge {
+    /// url of the forge instance: with scheme but remove trailing slash
+    pub url: Url,
     /// forge type: which software is the instance running?
     pub forge_type: ForgeImplementation,
 }
 
-/// Get hostname from URL
-/// Utility function for uniform hostname format
-pub fn get_hostname(url: &Url) -> String {
-    url.host().as_ref().unwrap().to_string()
+/// Get url from URL
+/// Utility function for uniform url format
+pub fn clean_url(url: &Url) -> String {
+    let mut url = url.clone();
+    url.set_path("");
+    url.set_query(None);
+    url.set_fragment(None);
+    url.as_str().to_string()
 }
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 /// user data
 pub struct User {
-    /// hostname of the forge instance: with scheme but remove trailing slash
-    /// hostname can be derived  from html_link also, but used to link to user's forge instance
-    pub hostname: String,
+    /// url of the forge instance: with scheme but remove trailing slash
+    /// url can be derived  from html_link also, but used to link to user's forge instance
+    pub url: String,
     /// username of the user
     pub username: String,
     /// html link to the user profile
@@ -90,9 +94,9 @@ pub struct User {
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 /// add new user to database
 pub struct AddUser<'a> {
-    /// hostname of the forge instance: with scheme but remove trailing slash
-    /// hostname can be derived  from html_link also, but used to link to user's forge instance
-    pub hostname: &'a str,
+    /// url of the forge instance: with scheme but remove trailing slash
+    /// url can be derived  from html_link also, but used to link to user's forge instance
+    pub url: Url,
     /// username of the user
     pub username: &'a str,
     /// html link to the user profile
@@ -108,9 +112,9 @@ pub struct AddRepository<'a> {
     pub html_link: &'a str,
     /// repository topic tags
     pub tags: Option<Vec<&'a str>>,
-    /// hostname of the forge instance: with scheme but remove trailing slash
-    /// hostname can be derived  from html_link also, but used to link to user's forge instance
-    pub hostname: &'a str,
+    /// url of the forge instance: with scheme but remove trailing slash
+    /// url can be derived  from html_link also, but used to link to user's forge instance
+    pub url: Url,
     /// repository name
     pub name: &'a str,
     /// repository owner
@@ -124,8 +128,8 @@ pub struct AddRepository<'a> {
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 /// data representing a forge instance
 pub struct Forge {
-    /// hostname of the forge
-    pub hostname: String,
+    /// url of the forge
+    pub url: String,
     /// type of the forge
     pub forge_type: ForgeImplementation,
     /// last crawl
@@ -139,9 +143,9 @@ pub struct Repository {
     pub html_url: String,
     /// repository topic tags
     pub tags: Option<Vec<String>>,
-    /// hostname of the forge instance: with scheme but remove trailing slash
-    /// hostname can be derived  from html_link also, but used to link to user's forge instance
-    pub hostname: String,
+    /// url of the forge instance: with scheme but remove trailing slash
+    /// url can be derived  from html_link also, but used to link to user's forge instance
+    pub url: String,
     /// repository name
     pub name: String,
     /// repository owner
@@ -155,8 +159,8 @@ pub struct Repository {
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 /// represents a DNS challenge
 pub struct Challenge {
-    /// hostname of the forge instance
-    pub hostname: String,
+    /// url of the forge instance
+    pub url: String,
     /// key of TXT record
     pub key: String,
     /// value of TXT record
@@ -186,13 +190,13 @@ pub trait SCDatabase: std::marker::Send + std::marker::Sync + CloneSPDatabase {
     async fn create_forge_instance(&self, f: &CreateForge) -> DBResult<()>;
 
     /// get forge instance data
-    async fn get_forge(&self, hostname: &str) -> DBResult<Forge>;
+    async fn get_forge(&self, url: &Url) -> DBResult<Forge>;
 
     /// delete forge instance
-    async fn delete_forge_instance(&self, hostname: &str) -> DBResult<()>;
+    async fn delete_forge_instance(&self, url: &Url) -> DBResult<()>;
 
     /// check if a forge instance exists
-    async fn forge_exists(&self, hostname: &str) -> DBResult<bool>;
+    async fn forge_exists(&self, url: &Url) -> DBResult<bool>;
 
     /// check if forge type exists
     async fn forge_type_exists(&self, forge_type: &ForgeImplementation) -> DBResult<bool>;
@@ -204,20 +208,20 @@ pub trait SCDatabase: std::marker::Send + std::marker::Sync + CloneSPDatabase {
     async fn add_user(&self, u: &AddUser) -> DBResult<()>;
 
     /// get user data
-    async fn get_user(&self, username: &str, hostname: &str) -> DBResult<User>;
+    async fn get_user(&self, username: &str, url: &Url) -> DBResult<User>;
 
-    /// check if an user exists. When hostname of a forge instace is provided, username search is
+    /// check if an user exists. When url of a forge instace is provided, username search is
     /// done only on that forge
-    async fn user_exists(&self, username: &str, hostname: Option<&str>) -> DBResult<bool>;
+    async fn user_exists(&self, username: &str, url: Option<&Url>) -> DBResult<bool>;
 
     /// delete user
-    async fn delete_user(&self, username: &str, hostname: &str) -> DBResult<()>;
+    async fn delete_user(&self, username: &str, url: &Url) -> DBResult<()>;
 
     /// delete repository
-    async fn delete_repository(&self, owner: &str, name: &str, hostname: &str) -> DBResult<()>;
+    async fn delete_repository(&self, owner: &str, name: &str, url: &Url) -> DBResult<()>;
 
     /// check if a repository exists.
-    async fn repository_exists(&self, name: &str, owner: &str, hostname: &str) -> DBResult<bool>;
+    async fn repository_exists(&self, name: &str, owner: &str, url: &Url) -> DBResult<bool>;
 
     /// Get all repositories
     async fn get_all_repositories(&self, offset: u32, limit: u32) -> DBResult<Vec<Repository>>;
