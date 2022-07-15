@@ -154,6 +154,10 @@ pub struct Repository {
     pub description: Option<String>,
     /// repository website, if any
     pub website: Option<String>,
+    /// created date
+    pub created: i64,
+    /// last crawl
+    pub last_crawl_on: Option<i64>,
 }
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]

@@ -512,6 +512,8 @@ impl SCDatabase for Database {
             /// repository website, if any
             pub website: Option<String>,
             pub ID: i64,
+            last_crawl: i64,
+            created: i64,
         }
 
         let mut db_res = sqlx::query_as!(
@@ -523,7 +525,9 @@ impl SCDatabase for Database {
 		starchart_repositories.description,
 		starchart_repositories.html_url,
         starchart_repositories.ID,
-		starchart_repositories.website
+		starchart_repositories.website,
+		starchart_repositories.last_crawl,
+		starchart_repositories.created
 FROM
 	starchart_repositories
 INNER JOIN
@@ -580,6 +584,8 @@ LIMIT $1 OFFSET $2
                 description: repo.description,
                 website: repo.website,
                 tags: topics,
+                last_crawl_on: Some(repo.last_crawl),
+                created: repo.created,
             });
         }
 
