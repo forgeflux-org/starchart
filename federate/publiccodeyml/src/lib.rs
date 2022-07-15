@@ -136,7 +136,7 @@ impl Federate for PccFederate {
 
     /// delete forge instance
     async fn delete_forge_instance(&self, url: &Url) -> FResult<()> {
-        let path = self.get_instance_path(&url, false).await?;
+        let path = self.get_instance_path(url, false).await?;
         self.rm_util(&path).await
     }
 

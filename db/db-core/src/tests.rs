@@ -102,8 +102,9 @@ pub async fn adding_forge_works<'a, T: SCDatabase>(
 
 /// test if all forge type implementations are loaded into DB
 pub async fn forge_type_exists_helper<T: SCDatabase>(db: &T) {
-    for f in [ForgeImplementation::Gitea].iter() {
-        println!("Testing forge implementation exists for: {}", f.to_str());
-        assert!(db.forge_type_exists(f).await.unwrap());
-    }
+    //for f in [ForgeImplementation::Gitea].iter() {
+    //let f = For
+    let f = ForgeImplementation::Gitea;
+    println!("Testing forge implementation exists for: {}", f.to_str());
+    assert!(db.forge_type_exists(&f).await.unwrap());
 }

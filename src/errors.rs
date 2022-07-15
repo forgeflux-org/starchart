@@ -131,10 +131,11 @@ impl From<DBError> for ServiceError {
     #[cfg(not(tarpaulin_include))]
     fn from(e: DBError) -> ServiceError {
         println!("from conversin: {}", e);
-        match e {
-            // TODO: resolve all errors to ServiceError::*
-            _ => ServiceError::DBError(DBErrorWrapper(e)),
-        }
+        ServiceError::DBError(DBErrorWrapper(e))
+        //        match e {
+        //            // TODO: resolve all errors to ServiceError::*
+        //            _ => ServiceError::DBError(DBErrorWrapper(e)),
+        //        }
     }
 }
 

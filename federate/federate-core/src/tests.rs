@@ -32,12 +32,12 @@ pub async fn adding_forge_works<'a, T: Federate>(
 
     // add user
     assert!(!ff
-        .user_exists(&create_user_msg.username, &create_user_msg.url)
+        .user_exists(create_user_msg.username, &create_user_msg.url)
         .await
         .unwrap());
     ff.create_user(&create_user_msg).await.unwrap();
     assert!(ff
-        .user_exists(&create_user_msg.username, &create_user_msg.url)
+        .user_exists(create_user_msg.username, &create_user_msg.url)
         .await
         .unwrap());
 

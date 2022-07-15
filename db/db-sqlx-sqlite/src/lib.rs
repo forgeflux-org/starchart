@@ -274,7 +274,7 @@ impl SCDatabase for Database {
         .map_err(|e| DBError::DBError(Box::new(e)))?;
         Ok(User {
             username: username.into(),
-            url: url.into(),
+            url,
             profile_photo: res.profile_photo_html_url,
             html_link: res.html_url,
         })
@@ -496,6 +496,7 @@ impl SCDatabase for Database {
 
     /// Get all repositories
     async fn get_all_repositories(&self, offset: u32, limit: u32) -> DBResult<Vec<Repository>> {
+        #[allow(non_snake_case)]
         struct InnerRepository {
             /// html link to the repository
             pub html_url: String,

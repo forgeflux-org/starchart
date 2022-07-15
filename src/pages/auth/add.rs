@@ -18,7 +18,6 @@
 use actix_web::http::{self, header::ContentType};
 use actix_web::{HttpResponse, Responder};
 use actix_web_codegen_const_routes::{get, post};
-use log::info;
 use serde::{Deserialize, Serialize};
 use std::cell::RefCell;
 use tera::Context;
@@ -97,7 +96,7 @@ pub async fn add_submit(
         db: &BoxDB,
     ) -> ServiceResult<TXTChallenge> {
         let url_hostname = Url::parse(&payload.hostname).unwrap();
-        let key = TXTChallenge::get_challenge_txt_key(&ctx, &url_hostname);
+        let key = TXTChallenge::get_challenge_txt_key(ctx, &url_hostname);
         if db.dns_challenge_exists(&key).await? {
             let value = db.get_dns_challenge(&key).await?.value;
             Ok(TXTChallenge { key, value })
@@ -136,14 +135,9 @@ mod tests {
     use actix_web::test;
     use url::Url;
 
-    use super::AddChallenge;
     use super::AddChallengePayload;
     use super::TXTChallenge;
     use crate::errors::*;
-    use crate::pages::errors::*;
-    use crate::settings::Settings;
-
-    use db_core::prelude::*;
 
     #[cfg(test)]
     mod isolated {

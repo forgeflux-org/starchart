@@ -90,13 +90,11 @@ impl Repository {
         if license_path.exists() {
             if license_path.is_dir() {
                 panic!("Can't create license file at {:?}", license_path);
-            } else {
-                if !fs::read_to_string(&license_path)
-                    .unwrap()
-                    .contains(CC0_LICENSE_TXT)
-                {
-                    panic!("Can't create license file at {:?}", &license_path);
-                }
+            } else if !fs::read_to_string(&license_path)
+                .unwrap()
+                .contains(CC0_LICENSE_TXT)
+            {
+                panic!("Can't create license file at {:?}", &license_path);
             }
         } else {
             fs::write(license_path, CC0_LICENSE_TXT).unwrap();
@@ -111,16 +109,6 @@ pub enum DBType {
     Postgres,
     #[display(fmt = "sqlite")]
     Sqlite,
-}
-
-impl DBType {
-    fn from_url(url: &Url) -> Result<Self, ConfigError> {
-        match url.scheme() {
-            "sqlite" => Ok(Self::Sqlite),
-            "postgres" => Ok(Self::Postgres),
-            _ => Err(ConfigError::Message("Unknown database type".into())),
-        }
-    }
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -236,20 +224,6 @@ impl Settings {
 mod tests {
     use super::*;
     use crate::utils::get_random;
-
-    #[test]
-    fn database_type_test() {
-        for i in ["sqlite://foo", "postgres://bar", "unknown://"].iter() {
-            let url = Url::parse(i).unwrap();
-            if i.contains("sqlite") {
-                assert_eq!(DBType::from_url(&url).unwrap(), DBType::Sqlite);
-            } else if i.contains("unknown") {
-                assert!(DBType::from_url(&url).is_err());
-            } else {
-                assert_eq!(DBType::from_url(&url).unwrap(), DBType::Postgres);
-            }
-        }
-    }
 
     #[test]
     fn root_dir_is_created_test() {

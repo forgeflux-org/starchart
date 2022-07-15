@@ -31,7 +31,6 @@ pub struct TXTChallenge {
     pub value: String,
 }
 
-const KEY_LEN: usize = 30;
 const VALUES_LEN: usize = 30;
 
 impl TXTChallenge {

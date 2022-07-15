@@ -18,7 +18,6 @@
 use actix_web::http::{self, header::ContentType};
 use actix_web::{HttpResponse, Responder};
 use actix_web_codegen_const_routes::{get, post};
-use log::info;
 use serde::{Deserialize, Serialize};
 use std::cell::RefCell;
 use tera::Context;
@@ -83,7 +82,7 @@ pub async fn get_verify(
     query: web::Query<VerifyChallengePayload>,
 ) -> PageResult<impl Responder, VerifyChallenge> {
     let payload = query.into_inner();
-    let value = _get_challenge(&payload, &ctx, &db).await.map_err(|e| {
+    let value = _get_challenge(&payload, &db).await.map_err(|e| {
         let challenge = Challenge {
             key: payload.hostname,
             value: "".into(),
@@ -103,11 +102,7 @@ pub fn services(cfg: &mut web::ServiceConfig) {
     cfg.service(submit_verify);
 }
 
-async fn _get_challenge(
-    payload: &VerifyChallengePayload,
-    ctx: &ArcCtx,
-    db: &BoxDB,
-) -> ServiceResult<Challenge> {
+async fn _get_challenge(payload: &VerifyChallengePayload, db: &BoxDB) -> ServiceResult<Challenge> {
     let value = db.get_dns_challenge(&payload.hostname).await?;
     Ok(value)
 }
@@ -120,7 +115,7 @@ pub async fn submit_verify(
     federate: WebFederate,
 ) -> PageResult<impl Responder, VerifyChallenge> {
     let payload = payload.into_inner();
-    let value = _get_challenge(&payload, &ctx, &db).await.map_err(|e| {
+    let value = _get_challenge(&payload, &db).await.map_err(|e| {
         let challenge = Challenge {
             key: payload.hostname.clone(),
             value: "".into(),

@@ -33,7 +33,7 @@ pub mod routes {
     use super::*;
 
     lazy_static! {
-        pub static ref ASSETS: Assets = Assets::new();
+        pub static ref ASSETS: Assets = Assets::default();
     }
 
     #[derive(Serialize)]
@@ -43,9 +43,9 @@ pub mod routes {
         pub css: &'static str,
     }
 
-    impl Assets {
+    impl Default for Assets {
         /// create new instance of Routes
-        pub fn new() -> Assets {
+        fn default() -> Assets {
             Assets {
                 css: &static_files::assets::CSS,
             }

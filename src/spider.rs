@@ -43,21 +43,19 @@ impl Ctx {
         let url = forge.get_url();
         if !db.forge_exists(url).await.unwrap() {
             info!("[crawl][{url}] Creating forge");
-            let mut msg = CreateForge {
+            let msg = CreateForge {
                 url: url.clone(),
                 forge_type: forge.forge_type(),
             };
 
             db.create_forge_instance(&msg).await.unwrap();
-        } else {
-            if !federate.forge_exists(&url).await.unwrap() {
-                let forge = db.get_forge(&url).await.unwrap();
-                let msg = CreateForge {
-                    url: url.clone(),
-                    forge_type: forge.forge_type,
-                };
-                federate.create_forge_instance(&msg).await.unwrap();
-            }
+        } else if !federate.forge_exists(url).await.unwrap() {
+            let forge = db.get_forge(url).await.unwrap();
+            let msg = CreateForge {
+                url: url.clone(),
+                forge_type: forge.forge_type,
+            };
+            federate.create_forge_instance(&msg).await.unwrap();
         }
 
         loop {
@@ -84,15 +82,14 @@ impl Ctx {
                     let msg = u.as_ref().into();
                     db.add_user(&msg).await.unwrap();
                     federate.create_user(&msg).await.unwrap();
-                } else {
-                    if !federate
-                        .user_exists(username, forge.get_url())
-                        .await
-                        .unwrap()
-                    {
-                        let msg = u.as_ref().into();
-                        federate.create_user(&msg).await.unwrap();
-                    }
+                }
+                if !federate
+                    .user_exists(username, forge.get_url())
+                    .await
+                    .unwrap()
+                {
+                    let msg = u.as_ref().into();
+                    federate.create_user(&msg).await.unwrap();
                 }
             }
 
@@ -106,15 +103,14 @@ impl Ctx {
                     let msg = r.into();
                     db.create_repository(&msg).await.unwrap();
                     federate.create_repository(&msg).await.unwrap();
-                } else {
-                    if !federate
-                        .repository_exists(&r.name, &r.owner.username, &r.url)
-                        .await
-                        .unwrap()
-                    {
-                        let msg = r.into();
-                        federate.create_repository(&msg).await.unwrap();
-                    }
+                }
+                if !federate
+                    .repository_exists(&r.name, &r.owner.username, &r.url)
+                    .await
+                    .unwrap()
+                {
+                    let msg = r.into();
+                    federate.create_repository(&msg).await.unwrap();
                 }
             }
 
@@ -126,7 +122,6 @@ impl Ctx {
 #[cfg(test)]
 mod tests {
     use crate::tests::sqlx_sqlite;
-    use db_core::prelude::*;
 
     use url::Url;
 

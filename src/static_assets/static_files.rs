@@ -67,9 +67,7 @@ mod tests {
     use actix_web::http::StatusCode;
     use actix_web::test;
 
-    use crate::db::BoxDB;
     use crate::tests::*;
-    use crate::ArcCtx;
     use crate::*;
 
     use super::assets::CSS;
