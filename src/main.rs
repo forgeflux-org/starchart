@@ -20,6 +20,7 @@ use std::sync::Arc;
 use actix_files::Files;
 use actix_web::{middleware, web::Data, App, HttpServer};
 use lazy_static::lazy_static;
+use tokio::sync::oneshot;
 
 pub mod ctx;
 pub mod db;
@@ -66,10 +67,20 @@ async fn main() {
     pretty_env_logger::init();
     lazy_static::initialize(&pages::TEMPLATES);
 
-    let ctx = WebCtx::new(Ctx::new(settings.clone()).await);
+    let ctx = Ctx::new(settings.clone()).await;
     let db = WebDB::new(sqlite::get_data(Some(settings.clone())).await);
     let federate = WebFederate::new(get_federate(Some(settings.clone())).await);
 
+    let (kill_crawler, rx) = oneshot::channel();
+    let crawler = spider::Crawler::new(
+        rx,
+        ctx.clone(),
+        db.as_ref().clone(),
+        federate.as_ref().clone(),
+    );
+
+    let crawler_fut = tokio::spawn(spider::Crawler::start(crawler.clone()));
+    let ctx = WebCtx::new(ctx);
     let socket_addr = settings.server.get_ip();
 
     HttpServer::new(move || {
@@ -90,4 +101,7 @@ async fn main() {
     .run()
     .await
     .unwrap();
+
+    kill_crawler.send(true).unwrap();
+    crawler_fut.await.unwrap().await;
 }
