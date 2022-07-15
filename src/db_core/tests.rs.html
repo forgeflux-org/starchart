@@ -112,6 +112,7 @@
 <span id="107">107</span>
 <span id="108">108</span>
 <span id="109">109</span>
+<span id="110">110</span>
 </pre><pre class="rust"><code><span class="comment">/*
  * ForgeFlux StarChart - A federated software forge spider
  * Copyright (C) 2022  Aravinth Manivannan &lt;realaravinth@batsense.net&gt;
@@ -135,20 +136,20 @@
 <span class="doccomment">/// adding forge works</span>
 <span class="kw">pub</span> <span class="kw">async</span> <span class="kw">fn</span> <span class="ident">adding_forge_works</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">T</span>: <span class="ident">SCDatabase</span><span class="op">&gt;</span>(
     <span class="ident">db</span>: <span class="kw-2">&amp;</span><span class="ident">T</span>,
-    <span class="ident">create_forge_msg</span>: <span class="ident">CreateForge</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span>,
+    <span class="ident">create_forge_msg</span>: <span class="ident">CreateForge</span>,
     <span class="ident">add_user_msg</span>: <span class="ident">AddUser</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span>,
     <span class="ident">add_user_msg2</span>: <span class="ident">AddUser</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span>,
     <span class="ident">add_repo_msg</span>: <span class="ident">AddRepository</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span>,
 ) {
-    <span class="kw">let</span> <span class="kw">_</span> <span class="op">=</span> <span class="ident">db</span>.<span class="ident">delete_forge_instance</span>(<span class="ident">create_forge_msg</span>.<span class="ident">hostname</span>).<span class="kw">await</span>;
+    <span class="kw">let</span> <span class="kw">_</span> <span class="op">=</span> <span class="ident">db</span>.<span class="ident">delete_forge_instance</span>(<span class="kw-2">&amp;</span><span class="ident">create_forge_msg</span>.<span class="ident">url</span>).<span class="kw">await</span>;
     <span class="ident">db</span>.<span class="ident">create_forge_instance</span>(<span class="kw-2">&amp;</span><span class="ident">create_forge_msg</span>).<span class="kw">await</span>.<span class="ident">unwrap</span>();
     <span class="macro">assert!</span>(
-        <span class="ident">db</span>.<span class="ident">forge_exists</span>(<span class="ident">create_forge_msg</span>.<span class="ident">hostname</span>).<span class="kw">await</span>.<span class="ident">unwrap</span>(),
-        <span class="string">&quot;forge creation failed, forge exinstance check failure&quot;</span>
+        <span class="ident">db</span>.<span class="ident">forge_exists</span>(<span class="kw-2">&amp;</span><span class="ident">create_forge_msg</span>.<span class="ident">url</span>).<span class="kw">await</span>.<span class="ident">unwrap</span>(),
+        <span class="string">&quot;forge creation failed, forge existence check failure&quot;</span>
     );
 
     {
-        <span class="kw">let</span> <span class="ident">forge</span> <span class="op">=</span> <span class="ident">db</span>.<span class="ident">get_forge</span>(<span class="ident">create_forge_msg</span>.<span class="ident">hostname</span>).<span class="kw">await</span>.<span class="ident">unwrap</span>();
+        <span class="kw">let</span> <span class="ident">forge</span> <span class="op">=</span> <span class="ident">db</span>.<span class="ident">get_forge</span>(<span class="kw-2">&amp;</span><span class="ident">create_forge_msg</span>.<span class="ident">url</span>).<span class="kw">await</span>.<span class="ident">unwrap</span>();
         <span class="kw">let</span> <span class="ident">forges</span> <span class="op">=</span> <span class="ident">db</span>.<span class="ident">get_all_forges</span>(<span class="number">0</span>, <span class="number">10</span>).<span class="kw">await</span>.<span class="ident">unwrap</span>();
         <span class="macro">assert_eq!</span>(<span class="ident">forges</span>.<span class="ident">len</span>(), <span class="number">1</span>);
 
@@ -157,11 +158,11 @@
             <span class="ident">create_forge_msg</span>.<span class="ident">forge_type</span>
         );
         <span class="macro">assert_eq!</span>(
-            <span class="ident">forges</span>.<span class="ident">get</span>(<span class="number">0</span>).<span class="ident">as_ref</span>().<span class="ident">unwrap</span>().<span class="ident">hostname</span>,
-            <span class="ident">create_forge_msg</span>.<span class="ident">hostname</span>
+            <span class="ident">forges</span>.<span class="ident">get</span>(<span class="number">0</span>).<span class="ident">as_ref</span>().<span class="ident">unwrap</span>().<span class="ident">url</span>,
+            <span class="ident"><span class="kw">crate</span>::clean_url</span>(<span class="kw-2">&amp;</span><span class="ident">create_forge_msg</span>.<span class="ident">url</span>)
         );
 
-        <span class="macro">assert_eq!</span>(<span class="ident">forge</span>.<span class="ident">hostname</span>, <span class="ident">create_forge_msg</span>.<span class="ident">hostname</span>);
+        <span class="macro">assert_eq!</span>(<span class="ident">forge</span>.<span class="ident">url</span>, <span class="ident"><span class="kw">crate</span>::clean_url</span>(<span class="kw-2">&amp;</span><span class="ident">create_forge_msg</span>.<span class="ident">url</span>));
         <span class="macro">assert_eq!</span>(<span class="ident">forge</span>.<span class="ident">forge_type</span>, <span class="ident">create_forge_msg</span>.<span class="ident">forge_type</span>);
     }
 
@@ -170,10 +171,10 @@
     <span class="ident">db</span>.<span class="ident">add_user</span>(<span class="kw-2">&amp;</span><span class="ident">add_user_msg2</span>).<span class="kw">await</span>.<span class="ident">unwrap</span>();
     {
         <span class="kw">let</span> <span class="ident">db_user</span> <span class="op">=</span> <span class="ident">db</span>
-            .<span class="ident">get_user</span>(<span class="ident">add_user_msg</span>.<span class="ident">username</span>, <span class="ident">add_user_msg</span>.<span class="ident">hostname</span>)
+            .<span class="ident">get_user</span>(<span class="ident">add_user_msg</span>.<span class="ident">username</span>, <span class="kw-2">&amp;</span><span class="ident">add_user_msg</span>.<span class="ident">url</span>)
             .<span class="kw">await</span>
             .<span class="ident">unwrap</span>();
-        <span class="macro">assert_eq!</span>(<span class="ident">db_user</span>.<span class="ident">hostname</span>, <span class="ident">add_user_msg</span>.<span class="ident">hostname</span>);
+        <span class="macro">assert_eq!</span>(<span class="ident">db_user</span>.<span class="ident">url</span>, <span class="ident"><span class="kw">crate</span>::clean_url</span>(<span class="kw-2">&amp;</span><span class="ident">add_user_msg</span>.<span class="ident">url</span>));
         <span class="macro">assert_eq!</span>(<span class="ident">db_user</span>.<span class="ident">username</span>, <span class="ident">add_user_msg</span>.<span class="ident">username</span>);
         <span class="macro">assert_eq!</span>(<span class="ident">db_user</span>.<span class="ident">html_link</span>, <span class="ident">add_user_msg</span>.<span class="ident">html_link</span>);
         <span class="macro">assert_eq!</span>(
@@ -184,7 +185,7 @@
     <span class="comment">// verify user exists</span>
     <span class="macro">assert!</span>(<span class="ident">db</span>.<span class="ident">user_exists</span>(<span class="ident">add_user_msg</span>.<span class="ident">username</span>, <span class="prelude-val">None</span>).<span class="kw">await</span>.<span class="ident">unwrap</span>());
     <span class="macro">assert!</span>(<span class="ident">db</span>
-        .<span class="ident">user_exists</span>(<span class="ident">add_user_msg</span>.<span class="ident">username</span>, <span class="prelude-val">Some</span>(<span class="ident">add_user_msg</span>.<span class="ident">hostname</span>))
+        .<span class="ident">user_exists</span>(<span class="ident">add_user_msg</span>.<span class="ident">username</span>, <span class="prelude-val">Some</span>(<span class="kw-2">&amp;</span><span class="ident">add_user_msg</span>.<span class="ident">url</span>))
         .<span class="kw">await</span>
         .<span class="ident">unwrap</span>());
 
@@ -192,34 +193,35 @@
     <span class="ident">db</span>.<span class="ident">create_repository</span>(<span class="kw-2">&amp;</span><span class="ident">add_repo_msg</span>).<span class="kw">await</span>.<span class="ident">unwrap</span>();
     <span class="comment">// verify repo exists</span>
     <span class="macro">assert!</span>(<span class="ident">db</span>
-        .<span class="ident">repository_exists</span>(<span class="ident">add_repo_msg</span>.<span class="ident">name</span>, <span class="ident">add_repo_msg</span>.<span class="ident">owner</span>, <span class="ident">add_repo_msg</span>.<span class="ident">hostname</span>)
+        .<span class="ident">repository_exists</span>(<span class="ident">add_repo_msg</span>.<span class="ident">name</span>, <span class="ident">add_repo_msg</span>.<span class="ident">owner</span>, <span class="kw-2">&amp;</span><span class="ident">add_repo_msg</span>.<span class="ident">url</span>)
         .<span class="kw">await</span>
         .<span class="ident">unwrap</span>());
     <span class="comment">// delete repository</span>
-    <span class="ident">db</span>.<span class="ident">delete_repository</span>(<span class="ident">add_repo_msg</span>.<span class="ident">owner</span>, <span class="ident">add_repo_msg</span>.<span class="ident">name</span>, <span class="ident">add_repo_msg</span>.<span class="ident">hostname</span>)
+    <span class="ident">db</span>.<span class="ident">delete_repository</span>(<span class="ident">add_repo_msg</span>.<span class="ident">owner</span>, <span class="ident">add_repo_msg</span>.<span class="ident">name</span>, <span class="kw-2">&amp;</span><span class="ident">add_repo_msg</span>.<span class="ident">url</span>)
         .<span class="kw">await</span>
         .<span class="ident">unwrap</span>();
     <span class="macro">assert!</span>(<span class="op">!</span><span class="ident">db</span>
-        .<span class="ident">repository_exists</span>(<span class="ident">add_repo_msg</span>.<span class="ident">name</span>, <span class="ident">add_repo_msg</span>.<span class="ident">owner</span>, <span class="ident">add_repo_msg</span>.<span class="ident">hostname</span>)
+        .<span class="ident">repository_exists</span>(<span class="ident">add_repo_msg</span>.<span class="ident">name</span>, <span class="ident">add_repo_msg</span>.<span class="ident">owner</span>, <span class="kw-2">&amp;</span><span class="ident">add_repo_msg</span>.<span class="ident">url</span>)
         .<span class="kw">await</span>
         .<span class="ident">unwrap</span>());
 
     <span class="comment">// delete user</span>
-    <span class="ident">db</span>.<span class="ident">delete_user</span>(<span class="ident">add_user_msg</span>.<span class="ident">username</span>, <span class="ident">add_user_msg</span>.<span class="ident">hostname</span>)
+    <span class="ident">db</span>.<span class="ident">delete_user</span>(<span class="ident">add_user_msg</span>.<span class="ident">username</span>, <span class="kw-2">&amp;</span><span class="ident">add_user_msg</span>.<span class="ident">url</span>)
         .<span class="kw">await</span>
         .<span class="ident">unwrap</span>();
     <span class="macro">assert!</span>(<span class="op">!</span><span class="ident">db</span>
-        .<span class="ident">user_exists</span>(<span class="ident">add_user_msg</span>.<span class="ident">username</span>, <span class="prelude-val">Some</span>(<span class="ident">add_user_msg</span>.<span class="ident">hostname</span>))
+        .<span class="ident">user_exists</span>(<span class="ident">add_user_msg</span>.<span class="ident">username</span>, <span class="prelude-val">Some</span>(<span class="kw-2">&amp;</span><span class="ident">add_user_msg</span>.<span class="ident">url</span>))
         .<span class="kw">await</span>
         .<span class="ident">unwrap</span>());
 }
 
 <span class="doccomment">/// test if all forge type implementations are loaded into DB</span>
 <span class="kw">pub</span> <span class="kw">async</span> <span class="kw">fn</span> <span class="ident">forge_type_exists_helper</span><span class="op">&lt;</span><span class="ident">T</span>: <span class="ident">SCDatabase</span><span class="op">&gt;</span>(<span class="ident">db</span>: <span class="kw-2">&amp;</span><span class="ident">T</span>) {
-    <span class="kw">for</span> <span class="ident">f</span> <span class="kw">in</span> [<span class="ident">ForgeImplementation::Gitea</span>].<span class="ident">iter</span>() {
-        <span class="macro">println!</span>(<span class="string">&quot;Testing forge implementation exists for: {}&quot;</span>, <span class="ident">f</span>.<span class="ident">to_str</span>());
-        <span class="macro">assert!</span>(<span class="ident">db</span>.<span class="ident">forge_type_exists</span>(<span class="ident">f</span>).<span class="kw">await</span>.<span class="ident">unwrap</span>());
-    }
+    <span class="comment">//for f in [ForgeImplementation::Gitea].iter() {</span>
+    <span class="comment">//let f = For</span>
+    <span class="kw">let</span> <span class="ident">f</span> <span class="op">=</span> <span class="ident">ForgeImplementation::Gitea</span>;
+    <span class="macro">println!</span>(<span class="string">&quot;Testing forge implementation exists for: {}&quot;</span>, <span class="ident">f</span>.<span class="ident">to_str</span>());
+    <span class="macro">assert!</span>(<span class="ident">db</span>.<span class="ident">forge_type_exists</span>(<span class="kw-2">&amp;</span><span class="ident">f</span>).<span class="kw">await</span>.<span class="ident">unwrap</span>());
 }
 </code></pre></div>
 </section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="db_core" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.62.0 (a8314ef7d 2022-06-27)" ></div>

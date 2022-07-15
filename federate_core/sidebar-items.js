@@ -1,1 +1,1 @@
-initSidebarItems({"mod":[["tests","Test utilities"]],"trait":[["Federate",""]]});
+initSidebarItems({"fn":[["get_hostname",""]],"mod":[["tests","Test utilities"]],"trait":[["Federate",""]]});

@@ -159,6 +159,7 @@
 <span id="154">154</span>
 <span id="155">155</span>
 <span id="156">156</span>
+<span id="157">157</span>
 </pre><pre class="rust"><code><span class="comment">/*
  * ForgeFlux StarChart - A federated software forge spider
  * Copyright (C) 2022  Aravinth Manivannan &lt;realaravinth@batsense.net&gt;
@@ -292,10 +293,11 @@
     <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">not</span>(<span class="ident">tarpaulin_include</span>))]</span>
     <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">e</span>: <span class="ident">DBError</span>) -&gt; <span class="ident">ServiceError</span> {
         <span class="macro">println!</span>(<span class="string">&quot;from conversin: {}&quot;</span>, <span class="ident">e</span>);
-        <span class="kw">match</span> <span class="ident">e</span> {
-            <span class="comment">// TODO: resolve all errors to ServiceError::*</span>
-            <span class="kw">_</span> =&gt; <span class="ident">ServiceError::DBError</span>(<span class="ident">DBErrorWrapper</span>(<span class="ident">e</span>)),
-        }
+        <span class="ident">ServiceError::DBError</span>(<span class="ident">DBErrorWrapper</span>(<span class="ident">e</span>))
+        <span class="comment">//        match e {</span>
+        <span class="comment">//            // TODO: resolve all errors to ServiceError::*</span>
+        <span class="comment">//            _ =&gt; ServiceError::DBError(DBErrorWrapper(e)),</span>
+        <span class="comment">//        }</span>
     }
 }
 

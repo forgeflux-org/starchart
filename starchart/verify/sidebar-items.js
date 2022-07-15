@@ -1,1 +1,1 @@
-initSidebarItems({"constant":[["KEY_LEN",""],["VALUES_LEN",""]],"struct":[["TXTChallenge",""]]});
+initSidebarItems({"constant":[["VALUES_LEN",""]],"struct":[["TXTChallenge",""]]});

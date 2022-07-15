@@ -92,7 +92,7 @@
     <span class="kw">use</span> <span class="kw">super</span>::<span class="kw-2">*</span>;
 
     <span class="macro">lazy_static!</span> {
-        <span class="kw">pub</span> <span class="kw">static</span> <span class="kw-2">ref</span> <span class="ident">ASSETS</span>: <span class="ident">Assets</span> <span class="op">=</span> <span class="ident">Assets::new</span>();
+        <span class="kw">pub</span> <span class="kw">static</span> <span class="kw-2">ref</span> <span class="ident">ASSETS</span>: <span class="ident">Assets</span> <span class="op">=</span> <span class="ident">Assets::default</span>();
     }
 
     <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Serialize</span>)]</span>
@@ -102,9 +102,9 @@
         <span class="kw">pub</span> <span class="ident">css</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static</span> <span class="ident">str</span>,
     }
 
-    <span class="kw">impl</span> <span class="ident">Assets</span> {
+    <span class="kw">impl</span> <span class="ident">Default</span> <span class="kw">for</span> <span class="ident">Assets</span> {
         <span class="doccomment">/// create new instance of Routes</span>
-        <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>() -&gt; <span class="ident">Assets</span> {
+        <span class="kw">fn</span> <span class="ident">default</span>() -&gt; <span class="ident">Assets</span> {
             <span class="ident">Assets</span> {
                 <span class="ident">css</span>: <span class="kw-2">&amp;</span><span class="ident">static_files::assets::CSS</span>,
             }

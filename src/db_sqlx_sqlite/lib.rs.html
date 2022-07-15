@@ -591,6 +591,26 @@
 <span id="586">586</span>
 <span id="587">587</span>
 <span id="588">588</span>
+<span id="589">589</span>
+<span id="590">590</span>
+<span id="591">591</span>
+<span id="592">592</span>
+<span id="593">593</span>
+<span id="594">594</span>
+<span id="595">595</span>
+<span id="596">596</span>
+<span id="597">597</span>
+<span id="598">598</span>
+<span id="599">599</span>
+<span id="600">600</span>
+<span id="601">601</span>
+<span id="602">602</span>
+<span id="603">603</span>
+<span id="604">604</span>
+<span id="605">605</span>
+<span id="606">606</span>
+<span id="607">607</span>
+<span id="608">608</span>
 </pre><pre class="rust"><code><span class="comment">/*
  * ForgeFlux StarChart - A federated software forge spider
  * Copyright (C) 2022  Aravinth Manivannan &lt;realaravinth@batsense.net&gt;
@@ -615,6 +635,7 @@
 <span class="kw">use</span> <span class="ident">sqlx::sqlite::SqlitePool</span>;
 <span class="kw">use</span> <span class="ident">sqlx::sqlite::SqlitePoolOptions</span>;
 <span class="kw">use</span> <span class="ident">sqlx::types::time::OffsetDateTime</span>;
+<span class="kw">use</span> <span class="ident">url::Url</span>;
 
 <span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">errors</span>;
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">test</span>)]</span>
@@ -705,26 +726,25 @@
     }
 
     <span class="doccomment">/// delete forge instance</span>
-    <span class="kw">async</span> <span class="kw">fn</span> <span class="ident">delete_forge_instance</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">hostname</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) -&gt; <span class="ident">DBResult</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
-        <span class="macro">sqlx::query!</span>(
-            <span class="string">&quot;DELETE FROM starchart_forges WHERE hostname = ($1)&quot;</span>,
-            <span class="ident">hostname</span>,
-        )
-        .<span class="ident">execute</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">pool</span>)
-        .<span class="kw">await</span>
-        .<span class="ident">map_err</span>(<span class="op">|</span><span class="ident">e</span><span class="op">|</span> <span class="ident">DBError::DBError</span>(<span class="ident">Box::new</span>(<span class="ident">e</span>)))<span class="question-mark">?</span>;
+    <span class="kw">async</span> <span class="kw">fn</span> <span class="ident">delete_forge_instance</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">url</span>: <span class="kw-2">&amp;</span><span class="ident">Url</span>) -&gt; <span class="ident">DBResult</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
+        <span class="kw">let</span> <span class="ident">url</span> <span class="op">=</span> <span class="ident">db_core::clean_url</span>(<span class="ident">url</span>);
+        <span class="macro">sqlx::query!</span>(<span class="string">&quot;DELETE FROM starchart_forges WHERE hostname = ($1)&quot;</span>, <span class="ident">url</span>,)
+            .<span class="ident">execute</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">pool</span>)
+            .<span class="kw">await</span>
+            .<span class="ident">map_err</span>(<span class="op">|</span><span class="ident">e</span><span class="op">|</span> <span class="ident">DBError::DBError</span>(<span class="ident">Box::new</span>(<span class="ident">e</span>)))<span class="question-mark">?</span>;
         <span class="prelude-val">Ok</span>(())
     }
 
     <span class="doccomment">/// create forge instance DB</span>
     <span class="kw">async</span> <span class="kw">fn</span> <span class="ident">create_forge_instance</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">f</span>: <span class="kw-2">&amp;</span><span class="ident">CreateForge</span>) -&gt; <span class="ident">DBResult</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="ident">now</span> <span class="op">=</span> <span class="ident">now_unix_time_stamp</span>();
+        <span class="kw">let</span> <span class="ident">url</span> <span class="op">=</span> <span class="ident">db_core::clean_url</span>(<span class="kw-2">&amp;</span><span class="ident">f</span>.<span class="ident">url</span>);
         <span class="kw">let</span> <span class="ident">forge_type</span> <span class="op">=</span> <span class="ident">f</span>.<span class="ident">forge_type</span>.<span class="ident">to_str</span>();
         <span class="macro">sqlx::query!</span>(
             <span class="string">&quot;INSERT INTO
             starchart_forges (hostname, verified_on, forge_type ) 
         VALUES ($1, $2, (SELECT ID FROM starchart_forge_type WHERE name = $3))&quot;</span>,
-            <span class="ident">f</span>.<span class="ident">hostname</span>,
+            <span class="ident">url</span>,
             <span class="ident">now</span>,
             <span class="ident">forge_type</span>,
         )
@@ -736,7 +756,8 @@
     }
 
     <span class="doccomment">/// get forge instance data</span>
-    <span class="kw">async</span> <span class="kw">fn</span> <span class="ident">get_forge</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">hostname</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) -&gt; <span class="ident">DBResult</span><span class="op">&lt;</span><span class="ident">Forge</span><span class="op">&gt;</span> {
+    <span class="kw">async</span> <span class="kw">fn</span> <span class="ident">get_forge</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">url</span>: <span class="kw-2">&amp;</span><span class="ident">Url</span>) -&gt; <span class="ident">DBResult</span><span class="op">&lt;</span><span class="ident">Forge</span><span class="op">&gt;</span> {
+        <span class="kw">let</span> <span class="ident">url</span> <span class="op">=</span> <span class="ident">db_core::clean_url</span>(<span class="ident">url</span>);
         <span class="kw">let</span> <span class="ident">f</span> <span class="op">=</span> <span class="macro">sqlx::query_as!</span>(
             <span class="ident">InnerForge</span>,
             <span class="string">&quot;SELECT 
@@ -752,7 +773,7 @@
         WHERE
             hostname = $1;
             &quot;</span>,
-            <span class="ident">hostname</span>,
+            <span class="ident">url</span>,
         )
         .<span class="ident">fetch_one</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">pool</span>)
         .<span class="kw">await</span>
@@ -793,13 +814,11 @@
     }
 
     <span class="doccomment">/// check if a forge instance exists</span>
-    <span class="kw">async</span> <span class="kw">fn</span> <span class="ident">forge_exists</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">hostname</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) -&gt; <span class="ident">DBResult</span><span class="op">&lt;</span><span class="ident">bool</span><span class="op">&gt;</span> {
-        <span class="kw">match</span> <span class="macro">sqlx::query!</span>(
-            <span class="string">&quot;SELECT ID FROM starchart_forges WHERE hostname = $1&quot;</span>,
-            <span class="ident">hostname</span>
-        )
-        .<span class="ident">fetch_one</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">pool</span>)
-        .<span class="kw">await</span>
+    <span class="kw">async</span> <span class="kw">fn</span> <span class="ident">forge_exists</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">url</span>: <span class="kw-2">&amp;</span><span class="ident">Url</span>) -&gt; <span class="ident">DBResult</span><span class="op">&lt;</span><span class="ident">bool</span><span class="op">&gt;</span> {
+        <span class="kw">let</span> <span class="ident">url</span> <span class="op">=</span> <span class="ident">db_core::clean_url</span>(<span class="ident">url</span>);
+        <span class="kw">match</span> <span class="macro">sqlx::query!</span>(<span class="string">&quot;SELECT ID FROM starchart_forges WHERE hostname = $1&quot;</span>, <span class="ident">url</span>)
+            .<span class="ident">fetch_one</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">pool</span>)
+            .<span class="kw">await</span>
         {
             <span class="prelude-val">Ok</span>(<span class="kw">_</span>) =&gt; <span class="prelude-val">Ok</span>(<span class="bool-val">true</span>),
             <span class="prelude-val">Err</span>(<span class="ident">Error::RowNotFound</span>) =&gt; <span class="prelude-val">Ok</span>(<span class="bool-val">false</span>),
@@ -825,6 +844,7 @@
     <span class="doccomment">/// add new user to database</span>
     <span class="kw">async</span> <span class="kw">fn</span> <span class="ident">add_user</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">u</span>: <span class="kw-2">&amp;</span><span class="ident">AddUser</span>) -&gt; <span class="ident">DBResult</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="ident">now</span> <span class="op">=</span> <span class="ident">now_unix_time_stamp</span>();
+        <span class="kw">let</span> <span class="ident">url</span> <span class="op">=</span> <span class="ident">db_core::clean_url</span>(<span class="kw-2">&amp;</span><span class="ident">u</span>.<span class="ident">url</span>);
         <span class="macro">sqlx::query!</span>(
             <span class="string">&quot;INSERT INTO 
                     starchart_users (
@@ -833,7 +853,7 @@
                     ) 
             VALUES (
                     (SELECT ID FROM starchart_forges WHERE hostname = $1), $2, $3, $4, $5, $6)&quot;</span>,
-            <span class="ident">u</span>.<span class="ident">hostname</span>,
+            <span class="ident">url</span>,
             <span class="ident">u</span>.<span class="ident">username</span>,
             <span class="ident">u</span>.<span class="ident">html_link</span>,
             <span class="ident">u</span>.<span class="ident">profile_photo</span>,
@@ -848,46 +868,51 @@
     }
 
     <span class="doccomment">/// get user data</span>
-    <span class="kw">async</span> <span class="kw">fn</span> <span class="ident">get_user</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">username</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>, <span class="ident">hostname</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) -&gt; <span class="ident">DBResult</span><span class="op">&lt;</span><span class="ident">User</span><span class="op">&gt;</span> {
+    <span class="kw">async</span> <span class="kw">fn</span> <span class="ident">get_user</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">username</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>, <span class="ident">url</span>: <span class="kw-2">&amp;</span><span class="ident">Url</span>) -&gt; <span class="ident">DBResult</span><span class="op">&lt;</span><span class="ident">User</span><span class="op">&gt;</span> {
         <span class="kw">struct</span> <span class="ident">InnerUser</span> {
             <span class="ident">profile_photo_html_url</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>,
             <span class="ident">html_url</span>: <span class="ident">String</span>,
         }
+
+        <span class="kw">let</span> <span class="ident">url</span> <span class="op">=</span> <span class="ident">db_core::clean_url</span>(<span class="ident">url</span>);
         <span class="kw">let</span> <span class="ident">res</span> <span class="op">=</span> <span class="macro">sqlx::query_as!</span>(
             <span class="ident">InnerUser</span>,
             <span class="string">&quot;SELECT html_url, profile_photo_html_url FROM starchart_users WHERE username = $1 AND 
                 hostname_id = (SELECT ID FROM starchart_forges WHERE hostname = $2)&quot;</span>,
             <span class="ident">username</span>,
-            <span class="ident">hostname</span>,
+            <span class="ident">url</span>,
         )
         .<span class="ident">fetch_one</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">pool</span>)
         .<span class="kw">await</span>
         .<span class="ident">map_err</span>(<span class="op">|</span><span class="ident">e</span><span class="op">|</span> <span class="ident">DBError::DBError</span>(<span class="ident">Box::new</span>(<span class="ident">e</span>)))<span class="question-mark">?</span>;
         <span class="prelude-val">Ok</span>(<span class="ident">User</span> {
             <span class="ident">username</span>: <span class="ident">username</span>.<span class="ident">into</span>(),
-            <span class="ident">hostname</span>: <span class="ident">hostname</span>.<span class="ident">into</span>(),
+            <span class="ident">url</span>,
             <span class="ident">profile_photo</span>: <span class="ident">res</span>.<span class="ident">profile_photo_html_url</span>,
             <span class="ident">html_link</span>: <span class="ident">res</span>.<span class="ident">html_url</span>,
         })
     }
 
-    <span class="doccomment">/// check if an user exists. When hostname of a forge instace is provided, username search is</span>
+    <span class="doccomment">/// check if an user exists. When url of a forge instace is provided, username search is</span>
     <span class="doccomment">/// done only on that forge</span>
-    <span class="kw">async</span> <span class="kw">fn</span> <span class="ident">user_exists</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">username</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>, <span class="ident">hostname</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">str</span><span class="op">&gt;</span>) -&gt; <span class="ident">DBResult</span><span class="op">&lt;</span><span class="ident">bool</span><span class="op">&gt;</span> {
-        <span class="kw">match</span> <span class="ident">hostname</span> {
-            <span class="prelude-val">Some</span>(<span class="ident">hostname</span>) =&gt; <span class="kw">match</span> <span class="macro">sqlx::query!</span>(
-                <span class="string">&quot;SELECT ID FROM starchart_users WHERE username = $1 AND 
+    <span class="kw">async</span> <span class="kw">fn</span> <span class="ident">user_exists</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">username</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>, <span class="ident">url</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">Url</span><span class="op">&gt;</span>) -&gt; <span class="ident">DBResult</span><span class="op">&lt;</span><span class="ident">bool</span><span class="op">&gt;</span> {
+        <span class="kw">match</span> <span class="ident">url</span> {
+            <span class="prelude-val">Some</span>(<span class="ident">url</span>) =&gt; {
+                <span class="kw">let</span> <span class="ident">url</span> <span class="op">=</span> <span class="ident">db_core::clean_url</span>(<span class="ident">url</span>);
+                <span class="kw">match</span> <span class="macro">sqlx::query!</span>(
+                    <span class="string">&quot;SELECT ID FROM starchart_users WHERE username = $1 AND 
                 hostname_id = (SELECT ID FROM starchart_forges WHERE hostname = $2)&quot;</span>,
-                <span class="ident">username</span>,
-                <span class="ident">hostname</span>,
-            )
-            .<span class="ident">fetch_one</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">pool</span>)
-            .<span class="kw">await</span>
-            {
-                <span class="prelude-val">Ok</span>(<span class="kw">_</span>) =&gt; <span class="prelude-val">Ok</span>(<span class="bool-val">true</span>),
-                <span class="prelude-val">Err</span>(<span class="ident">Error::RowNotFound</span>) =&gt; <span class="prelude-val">Ok</span>(<span class="bool-val">false</span>),
-                <span class="prelude-val">Err</span>(<span class="ident">e</span>) =&gt; <span class="prelude-val">Err</span>(<span class="ident">DBError::DBError</span>(<span class="ident">Box::new</span>(<span class="ident">e</span>).<span class="ident">into</span>())),
-            },
+                    <span class="ident">username</span>,
+                    <span class="ident">url</span>,
+                )
+                .<span class="ident">fetch_one</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">pool</span>)
+                .<span class="kw">await</span>
+                {
+                    <span class="prelude-val">Ok</span>(<span class="kw">_</span>) =&gt; <span class="prelude-val">Ok</span>(<span class="bool-val">true</span>),
+                    <span class="prelude-val">Err</span>(<span class="ident">Error::RowNotFound</span>) =&gt; <span class="prelude-val">Ok</span>(<span class="bool-val">false</span>),
+                    <span class="prelude-val">Err</span>(<span class="ident">e</span>) =&gt; <span class="prelude-val">Err</span>(<span class="ident">DBError::DBError</span>(<span class="ident">Box::new</span>(<span class="ident">e</span>).<span class="ident">into</span>())),
+                }
+            }
             <span class="prelude-val">None</span> =&gt; <span class="kw">match</span> <span class="macro">sqlx::query!</span>(
                 <span class="string">&quot;SELECT ID FROM starchart_users WHERE username = $1&quot;</span>,
                 <span class="ident">username</span>
@@ -903,7 +928,8 @@
     }
 
     <span class="doccomment">/// check if a repo exists.</span>
-    <span class="kw">async</span> <span class="kw">fn</span> <span class="ident">repository_exists</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">name</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>, <span class="ident">owner</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>, <span class="ident">hostname</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) -&gt; <span class="ident">DBResult</span><span class="op">&lt;</span><span class="ident">bool</span><span class="op">&gt;</span> {
+    <span class="kw">async</span> <span class="kw">fn</span> <span class="ident">repository_exists</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">name</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>, <span class="ident">owner</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>, <span class="ident">url</span>: <span class="kw-2">&amp;</span><span class="ident">Url</span>) -&gt; <span class="ident">DBResult</span><span class="op">&lt;</span><span class="ident">bool</span><span class="op">&gt;</span> {
+        <span class="kw">let</span> <span class="ident">url</span> <span class="op">=</span> <span class="ident">db_core::clean_url</span>(<span class="ident">url</span>);
         <span class="kw">match</span> <span class="macro">sqlx::query!</span>(
             <span class="string">&quot;SELECT ID FROM starchart_repositories
                     WHERE 
@@ -914,7 +940,7 @@
                         hostname_id = (SELECT ID FROM starchart_forges WHERE hostname = $3)&quot;</span>,
             <span class="ident">name</span>,
             <span class="ident">owner</span>,
-            <span class="ident">hostname</span>,
+            <span class="ident">url</span>,
         )
         .<span class="ident">fetch_one</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">pool</span>)
         .<span class="kw">await</span>
@@ -929,6 +955,7 @@
     <span class="kw">async</span> <span class="kw">fn</span> <span class="ident">create_repository</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">r</span>: <span class="kw-2">&amp;</span><span class="ident">AddRepository</span>) -&gt; <span class="ident">DBResult</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
         <span class="comment">//        unimplemented!()</span>
         <span class="kw">let</span> <span class="ident">now</span> <span class="op">=</span> <span class="ident">now_unix_time_stamp</span>();
+        <span class="kw">let</span> <span class="ident">url</span> <span class="op">=</span> <span class="ident">db_core::clean_url</span>(<span class="kw-2">&amp;</span><span class="ident">r</span>.<span class="ident">url</span>);
         <span class="macro">sqlx::query!</span>(
             <span class="string">&quot;INSERT INTO 
                 starchart_repositories (
@@ -939,7 +966,7 @@
                     (SELECT ID FROM starchart_users WHERE username = $2),
                     $3, $4, $5, $6, $7, $8
                 );&quot;</span>,
-            <span class="ident">r</span>.<span class="ident">hostname</span>,
+            <span class="ident">url</span>,
             <span class="ident">r</span>.<span class="ident">owner</span>,
             <span class="ident">r</span>.<span class="ident">name</span>,
             <span class="ident">r</span>.<span class="ident">description</span>,
@@ -982,12 +1009,13 @@
     }
 
     <span class="doccomment">/// delete user</span>
-    <span class="kw">async</span> <span class="kw">fn</span> <span class="ident">delete_user</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">username</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>, <span class="ident">hostname</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) -&gt; <span class="ident">DBResult</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
+    <span class="kw">async</span> <span class="kw">fn</span> <span class="ident">delete_user</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">username</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>, <span class="ident">url</span>: <span class="kw-2">&amp;</span><span class="ident">Url</span>) -&gt; <span class="ident">DBResult</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
+        <span class="kw">let</span> <span class="ident">url</span> <span class="op">=</span> <span class="ident">db_core::clean_url</span>(<span class="ident">url</span>);
         <span class="macro">sqlx::query!</span>(
             <span class="string">&quot; DELETE FROM starchart_users WHERE username = $1 AND 
                 hostname_id = (SELECT ID FROM starchart_forges WHERE hostname = $2)&quot;</span>,
             <span class="ident">username</span>,
-            <span class="ident">hostname</span>
+            <span class="ident">url</span>
         )
         .<span class="ident">execute</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">pool</span>)
         .<span class="kw">await</span>
@@ -996,7 +1024,8 @@
     }
 
     <span class="doccomment">/// delete repository</span>
-    <span class="kw">async</span> <span class="kw">fn</span> <span class="ident">delete_repository</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">owner</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>, <span class="ident">name</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>, <span class="ident">hostname</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) -&gt; <span class="ident">DBResult</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
+    <span class="kw">async</span> <span class="kw">fn</span> <span class="ident">delete_repository</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">owner</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>, <span class="ident">name</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>, <span class="ident">url</span>: <span class="kw-2">&amp;</span><span class="ident">Url</span>) -&gt; <span class="ident">DBResult</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
+        <span class="kw">let</span> <span class="ident">url</span> <span class="op">=</span> <span class="ident">db_core::clean_url</span>(<span class="ident">url</span>);
         <span class="macro">sqlx::query!</span>(
             <span class="string">&quot; DELETE FROM starchart_repositories
                     WHERE 
@@ -1007,7 +1036,7 @@
                         hostname_id = (SELECT ID FROM starchart_forges WHERE hostname = $3)&quot;</span>,
             <span class="ident">name</span>,
             <span class="ident">owner</span>,
-            <span class="ident">hostname</span>
+            <span class="ident">url</span>
         )
         .<span class="ident">execute</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">pool</span>)
         .<span class="kw">await</span>
@@ -1030,14 +1059,24 @@
     }
 
     <span class="kw">async</span> <span class="kw">fn</span> <span class="ident">get_dns_challenge</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">key</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) -&gt; <span class="ident">DBResult</span><span class="op">&lt;</span><span class="ident">Challenge</span><span class="op">&gt;</span> {
+        <span class="kw">struct</span> <span class="ident">InnerChallenge</span> {
+            <span class="ident">hostname</span>: <span class="ident">String</span>,
+            <span class="ident">key</span>: <span class="ident">String</span>,
+            <span class="ident">value</span>: <span class="ident">String</span>,
+        }
         <span class="kw">let</span> <span class="ident">res</span> <span class="op">=</span> <span class="macro">sqlx::query_as!</span>(
-            <span class="ident">Challenge</span>,
+            <span class="ident">InnerChallenge</span>,
             <span class="string">&quot;SELECT key, value, hostname FROM starchart_dns_challenges WHERE key = $1&quot;</span>,
             <span class="ident">key</span>
         )
         .<span class="ident">fetch_one</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">pool</span>)
         .<span class="kw">await</span>
         .<span class="ident">map_err</span>(<span class="op">|</span><span class="ident">e</span><span class="op">|</span> <span class="ident">DBError::DBError</span>(<span class="ident">Box::new</span>(<span class="ident">e</span>)))<span class="question-mark">?</span>;
+        <span class="kw">let</span> <span class="ident">res</span> <span class="op">=</span> <span class="ident">Challenge</span> {
+            <span class="ident">url</span>: <span class="ident">res</span>.<span class="ident">hostname</span>,
+            <span class="ident">key</span>: <span class="ident">res</span>.<span class="ident">key</span>,
+            <span class="ident">value</span>: <span class="ident">res</span>.<span class="ident">value</span>,
+        };
         <span class="prelude-val">Ok</span>(<span class="ident">res</span>)
     }
 
@@ -1056,7 +1095,7 @@
             <span class="string">&quot;INSERT INTO
             starchart_dns_challenges (hostname, value, key, created ) 
         VALUES ($1, $2, $3, $4);&quot;</span>,
-            <span class="ident">challenge</span>.<span class="ident">hostname</span>,
+            <span class="ident">challenge</span>.<span class="ident">url</span>,
             <span class="ident">challenge</span>.<span class="ident">value</span>,
             <span class="ident">challenge</span>.<span class="ident">key</span>,
             <span class="ident">now</span>,
@@ -1070,11 +1109,12 @@
 
     <span class="doccomment">/// Get all repositories</span>
     <span class="kw">async</span> <span class="kw">fn</span> <span class="ident">get_all_repositories</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">offset</span>: <span class="ident">u32</span>, <span class="ident">limit</span>: <span class="ident">u32</span>) -&gt; <span class="ident">DBResult</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Repository</span><span class="op">&gt;</span><span class="op">&gt;</span> {
+        <span class="attribute">#[<span class="ident">allow</span>(<span class="ident">non_snake_case</span>)]</span>
         <span class="kw">struct</span> <span class="ident">InnerRepository</span> {
             <span class="doccomment">/// html link to the repository</span>
             <span class="kw">pub</span> <span class="ident">html_url</span>: <span class="ident">String</span>,
-            <span class="doccomment">/// hostname of the forge instance: with scheme but remove trailing slash</span>
-            <span class="doccomment">/// hostname can be derived  from html_link also, but used to link to user&#39;s forge instance</span>
+            <span class="doccomment">/// url of the forge instance: with scheme but remove trailing slash</span>
+            <span class="doccomment">/// url can be derived  from html_link also, but used to link to user&#39;s forge instance</span>
             <span class="kw">pub</span> <span class="ident">hostname</span>: <span class="ident">String</span>,
             <span class="doccomment">/// repository name</span>
             <span class="kw">pub</span> <span class="ident">name</span>: <span class="ident">String</span>,
@@ -1147,7 +1187,7 @@ LIMIT $1 OFFSET $2
             };
             <span class="ident">res</span>.<span class="ident">push</span>(<span class="ident">Repository</span> {
                 <span class="ident">html_url</span>: <span class="ident">repo</span>.<span class="ident">html_url</span>,
-                <span class="ident">hostname</span>: <span class="ident">repo</span>.<span class="ident">hostname</span>,
+                <span class="ident">url</span>: <span class="ident">repo</span>.<span class="ident">hostname</span>,
                 <span class="ident">name</span>: <span class="ident">repo</span>.<span class="ident">name</span>,
                 <span class="ident">username</span>: <span class="ident">repo</span>.<span class="ident">username</span>,
                 <span class="ident">description</span>: <span class="ident">repo</span>.<span class="ident">description</span>,
@@ -1173,7 +1213,7 @@ LIMIT $1 OFFSET $2
 <span class="kw">impl</span> <span class="ident">From</span><span class="op">&lt;</span><span class="ident">InnerForge</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">Forge</span> {
     <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">f</span>: <span class="ident">InnerForge</span>) -&gt; <span class="self">Self</span> {
         <span class="self">Self</span> {
-            <span class="ident">hostname</span>: <span class="ident">f</span>.<span class="ident">hostname</span>,
+            <span class="ident">url</span>: <span class="ident">f</span>.<span class="ident">hostname</span>,
             <span class="ident">last_crawl_on</span>: <span class="ident">f</span>.<span class="ident">last_crawl_on</span>,
             <span class="ident">forge_type</span>: <span class="ident">ForgeImplementation::from_str</span>(<span class="kw-2">&amp;</span><span class="ident">f</span>.<span class="ident">name</span>).<span class="ident">unwrap</span>(),
         }
