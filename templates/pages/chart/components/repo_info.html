@@ -1,7 +1,7 @@
-{% set name = repository.url ~ "/" ~ repository.username ~ "/" ~ repository.name %}
+{% set name = repository.html_url %}
 <div class="repository__container">
 
-  <h3><a href="/{{ name }}">{{ name }}</a></h3>
+  <h3><a href="{{ repository.html_url }}">{{ repository.html_url }}</a></h3>
 
   {% if repository.description %}
     <p>{{ repository.description }}</p>
@@ -15,7 +15,9 @@
     {% endif %}
   </div>
 
+  <!--
   <a class="" href="{{ repository.html_url }}" target="_blank">On {{ repository.url }}</a>
+  -->
   {% if repository.website %}
     <a href="{{ repository.website }}" target="_blank">Homeage</a>
   {% endif %}
