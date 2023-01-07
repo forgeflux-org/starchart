@@ -256,4 +256,44 @@ impl Federate for PccFederate {
 
         Ok(path)
     }
+
+    /// get latest tar ball
+    async fn latest_tar(&self) -> Result<PathBuf, Self::Error> {
+        use std::fs::File;
+        use std::time::{SystemTime, UNIX_EPOCH};
+
+        use tar::Builder;
+
+        let now = SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .unwrap()
+            .as_secs();
+
+        let path = Path::new(&self.base_dir).join(format!("{now}.tar"));
+        let file = File::create(&path)?;
+        let mut a = Builder::new(file);
+        a.append_dir_all(".", self.get_content_path(false).await?)
+            .unwrap();
+        a.finish().unwrap();
+
+        let mut times: Vec<usize> = Vec::with_capacity(10);
+        let mut dir = fs::read_dir(Path::new(&self.base_dir)).await?;
+        while let Some(d) = dir.next_entry().await? {
+            if d.path().is_dir() {
+                continue;
+            }
+            let file = d.file_name().into_string().unwrap();
+            if file.ends_with(".tar") {
+                if let Some(time) = file.split(".tar").next() {
+                    times.push(time.parse::<usize>().unwrap());
+                }
+            }
+        }
+
+        times.sort();
+
+        let latest = times.pop().unwrap();
+        let latest = Path::new(&self.base_dir).join(format!("{}.tar", latest.to_string()));
+        Ok(latest)
+    }
 }
