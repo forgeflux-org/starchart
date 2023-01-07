@@ -76,6 +76,9 @@ pub trait Federate: Sync + Send {
 
     /// publish results in tar ball
     async fn tar(&self) -> Result<PathBuf, Self::Error>;
+
+    /// get latest tar ball
+    async fn latest_tar(&self) -> Result<PathBuf, Self::Error>;
 }
 
 pub fn get_hostname(url: &Url) -> &str {
