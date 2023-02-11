@@ -258,7 +258,7 @@ impl Federate for PccFederate {
     }
 
     /// get latest tar ball
-    async fn latest_tar(&self) -> Result<PathBuf, Self::Error> {
+    async fn latest_tar(&self) -> Result<String, Self::Error> {
         use std::fs::File;
         use std::time::{SystemTime, UNIX_EPOCH};
 
@@ -293,7 +293,6 @@ impl Federate for PccFederate {
         times.sort();
 
         let latest = times.pop().unwrap();
-        let latest = Path::new(&self.base_dir).join(format!("{}.tar", latest.to_string()));
-        Ok(latest)
+        Ok(format!("{}.tar", latest))
     }
 }

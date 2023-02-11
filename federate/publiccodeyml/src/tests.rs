@@ -37,6 +37,7 @@ async fn everything_works() {
     let create_forge_msg = CreateForge {
         url: url.clone(),
         forge_type: ForgeImplementation::Gitea,
+        import: false,
     };
 
     let add_user_msg = AddUser {
@@ -44,6 +45,7 @@ async fn everything_works() {
         html_link: HTML_PROFILE_URL,
         profile_photo: None,
         username: USERNAME,
+        import: false,
     };
 
     let add_repo_msg = AddRepository {
@@ -54,6 +56,7 @@ async fn everything_works() {
         website: None,
         description: None,
         url: url.clone(),
+        import: false,
     };
 
     let pcc = PccFederate::new(tmp_dir.to_str().unwrap().to_string())

@@ -53,9 +53,9 @@ pub async fn adding_forge_works<'a, T: Federate>(
         .unwrap());
 
     // tar()
-    let tar = ff.tar().await.unwrap();
+    let tar = ff.tar().await.unwrap().to_str().unwrap().to_string();
     let latest = ff.latest_tar().await.unwrap();
-    assert_eq!(tar, latest);
+    assert!(tar.contains(&latest));
 
     // delete repository
     ff.delete_repository(add_repo_msg.owner, add_repo_msg.name, &add_repo_msg.url)
