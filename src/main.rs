@@ -22,6 +22,7 @@ use actix_web::{middleware, web::Data, App, HttpServer};
 use lazy_static::lazy_static;
 use tokio::sync::oneshot;
 
+pub mod api;
 pub mod ctx;
 pub mod db;
 pub mod dns;
@@ -82,7 +83,6 @@ async fn main() {
     let crawler_fut = tokio::spawn(spider::Crawler::start(crawler.clone()));
     let ctx = WebCtx::new(ctx);
     let socket_addr = settings.server.get_ip();
-
     HttpServer::new(move || {
         App::new()
             .wrap(middleware::Logger::default())

@@ -17,6 +17,7 @@
  */
 
 pub fn services(cfg: &mut actix_web::web::ServiceConfig) {
+    crate::api::services(cfg);
     crate::pages::services(cfg);
     crate::static_assets::services(cfg);
 }
