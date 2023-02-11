@@ -129,11 +129,12 @@ impl SCDatabase for Database {
         let forge_type = f.forge_type.to_str();
         sqlx::query!(
             "INSERT INTO
-            starchart_forges (hostname, verified_on, forge_type ) 
-        VALUES ($1, $2, (SELECT ID FROM starchart_forge_type WHERE name = $3))",
+            starchart_forges (hostname, verified_on, forge_type, imported) 
+            VALUES ($1, $2, (SELECT ID FROM starchart_forge_type WHERE name = $3), $4)",
             url,
             now,
             forge_type,
+            f.import,
         )
         .execute(&self.pool)
         .await
@@ -148,17 +149,18 @@ impl SCDatabase for Database {
         let f = sqlx::query_as!(
             InnerForge,
             "SELECT 
-		hostname,
-		last_crawl_on,
-		starchart_forge_type.name
-        FROM
-            starchart_forges
-        INNER JOIN
-            starchart_forge_type
-        ON
-            starchart_forges.forge_type = starchart_forge_type.id
-        WHERE
-            hostname = $1;
+                hostname,
+                last_crawl_on,
+                imported,
+                starchart_forge_type.name
+            FROM
+                starchart_forges
+            INNER JOIN
+                starchart_forge_type
+            ON
+                starchart_forges.forge_type = starchart_forge_type.id
+            WHERE
+                hostname = $1;
             ",
             url,
         )
@@ -174,18 +176,19 @@ impl SCDatabase for Database {
         let mut inter_forges = sqlx::query_as!(
             InnerForge,
             "SELECT
-		hostname,
-		last_crawl_on,
-		starchart_forge_type.name
-        FROM
-            starchart_forges
-        INNER JOIN
-            starchart_forge_type
-        ON
-            starchart_forges.forge_type = starchart_forge_type.id
-    ORDER BY
-        starchart_forges.ID
-    LIMIT $1 OFFSET $2;
+                hostname,
+                last_crawl_on,
+                starchart_forge_type.name,
+                imported
+            FROM
+                starchart_forges
+            INNER JOIN
+                starchart_forge_type
+            ON
+                starchart_forges.forge_type = starchart_forge_type.id
+            ORDER BY
+                starchart_forges.ID
+            LIMIT $1 OFFSET $2;
         ",
             limit,
             offset
@@ -236,16 +239,17 @@ impl SCDatabase for Database {
             "INSERT INTO 
                     starchart_users (
                         hostname_id, username, html_url,
-                        profile_photo_html_url, added_on, last_crawl_on
+                        profile_photo_html_url, added_on, last_crawl_on, imported
                     ) 
             VALUES (
-                    (SELECT ID FROM starchart_forges WHERE hostname = $1), $2, $3, $4, $5, $6)",
+                    (SELECT ID FROM starchart_forges WHERE hostname = $1), $2, $3, $4, $5, $6, $7)",
             url,
             u.username,
             u.html_link,
             u.profile_photo,
             now,
-            now
+            now,
+            u.import
         )
         .execute(&self.pool)
         .await
@@ -259,12 +263,13 @@ impl SCDatabase for Database {
         struct InnerUser {
             profile_photo_html_url: Option<String>,
             html_url: String,
+            imported: bool,
         }
 
         let url = db_core::clean_url(url);
         let res = sqlx::query_as!(
             InnerUser,
-            "SELECT html_url, profile_photo_html_url FROM starchart_users WHERE username = $1 AND 
+            "SELECT html_url, profile_photo_html_url, imported FROM starchart_users WHERE username = $1 AND 
                 hostname_id = (SELECT ID FROM starchart_forges WHERE hostname = $2)",
             username,
             url,
@@ -277,6 +282,7 @@ impl SCDatabase for Database {
             url,
             profile_photo: res.profile_photo_html_url,
             html_link: res.html_url,
+            import: res.imported,
         })
     }
 
@@ -346,12 +352,13 @@ impl SCDatabase for Database {
         sqlx::query!(
             "INSERT INTO 
                 starchart_repositories (
-                    hostname_id, owner_id, name, description, html_url, website, created, last_crawl
+                    hostname_id, owner_id, name, description, html_url, website, created,
+                    last_crawl, imported
                 )
                 VALUES (
                     (SELECT ID FROM starchart_forges WHERE hostname = $1),
                     (SELECT ID FROM starchart_users WHERE username = $2),
-                    $3, $4, $5, $6, $7, $8
+                    $3, $4, $5, $6, $7, $8, $9
                 );",
             url,
             r.owner,
@@ -360,7 +367,8 @@ impl SCDatabase for Database {
             r.html_link,
             r.website,
             now,
-            now
+            now,
+            r.import,
         )
         .execute(&self.pool)
         .await
@@ -512,32 +520,34 @@ impl SCDatabase for Database {
             /// repository website, if any
             pub website: Option<String>,
             pub ID: i64,
+            pub imported: bool,
         }
 
         let mut db_res = sqlx::query_as!(
             InnerRepository,
-            "            SELECT 
-		starchart_forges.hostname,
-		starchart_users.username,
-		starchart_repositories.name,
-		starchart_repositories.description,
-		starchart_repositories.html_url,
-        starchart_repositories.ID,
-		starchart_repositories.website
-FROM
-	starchart_repositories
-INNER JOIN
-	starchart_forges
-ON
-	starchart_repositories.hostname_id = starchart_forges.id
-INNER JOIN
-	starchart_users
-ON
-	starchart_repositories.owner_id =  starchart_users.id
-ORDER BY
-	starchart_repositories.ID
-LIMIT $1 OFFSET $2
-;",
+            "SELECT 
+                starchart_forges.hostname,
+                starchart_users.username,
+                starchart_repositories.name,
+                starchart_repositories.description,
+                starchart_repositories.html_url,
+                starchart_repositories.ID,
+                starchart_repositories.website,
+                starchart_repositories.imported
+            FROM
+                starchart_repositories
+            INNER JOIN
+                starchart_forges
+            ON
+                starchart_repositories.hostname_id = starchart_forges.id
+            INNER JOIN
+                starchart_users
+            ON
+                starchart_repositories.owner_id =  starchart_users.id
+            ORDER BY
+                starchart_repositories.ID
+            LIMIT $1 OFFSET $2
+                ;",
             limit,
             offset,
         )
@@ -580,6 +590,7 @@ LIMIT $1 OFFSET $2
                 description: repo.description,
                 website: repo.website,
                 tags: topics,
+                import: repo.imported,
             });
         }
 
@@ -595,6 +606,7 @@ struct InnerForge {
     hostname: String,
     last_crawl_on: Option<i64>,
     name: String,
+    imported: bool,
 }
 
 impl From<InnerForge> for Forge {
@@ -603,6 +615,7 @@ impl From<InnerForge> for Forge {
             url: f.hostname,
             last_crawl_on: f.last_crawl_on,
             forge_type: ForgeImplementation::from_str(&f.name).unwrap(),
+            import: f.imported,
         }
     }
 }

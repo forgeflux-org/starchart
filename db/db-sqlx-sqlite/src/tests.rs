@@ -40,6 +40,7 @@ async fn everything_works() {
     let create_forge_msg = CreateForge {
         url: url.clone(),
         forge_type: ForgeImplementation::Gitea,
+        import: false,
     };
 
     let add_user_msg = AddUser {
@@ -47,6 +48,7 @@ async fn everything_works() {
         html_link: HTML_PROFILE_URL,
         profile_photo: None,
         username: USERNAME,
+        import: false,
     };
 
     let add_user_msg_2 = AddUser {
@@ -54,6 +56,7 @@ async fn everything_works() {
         html_link: HTML_PROFILE_PHOTO_URL_2,
         profile_photo: Some(HTML_PROFILE_PHOTO_URL_2),
         username: USERNAME2,
+        import: false,
     };
 
     let db = {
@@ -73,6 +76,7 @@ async fn everything_works() {
         website: None,
         description: None,
         url,
+        import: false,
     };
 
     adding_forge_works(

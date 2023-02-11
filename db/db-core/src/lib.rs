@@ -65,6 +65,8 @@ pub struct CreateForge {
     pub url: Url,
     /// forge type: which software is the instance running?
     pub forge_type: ForgeImplementation,
+    /// is this forge an import
+    pub import: bool,
 }
 
 /// Get url from URL
@@ -89,6 +91,8 @@ pub struct User {
     pub html_link: String,
     /// OPTIONAL: html link to the user's profile photo
     pub profile_photo: Option<String>,
+    /// is this user an import
+    pub import: bool,
 }
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
@@ -103,6 +107,8 @@ pub struct AddUser<'a> {
     pub html_link: &'a str,
     /// OPTIONAL: html link to the user's profile photo
     pub profile_photo: Option<&'a str>,
+    /// is this user an import
+    pub import: bool,
 }
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
@@ -123,6 +129,8 @@ pub struct AddRepository<'a> {
     pub description: Option<&'a str>,
     /// repository website, if any
     pub website: Option<&'a str>,
+    /// is this repository an import
+    pub import: bool,
 }
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
@@ -134,6 +142,8 @@ pub struct Forge {
     pub forge_type: ForgeImplementation,
     /// last crawl
     pub last_crawl_on: Option<i64>,
+    /// is this forge an import
+    pub import: bool,
 }
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
@@ -154,6 +164,8 @@ pub struct Repository {
     pub description: Option<String>,
     /// repository website, if any
     pub website: Option<String>,
+    /// is this repository an import
+    pub import: bool,
 }
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
