@@ -53,6 +53,7 @@ impl<'a> From<&'a User> for AddUser<'a> {
             username: u.username.as_str(),
             html_link: &u.html_link,
             profile_photo: u.profile_photo.as_deref(),
+            import: false,
         }
     }
 }
@@ -96,6 +97,7 @@ impl<'a> From<&'a Repository> for AddRepository<'a> {
             tags,
             html_link: &r.html_link,
             website: r.website.as_deref(),
+            import: false,
         }
     }
 }

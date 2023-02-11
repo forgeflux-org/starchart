@@ -60,23 +60,7 @@ impl PartialEq for Gitea {
 #[async_trait]
 impl SCForge for Gitea {
     async fn is_forge(&self) -> bool {
-        let mut url = self.instance_url.clone();
-        url.set_path(GITEA_NODEINFO);
-
-        let res: serde_json::Value = self
-            .client
-            .get(url)
-            .send()
-            .await
-            .unwrap()
-            .json()
-            .await
-            .unwrap();
-        if let serde_json::Value::String(software) = &res["software"]["name"] {
-            software == GITEA_IDENTIFIER
-        } else {
-            false
-        }
+        true
     }
 
     fn get_url(&self) -> &Url {
