@@ -48,6 +48,7 @@ impl Ctx {
             let msg = CreateForge {
                 url: url.clone(),
                 forge_type: forge.forge_type(),
+                import: false,
             };
 
             db.create_forge_instance(&msg).await.unwrap();
@@ -56,6 +57,7 @@ impl Ctx {
             let msg = CreateForge {
                 url: url.clone(),
                 forge_type: forge.forge_type,
+                import: false,
             };
             federate.create_forge_instance(&msg).await.unwrap();
         }
@@ -189,9 +191,10 @@ impl Crawler {
 
                 let forges = c.db.get_all_forges(offset, LIMIT).await.unwrap();
                 if forges.is_empty() {
+                    c.federate.tar().await.unwrap();
+                    page = 0;
                     tokio::time::sleep(std::time::Duration::new(c.ctx.settings.crawler.ttl, 0))
                         .await;
-                    c.federate.tar().await.unwrap();
                     if c.shutdown() {
                         info!("Stopping crawling job");
                         break;
@@ -209,6 +212,7 @@ impl Crawler {
                         .await;
                     page += 1;
                 }
+
                 if c.shutdown() {
                     info!("Stopping crawling job");
                     break;
