@@ -17,6 +17,7 @@
  */
 use std::collections::HashMap;
 
+use db_core::AddRepository;
 use serde::{Deserialize, Serialize};
 use url::Url;
 
@@ -34,7 +35,6 @@ pub struct Repository {
     pub is_based_on: Option<String>,
     #[serde(skip_serializing_if = "HashMap::is_empty")]
     pub description: HashMap<String, Description>,
-    #[serde(skip_serializing_if = "Legal::is_none")]
     pub legal: Legal,
     #[serde(skip_serializing_if = "IntendedAudience::is_none")]
     pub intended_audience: IntendedAudience,
@@ -56,13 +56,7 @@ pub struct Description {
 pub struct Legal {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub license: Option<String>,
-}
-
-impl Legal {
-    /// global is_none, to skip_serializing_if
-    pub fn is_none(&self) -> bool {
-        self.license.is_none()
-    }
+    pub repo_owner: String,
 }
 
 #[derive(Serialize, Deserialize)]
@@ -115,7 +109,10 @@ impl From<&db_core::AddRepository<'_>> for Repository {
             },
         );
 
-        let legal = Legal { license: None };
+        let legal = Legal {
+            license: None,
+            repo_owner: r.owner.to_string(),
+        };
 
         let scope = r
             .tags
