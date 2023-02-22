@@ -439,69 +439,6 @@ impl SCDatabase for Database {
         Ok(())
     }
 
-    async fn dns_challenge_exists(&self, key: &str) -> DBResult<bool> {
-        match sqlx::query!(
-            "SELECT ID FROM starchart_dns_challenges WHERE key = $1",
-            key
-        )
-        .fetch_one(&self.pool)
-        .await
-        {
-            Ok(_) => Ok(true),
-            Err(Error::RowNotFound) => Ok(false),
-            Err(e) => Err(DBError::DBError(Box::new(e).into())),
-        }
-    }
-
-    async fn get_dns_challenge(&self, key: &str) -> DBResult<Challenge> {
-        struct InnerChallenge {
-            hostname: String,
-            key: String,
-            value: String,
-        }
-        let res = sqlx::query_as!(
-            InnerChallenge,
-            "SELECT key, value, hostname FROM starchart_dns_challenges WHERE key = $1",
-            key
-        )
-        .fetch_one(&self.pool)
-        .await
-        .map_err(|e| DBError::DBError(Box::new(e)))?;
-        let res = Challenge {
-            url: res.hostname,
-            key: res.key,
-            value: res.value,
-        };
-        Ok(res)
-    }
-
-    async fn delete_dns_challenge(&self, key: &str) -> DBResult<()> {
-        sqlx::query!("DELETE FROM starchart_dns_challenges WHERE key = $1", key)
-            .execute(&self.pool)
-            .await
-            .map_err(map_register_err)?;
-        Ok(())
-    }
-
-    /// create DNS challenge
-    async fn create_dns_challenge(&self, challenge: &Challenge) -> DBResult<()> {
-        let now = now_unix_time_stamp();
-        sqlx::query!(
-            "INSERT INTO
-            starchart_dns_challenges (hostname, value, key, created ) 
-        VALUES ($1, $2, $3, $4);",
-            challenge.url,
-            challenge.value,
-            challenge.key,
-            now,
-        )
-        .execute(&self.pool)
-        .await
-        .map_err(map_register_err)?;
-
-        Ok(())
-    }
-
     /// Get all repositories
     async fn get_all_repositories(&self, offset: u32, limit: u32) -> DBResult<Vec<Repository>> {
         #[allow(non_snake_case)]

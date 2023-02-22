@@ -22,10 +22,20 @@ use trust_dns_resolver::{
 };
 use url::Url;
 
-use crate::utils::get_random;
 use crate::ArcCtx;
 
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
+/// represents a DNS challenge
+pub struct Challenge {
+    /// url of the forge instance
+    pub url: String,
+    /// key of TXT record
+    pub key: String,
+    /// value of TXT record
+    pub value: String,
+}
+
+#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
 pub struct TXTChallenge {
     pub key: String,
     pub value: String,
@@ -49,7 +59,7 @@ impl TXTChallenge {
 
     pub fn new(ctx: &ArcCtx, hostname: &Url) -> Self {
         let key = Self::get_challenge_txt_key(ctx, hostname);
-        let value = get_random(VALUES_LEN);
+        let value = ctx.settings.server.domain.clone();
         Self { key, value }
     }
 

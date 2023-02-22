@@ -18,6 +18,108 @@
     },
     "query": "SELECT ID FROM starchart_forges WHERE hostname = $1"
   },
+  "0fbcc736f60b14d55fbd88031a2929d04de02f5244345c2bc0f0e58d4c29cb14": {
+    "describe": {
+      "columns": [
+        {
+          "name": "html_url",
+          "ordinal": 0,
+          "type_info": "Text"
+        },
+        {
+          "name": "profile_photo_html_url",
+          "ordinal": 1,
+          "type_info": "Text"
+        },
+        {
+          "name": "imported",
+          "ordinal": 2,
+          "type_info": "Bool"
+        }
+      ],
+      "nullable": [
+        false,
+        true,
+        false
+      ],
+      "parameters": {
+        "Right": 2
+      }
+    },
+    "query": "SELECT html_url, profile_photo_html_url, imported FROM starchart_users WHERE username = $1 AND \n                hostname_id = (SELECT ID FROM starchart_forges WHERE hostname = $2)"
+  },
+  "1b88e5b97fd62fe5036ea3c87c90315f8d368542a8f2e12a0d542d1317a612db": {
+    "describe": {
+      "columns": [
+        {
+          "name": "hostname",
+          "ordinal": 0,
+          "type_info": "Text"
+        },
+        {
+          "name": "last_crawl_on",
+          "ordinal": 1,
+          "type_info": "Int64"
+        },
+        {
+          "name": "name",
+          "ordinal": 2,
+          "type_info": "Text"
+        },
+        {
+          "name": "imported",
+          "ordinal": 3,
+          "type_info": "Bool"
+        }
+      ],
+      "nullable": [
+        false,
+        true,
+        false,
+        false
+      ],
+      "parameters": {
+        "Right": 2
+      }
+    },
+    "query": "SELECT\n                hostname,\n                last_crawl_on,\n                starchart_forge_type.name,\n                imported\n            FROM\n                starchart_forges\n            INNER JOIN\n                starchart_forge_type\n            ON\n                starchart_forges.forge_type = starchart_forge_type.id\n            ORDER BY\n                starchart_forges.ID\n            LIMIT $1 OFFSET $2;\n        "
+  },
+  "1d98f7afc772f43fb7131131517f831ec9add25ec3f66881143d6d9baa9e2cc6": {
+    "describe": {
+      "columns": [
+        {
+          "name": "hostname",
+          "ordinal": 0,
+          "type_info": "Text"
+        },
+        {
+          "name": "last_crawl_on",
+          "ordinal": 1,
+          "type_info": "Int64"
+        },
+        {
+          "name": "imported",
+          "ordinal": 2,
+          "type_info": "Bool"
+        },
+        {
+          "name": "name",
+          "ordinal": 3,
+          "type_info": "Text"
+        }
+      ],
+      "nullable": [
+        false,
+        true,
+        false,
+        false
+      ],
+      "parameters": {
+        "Right": 1
+      }
+    },
+    "query": "SELECT \n                hostname,\n                last_crawl_on,\n                imported,\n                starchart_forge_type.name\n            FROM\n                starchart_forges\n            INNER JOIN\n                starchart_forge_type\n            ON\n                starchart_forges.forge_type = starchart_forge_type.id\n            WHERE\n                hostname = $1;\n            "
+  },
   "2afb17ba3753aa440465a836b46b7a1466f25791cfc4d0acdd38bc2755ae3e86": {
     "describe": {
       "columns": [
@@ -53,6 +155,16 @@
       }
     },
     "query": "SELECT ID FROM starchart_forge_type WHERE name = $1"
+  },
+  "338fb30307071e6df9efee6a68697c60e579d7b2332630bce401c0e7186a642a": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Right": 7
+      }
+    },
+    "query": "INSERT INTO \n                    starchart_users (\n                        hostname_id, username, html_url,\n                        profile_photo_html_url, added_on, last_crawl_on, imported\n                    ) \n            VALUES (\n                    (SELECT ID FROM starchart_forges WHERE hostname = $1), $2, $3, $4, $5, $6, $7)"
   },
   "364c8e3d147318b864fd28ad284f225aaace9479b5cf0428fb97f0e5689e248d": {
     "describe": {
@@ -92,17 +204,7 @@
     },
     "query": "SELECT ID FROM starchart_repositories\n                    WHERE \n                        name = $1\n                    AND\n                        owner_id = ( SELECT ID FROM starchart_users WHERE username = $2)\n                    AND\n                        hostname_id = (SELECT ID FROM starchart_forges WHERE hostname = $3)"
   },
-  "76f49b3e5e0c6d16daeb09afca427cbf29cd477bd647fee04c2067f7f898721a": {
-    "describe": {
-      "columns": [],
-      "nullable": [],
-      "parameters": {
-        "Right": 1
-      }
-    },
-    "query": "DELETE FROM starchart_dns_challenges WHERE key = $1"
-  },
-  "80106a5fde0077375453d6170948330cc89dee997c2b8ad1d98b0799702eddc4": {
+  "78e53b067f8706f326fe06d184f8d94dd2c1869f89706e88afa9a0b19717229c": {
     "describe": {
       "columns": [
         {
@@ -139,6 +241,11 @@
           "name": "website",
           "ordinal": 6,
           "type_info": "Text"
+        },
+        {
+          "name": "imported",
+          "ordinal": 7,
+          "type_info": "Bool"
         }
       ],
       "nullable": [
@@ -148,85 +255,16 @@
         true,
         false,
         false,
-        true
+        true,
+        false
       ],
       "parameters": {
         "Right": 2
       }
     },
-    "query": "            SELECT \n\t\tstarchart_forges.hostname,\n\t\tstarchart_users.username,\n\t\tstarchart_repositories.name,\n\t\tstarchart_repositories.description,\n\t\tstarchart_repositories.html_url,\n        starchart_repositories.ID,\n\t\tstarchart_repositories.website\nFROM\n\tstarchart_repositories\nINNER JOIN\n\tstarchart_forges\nON\n\tstarchart_repositories.hostname_id = starchart_forges.id\nINNER JOIN\n\tstarchart_users\nON\n\tstarchart_repositories.owner_id =  starchart_users.id\nORDER BY\n\tstarchart_repositories.ID\nLIMIT $1 OFFSET $2\n;"
+    "query": "SELECT \n                starchart_forges.hostname,\n                starchart_users.username,\n                starchart_repositories.name,\n                starchart_repositories.description,\n                starchart_repositories.html_url,\n                starchart_repositories.ID,\n                starchart_repositories.website,\n                starchart_repositories.imported\n            FROM\n                starchart_repositories\n            INNER JOIN\n                starchart_forges\n            ON\n                starchart_repositories.hostname_id = starchart_forges.id\n            INNER JOIN\n                starchart_users\n            ON\n                starchart_repositories.owner_id =  starchart_users.id\n            ORDER BY\n                starchart_repositories.ID\n            LIMIT $1 OFFSET $2\n                ;"
   },
-  "891a09656a04fdabfbf51b15204e224221cea8d30782170d3d8503c9275b3d58": {
-    "describe": {
-      "columns": [
-        {
-          "name": "key",
-          "ordinal": 0,
-          "type_info": "Text"
-        },
-        {
-          "name": "value",
-          "ordinal": 1,
-          "type_info": "Text"
-        },
-        {
-          "name": "hostname",
-          "ordinal": 2,
-          "type_info": "Text"
-        }
-      ],
-      "nullable": [
-        false,
-        false,
-        false
-      ],
-      "parameters": {
-        "Right": 1
-      }
-    },
-    "query": "SELECT key, value, hostname FROM starchart_dns_challenges WHERE key = $1"
-  },
-  "8c78e074d78291f9d3c4ef3526bae00cb356591edad79a7fb1f20aa7bb681216": {
-    "describe": {
-      "columns": [],
-      "nullable": [],
-      "parameters": {
-        "Right": 3
-      }
-    },
-    "query": "INSERT INTO\n            starchart_forges (hostname, verified_on, forge_type ) \n        VALUES ($1, $2, (SELECT ID FROM starchart_forge_type WHERE name = $3))"
-  },
-  "a4e02e0fafe95a6e21347607f5f69a06f592c3624775feadaaf5fa5b4285815d": {
-    "describe": {
-      "columns": [
-        {
-          "name": "hostname",
-          "ordinal": 0,
-          "type_info": "Text"
-        },
-        {
-          "name": "last_crawl_on",
-          "ordinal": 1,
-          "type_info": "Int64"
-        },
-        {
-          "name": "name",
-          "ordinal": 2,
-          "type_info": "Text"
-        }
-      ],
-      "nullable": [
-        false,
-        true,
-        false
-      ],
-      "parameters": {
-        "Right": 1
-      }
-    },
-    "query": "SELECT \n\t\thostname,\n\t\tlast_crawl_on,\n\t\tstarchart_forge_type.name\n        FROM\n            starchart_forges\n        INNER JOIN\n            starchart_forge_type\n        ON\n            starchart_forges.forge_type = starchart_forge_type.id\n        WHERE\n            hostname = $1;\n            "
-  },
-  "a75419ce6d1248944a7bdd63ddadd6f1017a27b8490fb2746a0f7a5d35ce889a": {
+  "9978a056397522cf1375900bb00c55bc17685dcc9cb22127b21a24b194a1e536": {
     "describe": {
       "columns": [],
       "nullable": [],
@@ -234,25 +272,7 @@
         "Right": 4
       }
     },
-    "query": "INSERT INTO\n            starchart_dns_challenges (hostname, value, key, created ) \n        VALUES ($1, $2, $3, $4);"
-  },
-  "a77477b2f3c383c2c3e849e8aef47dab411f6c8f9cfe5cb6f850e28314eb1a47": {
-    "describe": {
-      "columns": [
-        {
-          "name": "ID",
-          "ordinal": 0,
-          "type_info": "Int64"
-        }
-      ],
-      "nullable": [
-        false
-      ],
-      "parameters": {
-        "Right": 1
-      }
-    },
-    "query": "SELECT ID FROM starchart_dns_challenges WHERE key = $1"
+    "query": "INSERT INTO\n            starchart_forges (hostname, verified_on, forge_type, imported) \n            VALUES ($1, $2, (SELECT ID FROM starchart_forge_type WHERE name = $3), $4)"
   },
   "a81dd4b5df666e22fac211092e7b8425d838dd9023aa2b17659352f30831944d": {
     "describe": {
@@ -272,55 +292,15 @@
     },
     "query": "SELECT ID FROM starchart_users WHERE username = $1 AND \n                hostname_id = (SELECT ID FROM starchart_forges WHERE hostname = $2)"
   },
-  "b4985ad11fafa367302ca9c0126b95bc70f6ae387f9de649aabb2ef424f676db": {
+  "ca22e5f6e7065cf2d4ffdbfac0084f9871de8cd9073d470cbf7eac2de2a73c47": {
     "describe": {
       "columns": [],
       "nullable": [],
       "parameters": {
-        "Right": 6
+        "Right": 9
       }
     },
-    "query": "INSERT INTO \n                    starchart_users (\n                        hostname_id, username, html_url,\n                        profile_photo_html_url, added_on, last_crawl_on\n                    ) \n            VALUES (\n                    (SELECT ID FROM starchart_forges WHERE hostname = $1), $2, $3, $4, $5, $6)"
-  },
-  "c0439c4b2d683c516bd29780cd1e39a7bc75adaebdb450b864eb0b424f401b0c": {
-    "describe": {
-      "columns": [
-        {
-          "name": "hostname",
-          "ordinal": 0,
-          "type_info": "Text"
-        },
-        {
-          "name": "last_crawl_on",
-          "ordinal": 1,
-          "type_info": "Int64"
-        },
-        {
-          "name": "name",
-          "ordinal": 2,
-          "type_info": "Text"
-        }
-      ],
-      "nullable": [
-        false,
-        true,
-        false
-      ],
-      "parameters": {
-        "Right": 2
-      }
-    },
-    "query": "SELECT\n\t\thostname,\n\t\tlast_crawl_on,\n\t\tstarchart_forge_type.name\n        FROM\n            starchart_forges\n        INNER JOIN\n            starchart_forge_type\n        ON\n            starchart_forges.forge_type = starchart_forge_type.id\n    ORDER BY\n        starchart_forges.ID\n    LIMIT $1 OFFSET $2;\n        "
-  },
-  "e00c8a8b0dbeb4a89a673864055c137365c2ae7bc5daf677bdacb20f21d0fcb2": {
-    "describe": {
-      "columns": [],
-      "nullable": [],
-      "parameters": {
-        "Right": 8
-      }
-    },
-    "query": "INSERT INTO \n                starchart_repositories (\n                    hostname_id, owner_id, name, description, html_url, website, created, last_crawl\n                )\n                VALUES (\n                    (SELECT ID FROM starchart_forges WHERE hostname = $1),\n                    (SELECT ID FROM starchart_users WHERE username = $2),\n                    $3, $4, $5, $6, $7, $8\n                );"
+    "query": "INSERT INTO \n                starchart_repositories (\n                    hostname_id, owner_id, name, description, html_url, website, created,\n                    last_crawl, imported\n                )\n                VALUES (\n                    (SELECT ID FROM starchart_forges WHERE hostname = $1),\n                    (SELECT ID FROM starchart_users WHERE username = $2),\n                    $3, $4, $5, $6, $7, $8, $9\n                );"
   },
   "e30ccfaa6aeda8cf30a2b3e9134abd0c0420441c5ed05189c3be605b1405c8e9": {
     "describe": {
@@ -369,29 +349,5 @@
       }
     },
     "query": "DELETE FROM starchart_forges WHERE hostname = ($1)"
-  },
-  "fbf6dd6bc2bc6121e080903fc9d6d9031b177acacf64fa92b7b52bd79f8fe89c": {
-    "describe": {
-      "columns": [
-        {
-          "name": "html_url",
-          "ordinal": 0,
-          "type_info": "Text"
-        },
-        {
-          "name": "profile_photo_html_url",
-          "ordinal": 1,
-          "type_info": "Text"
-        }
-      ],
-      "nullable": [
-        false,
-        true
-      ],
-      "parameters": {
-        "Right": 2
-      }
-    },
-    "query": "SELECT html_url, profile_photo_html_url FROM starchart_users WHERE username = $1 AND \n                hostname_id = (SELECT ID FROM starchart_forges WHERE hostname = $2)"
   }
 }

@@ -23,12 +23,10 @@ use std::cell::RefCell;
 use tera::Context;
 use url::Url;
 
-use db_core::prelude::*;
-
 use crate::errors::ServiceResult;
 use crate::pages::errors::*;
 use crate::settings::Settings;
-use crate::verify::TXTChallenge;
+use crate::verify::{Challenge, TXTChallenge};
 use crate::*;
 
 pub use crate::pages::*;
@@ -88,37 +86,28 @@ pub fn services(cfg: &mut web::ServiceConfig) {
 pub async fn add_submit(
     payload: web::Form<AddChallengePayload>,
     ctx: WebCtx,
-    db: WebDB,
 ) -> PageResult<impl Responder, AddChallenge> {
     async fn _add_submit(
         payload: &AddChallengePayload,
         ctx: &ArcCtx,
-        db: &BoxDB,
     ) -> ServiceResult<TXTChallenge> {
         let url_hostname = Url::parse(&payload.hostname).unwrap();
-        let key = TXTChallenge::get_challenge_txt_key(ctx, &url_hostname);
-        if db.dns_challenge_exists(&key).await? {
-            let value = db.get_dns_challenge(&key).await?.value;
-            Ok(TXTChallenge { key, value })
-        } else {
-            let challenge = TXTChallenge::new(ctx, &url_hostname);
+        let challenge = TXTChallenge::new(ctx, &url_hostname);
 
-            let c = Challenge {
-                key: challenge.key,
-                value: challenge.value,
-                url: url_hostname.to_string(),
-            };
-            db.create_dns_challenge(&c).await?;
+        let c = Challenge {
+            key: challenge.key,
+            value: challenge.value,
+            url: url_hostname.to_string(),
+        };
 
-            let challenge = TXTChallenge {
-                key: c.key,
-                value: c.value,
-            };
-            Ok(challenge)
-        }
+        let challenge = TXTChallenge {
+            key: c.key,
+            value: c.value,
+        };
+        Ok(challenge)
     }
 
-    let challenge = _add_submit(&payload, &ctx, &db)
+    let challenge = _add_submit(&payload, &ctx)
         .await
         .map_err(|e| PageError::new(AddChallenge::new(&ctx.settings, Some(&payload)), e))?;
 
@@ -173,11 +162,6 @@ mod tests {
         };
 
         println!("{}", payload.hostname);
-        let hostname = Url::parse(&payload.hostname).unwrap();
-        let key = TXTChallenge::get_challenge_txt_key(&ctx, &hostname);
-
-        db.delete_dns_challenge(&key).await.unwrap();
-        assert!(!db.dns_challenge_exists(&key).await.unwrap());
 
         let resp = test::call_service(
             &app,
@@ -190,10 +174,6 @@ mod tests {
         }
         assert_eq!(resp.status(), StatusCode::FOUND);
 
-        assert!(db.dns_challenge_exists(&key).await.unwrap());
-
-        let challenge = db.get_dns_challenge(&key).await.unwrap().value;
-
         // replay config
         let resp = test::call_service(
             &app,
@@ -202,8 +182,5 @@ mod tests {
         .await;
 
         assert_eq!(resp.status(), StatusCode::FOUND);
-
-        assert!(db.dns_challenge_exists(&key).await.unwrap());
-        assert_eq!(challenge, db.get_dns_challenge(&key).await.unwrap().value);
     }
 }

@@ -23,12 +23,9 @@ use std::cell::RefCell;
 use tera::Context;
 use url::Url;
 
-use db_core::prelude::*;
-
-use crate::errors::ServiceResult;
 use crate::pages::errors::*;
 use crate::settings::Settings;
-use crate::verify::TXTChallenge;
+use crate::verify::{Challenge, TXTChallenge};
 use crate::*;
 
 pub use crate::pages::*;
@@ -50,7 +47,7 @@ impl CtxError for VerifyChallenge {
 
 #[derive(Clone, Debug, PartialEq, Deserialize, Serialize)]
 pub struct VerifyChallengePayload {
-    pub hostname: String,
+    pub hostname: Url,
 }
 
 impl VerifyChallenge {
@@ -78,19 +75,14 @@ impl VerifyChallenge {
 #[get(path = "PAGES.auth.verify")]
 pub async fn get_verify(
     ctx: WebCtx,
-    db: WebDB,
     query: web::Query<VerifyChallengePayload>,
 ) -> PageResult<impl Responder, VerifyChallenge> {
-    let payload = query.into_inner();
-    let value = _get_challenge(&payload, &db).await.map_err(|e| {
-        let challenge = Challenge {
-            key: payload.hostname,
-            value: "".into(),
-            url: "".into(),
-        };
-
-        PageError::new(VerifyChallenge::new(&ctx.settings, &challenge), e)
-    })?;
+    let challenge = TXTChallenge::new(&ctx, &query.hostname);
+    let value = Challenge {
+        key: challenge.key,
+        value: challenge.value,
+        url: query.hostname.to_string(),
+    };
 
     let login = VerifyChallenge::page(&ctx.settings, &value);
     let html = ContentType::html();
@@ -102,11 +94,6 @@ pub fn services(cfg: &mut web::ServiceConfig) {
     cfg.service(submit_verify);
 }
 
-async fn _get_challenge(payload: &VerifyChallengePayload, db: &BoxDB) -> ServiceResult<Challenge> {
-    let value = db.get_dns_challenge(&payload.hostname).await?;
-    Ok(value)
-}
-
 #[post(path = "PAGES.auth.verify")]
 pub async fn submit_verify(
     payload: web::Form<VerifyChallengePayload>,
@@ -115,31 +102,15 @@ pub async fn submit_verify(
     federate: WebFederate,
 ) -> PageResult<impl Responder, VerifyChallenge> {
     let payload = payload.into_inner();
-    let value = _get_challenge(&payload, &db).await.map_err(|e| {
-        let challenge = Challenge {
-            key: payload.hostname.clone(),
-            value: "".into(),
-            url: "".into(),
-        };
-
-        PageError::new(VerifyChallenge::new(&ctx.settings, &challenge), e)
-    })?;
-
-    let challenge = TXTChallenge {
-        key: payload.hostname,
-        value: value.value,
-    };
+    let challenge = TXTChallenge::new(&ctx, &payload.hostname);
 
     match challenge.verify_txt().await {
         Ok(true) => {
-            let _ = db.delete_dns_challenge(&challenge.key).await;
-
             let ctx = ctx.clone();
             let federate = federate.clone();
             let db = db.clone();
             let fut = async move {
-                ctx.crawl(&Url::parse(&value.url).unwrap(), &db, &federate)
-                    .await;
+                ctx.crawl(&payload.hostname, &db, &federate).await;
             };
 
             tokio::spawn(fut);
