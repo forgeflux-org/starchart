@@ -132,3 +132,38 @@ impl From<&db_core::AddRepository<'_>> for Repository {
         }
     }
 }
+
+impl Repository {
+    pub fn to_add_repository(&self, import: bool) -> AddRepository {
+        let tags = self
+            .intended_audience
+            .scope
+            .as_ref()
+            .map(|s| s.iter().map(|t| t.as_str()).collect());
+        let description = self
+            .description
+            .get("en")
+            .as_ref()
+            .unwrap()
+            .short_description
+            .as_ref()
+            .map(|s| s.as_str());
+        let website = self
+            .description
+            .get("en")
+            .unwrap()
+            .documentation
+            .as_ref()
+            .map(|s| s.as_str());
+        AddRepository {
+            html_link: self.url.as_str(),
+            tags,
+            url: self.url.clone(),
+            name: &self.name,
+            owner: &self.legal.repo_owner,
+            description,
+            website,
+            import,
+        }
+    }
+}
