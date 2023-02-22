@@ -36,6 +36,8 @@ pub struct Repository {
     pub description: HashMap<String, Description>,
     #[serde(skip_serializing_if = "Legal::is_none")]
     pub legal: Legal,
+    #[serde(skip_serializing_if = "IntendedAudience::is_none")]
+    pub intended_audience: IntendedAudience,
 }
 
 #[derive(Serialize, Deserialize)]
@@ -80,6 +82,27 @@ pub struct Contacts {
     pub name: String,
 }
 
+#[derive(Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct IntendedAudience {
+    #[serde(
+        skip_serializing_if = "Option::is_none",
+        rename(serialize = "type", deserialize = "m_type")
+    )]
+    pub scope: Option<Vec<String>>,
+}
+
+impl IntendedAudience {
+    /// global is_none, to skip_serializing_if
+    pub fn is_none(&self) -> bool {
+        if self.scope.is_none() {
+            true
+        } else {
+            self.scope.as_ref().unwrap().is_empty()
+        }
+    }
+}
+
 impl From<&db_core::AddRepository<'_>> for Repository {
     fn from(r: &db_core::AddRepository<'_>) -> Self {
         let mut description = HashMap::with_capacity(1);
@@ -94,6 +117,12 @@ impl From<&db_core::AddRepository<'_>> for Repository {
 
         let legal = Legal { license: None };
 
+        let scope = r
+            .tags
+            .as_ref()
+            .map(|tags| tags.iter().map(|t| t.to_string()).collect());
+        let intended_audience = IntendedAudience { scope };
+
         Self {
             publiccode_yml_version: PUBLIC_CODE_VERSION.into(),
             url: Url::parse(r.html_link).unwrap(),
@@ -102,6 +131,7 @@ impl From<&db_core::AddRepository<'_>> for Repository {
             is_based_on: None, // TODO collect is_fork information in forge/*
             description,
             legal,
+            intended_audience,
         }
     }
 }
