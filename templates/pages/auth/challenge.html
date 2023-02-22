@@ -14,7 +14,7 @@
       <li>
           <p>Click verify to verify challenge
 		  <form action="{{ page.auth.verify }}" method="POST">
-            <input type="hidden" name="hostname" id="hostname" value="{{ payload.key }}">
+            <input type="hidden" name="hostname" id="hostname" value="{{ payload.url }}">
             <button type="submit">Verify</button>
           </form>
           </p>

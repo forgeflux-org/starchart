@@ -23,10 +23,8 @@ use std::cell::RefCell;
 use tera::Context;
 use url::Url;
 
-use crate::errors::ServiceResult;
 use crate::pages::errors::*;
 use crate::settings::Settings;
-use crate::verify::{Challenge, TXTChallenge};
 use crate::*;
 
 pub use crate::pages::*;
@@ -47,7 +45,7 @@ impl CtxError for AddChallenge {
 
 #[derive(Clone, Debug, PartialEq, Deserialize, Serialize)]
 pub struct AddChallengePayload {
-    pub hostname: String,
+    pub hostname: Url,
 }
 
 impl AddChallenge {
@@ -85,33 +83,8 @@ pub fn services(cfg: &mut web::ServiceConfig) {
 #[post(path = "PAGES.auth.add")]
 pub async fn add_submit(
     payload: web::Form<AddChallengePayload>,
-    ctx: WebCtx,
 ) -> PageResult<impl Responder, AddChallenge> {
-    async fn _add_submit(
-        payload: &AddChallengePayload,
-        ctx: &ArcCtx,
-    ) -> ServiceResult<TXTChallenge> {
-        let url_hostname = Url::parse(&payload.hostname).unwrap();
-        let challenge = TXTChallenge::new(ctx, &url_hostname);
-
-        let c = Challenge {
-            key: challenge.key,
-            value: challenge.value,
-            url: url_hostname.to_string(),
-        };
-
-        let challenge = TXTChallenge {
-            key: c.key,
-            value: c.value,
-        };
-        Ok(challenge)
-    }
-
-    let challenge = _add_submit(&payload, &ctx)
-        .await
-        .map_err(|e| PageError::new(AddChallenge::new(&ctx.settings, Some(&payload)), e))?;
-
-    let link = PAGES.auth.verify_get(&challenge.key);
+    let link = PAGES.auth.verify_get(&payload.hostname.to_string());
 
     Ok(HttpResponse::Found()
         .insert_header((http::header::LOCATION, link))
@@ -125,7 +98,6 @@ mod tests {
     use url::Url;
 
     use super::AddChallengePayload;
-    use super::TXTChallenge;
     use crate::errors::*;
 
     #[cfg(test)]
@@ -140,7 +112,7 @@ mod tests {
             let settings = Settings::new().unwrap();
             AddChallenge::page(&settings);
             let payload = AddChallengePayload {
-                hostname: "https://example.com".into(),
+                hostname: url::Url::parse("https://example.com").unwrap(),
             };
             let page = AddChallenge::new(&settings, Some(&payload));
             page.with_error(&ReadableError::new(&ServiceError::ClosedForRegistration));
@@ -158,7 +130,7 @@ mod tests {
         let app = get_app!(ctx, db, federate).await;
 
         let payload = AddChallengePayload {
-            hostname: format!("https://{BASE_DOMAIN}"),
+            hostname: Url::parse(&format!("https://{BASE_DOMAIN}")).unwrap(),
         };
 
         println!("{}", payload.hostname);
