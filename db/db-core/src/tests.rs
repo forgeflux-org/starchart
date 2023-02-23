@@ -81,6 +81,13 @@ pub async fn adding_forge_works<'a, T: SCDatabase>(
         .repository_exists(add_repo_msg.name, add_repo_msg.owner, &add_repo_msg.url)
         .await
         .unwrap());
+
+    assert!(db.get_all_repositories(00, 1000).await.unwrap().len() >= 1);
+    let repo_search = db.search_repository(add_repo_msg.name).await.unwrap();
+
+    assert!(!repo_search.is_empty());
+    assert_eq!(repo_search.first().unwrap().url, add_repo_msg.url.as_str());
+
     // delete repository
     db.delete_repository(add_repo_msg.owner, add_repo_msg.name, &add_repo_msg.url)
         .await

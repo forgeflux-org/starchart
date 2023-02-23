@@ -217,6 +217,9 @@ pub trait SCDatabase: std::marker::Send + std::marker::Sync + CloneSPDatabase {
 
     /// add new repository to database.
     async fn create_repository(&self, r: &AddRepository) -> DBResult<()>;
+
+    /// Search all repositories
+    async fn search_repository(&self, query: &str) -> DBResult<Vec<Repository>>;
 }
 
 /// Trait to clone SCDatabase
