@@ -20,12 +20,15 @@ use std::path::PathBuf;
 use std::result::Result;
 
 use async_trait::async_trait;
+use reqwest::Client;
 use url::Url;
 
 use db_core::prelude::*;
 
 #[cfg(feature = "test")]
 pub mod tests;
+
+pub use api_routes::*;
 
 #[async_trait]
 pub trait Federate: Sync + Send {
@@ -79,6 +82,19 @@ pub trait Federate: Sync + Send {
 
     /// get latest tar ball
     async fn latest_tar(&self) -> Result<String, Self::Error>;
+
+    /// import archive from another Starchart instance
+    async fn import(
+        &self,
+        mut starchart_url: Url,
+        client: &Client,
+        db: &Box<dyn SCDatabase>,
+    ) -> Result<(), Self::Error>;
+
+    async fn latest_tar_json(&self) -> Result<LatestResp, Self::Error> {
+        let latest = self.latest_tar().await?;
+        Ok(LatestResp { latest })
+    }
 }
 
 pub fn get_hostname(url: &Url) -> &str {
