@@ -1,6 +1,6 @@
 /*
  * ForgeFlux StarChart - A federated software forge spider
- * Copyright (C) 2022  Aravinth Manivannan <realaravinth@batsense.net>
+ * Copyright (C) 2023  Aravinth Manivannan <realaravinth@batsense.net>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -15,21 +15,23 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-use actix_web::web;
-use actix_web::{HttpResponse, Responder};
-use actix_web_codegen_const_routes::get;
+use serde::{Deserialize, Serialize};
 
-pub use api_routes::*;
+pub const ROUTES: Api = Api::new();
 
-use crate::errors::*;
-use crate::WebFederate;
-
-#[get(path = "ROUTES.get_latest")]
-pub async fn lastest(federate: WebFederate) -> ServiceResult<impl Responder> {
-    let latest = federate.latest_tar_json().await.unwrap();
-    Ok(HttpResponse::Ok().json(latest))
+#[derive(Deserialize, Serialize, Clone, Debug, Eq, PartialEq)]
+pub struct Api {
+    pub get_latest: &'static str,
 }
 
-pub fn services(cfg: &mut web::ServiceConfig) {
-    cfg.service(lastest);
+impl Api {
+    const fn new() -> Api {
+        let get_latest = "/api/v1/federated/latest";
+        Api { get_latest }
+    }
+}
+
+#[derive(Deserialize, Serialize, Clone, Debug, Eq, PartialEq)]
+pub struct LatestResp {
+    pub latest: String,
 }

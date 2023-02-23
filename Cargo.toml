@@ -41,6 +41,8 @@ log = "0.4.16"
 pretty_env_logger = "0.4"
 rust-embed = "6.3.0"
 urlencoding = "2.1.0"
+clap = { version = "4.0.32", features = ["derive"] }
+api_routes = { path ="./api_routes/"}
 
 [dependencies.cache-buster]
 git = "https://github.com/realaravinth/cache-buster"
@@ -83,7 +85,7 @@ path = "./federate/publiccodeyml"
 
 [dependencies.sqlx]
 features = ["runtime-actix-rustls", "uuid", "postgres", "time", "offline", "sqlite"]
-version = "0.5.11"
+version = "0.6.2"
 
 [dev-dependencies]
 mktemp = "0.4.1"

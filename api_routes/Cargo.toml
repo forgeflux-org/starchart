@@ -1,0 +1,17 @@
+[package]
+name = "api_routes"
+version = "0.1.0"
+edition = "2021"
+repository = "https://github.com/forgeflux-org/starchart"
+authors = ["realaravinth <realaravinth@batsense.net>"]
+description = "ForgeFlux StarChart - Federated forge spider"
+documentation = "https://forgeflux.org/"
+license = "AGPLv3 or later version"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+
+[dependencies.serde]
+features = ["derive"]
+version = "1"

@@ -68,6 +68,7 @@ check: ## Check for syntax errors on all workspaces
 	cd federate/federate-core && cargo check --tests --all-features
 	cd federate/publiccodeyml && cargo check --tests --all-features
 	cd utils/cache-bust && cargo check --tests --all-features
+	cd api_routes && cargo check --tests --all-features
 
 dev-env: ## Download development dependencies
 	$(call launch_test_env)
@@ -96,6 +97,7 @@ run: default ## Run debug build
 
 migrate: ## run migrations
 	@-rm -rf db/db-sqlx-sqlite/tmp && mkdir db/db-sqlx-sqlite/tmp
+	@-rm -rf db/migrator/target/
 	cd db/migrator && cargo run
 #	echo TODO: add migrations
 
