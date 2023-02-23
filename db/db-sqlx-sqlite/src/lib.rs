@@ -95,6 +95,141 @@ impl Migrate for Database {
             .run(&self.pool)
             .await
             .map_err(|e| DBError::DBError(Box::new(e)))?;
+
+        self.init_project_topics_fts().await?;
+        self.init_username_fts().await?;
+        self.init_repository_fts().await?;
+        Ok(())
+    }
+}
+
+impl Database {
+    async fn new_fts_repositories(
+        &self,
+        name: &str,
+        description: Option<&str>,
+        website: Option<&str>,
+        html_url: &str,
+    ) -> DBResult<()> {
+        sqlx::query!(
+            "INSERT OR IGNORE INTO fts_repositories ( name, description, website, html_url ) 
+            VALUES ( $1, $2, $3, $4 );",
+            name,
+            description,
+            website,
+            html_url
+        )
+        .execute(&self.pool)
+        .await
+        .map_err(map_register_err)?;
+        Ok(())
+    }
+
+    async fn init_repository_fts(&self) -> DBResult<()> {
+        let limit = 50;
+        let mut page = 0;
+        loop {
+            let offset = page * limit;
+            let mut repositories = self.get_all_repositories(offset, limit).await?;
+            if repositories.is_empty() {
+                break;
+            }
+
+            for repo in repositories.drain(0..) {
+                self.new_fts_repositories(
+                    &repo.name,
+                    repo.description.as_ref().map(|d| d.as_str()),
+                    repo.website.as_ref().map(|s| s.as_str()),
+                    &repo.html_url,
+                )
+                .await?;
+            }
+            page += 1;
+        }
+
+        Ok(())
+    }
+
+    async fn new_fts_user(&self, username: &str) -> DBResult<()> {
+        sqlx::query!(
+            "INSERT OR IGNORE INTO fts_users ( username ) VALUES ( $1 );",
+            username,
+        )
+        .execute(&self.pool)
+        .await
+        .map_err(map_register_err)?;
+        Ok(())
+    }
+
+    async fn init_username_fts(&self) -> DBResult<()> {
+        struct User {
+            username: String,
+        }
+        let limit = 50;
+        let mut page = 0;
+        loop {
+            let offset = page * limit;
+
+            let mut users = sqlx::query_as!(
+                User,
+                "SELECT username FROM starchart_users ORDER BY ID LIMIT $1 OFFSET $2",
+                limit,
+                offset,
+            )
+            .fetch_all(&self.pool)
+            .await
+            .map_err(|e| DBError::DBError(Box::new(e)))?;
+            if users.is_empty() {
+                break;
+            }
+
+            for user in users.drain(0..) {
+                self.new_fts_user(&user.username).await?;
+            }
+            page += 1;
+        }
+
+        Ok(())
+    }
+
+    async fn new_fts_topic(&self, name: &str) -> DBResult<()> {
+        sqlx::query!(
+            "INSERT OR IGNORE INTO fts_project_topics ( name ) VALUES ( $1 );",
+            name,
+        )
+        .execute(&self.pool)
+        .await
+        .map_err(map_register_err)?;
+        Ok(())
+    }
+
+    async fn init_project_topics_fts(&self) -> DBResult<()> {
+        struct Topic {
+            name: String,
+        }
+        let limit = 50;
+        let mut page = 0;
+        loop {
+            let offset = page * limit;
+            let mut topics = sqlx::query_as!(
+                Topic,
+                "SELECT name FROM starchart_project_topics ORDER BY ID LIMIT $1 OFFSET $2;",
+                limit,
+                offset
+            )
+            .fetch_all(&self.pool)
+            .await
+            .map_err(|e| DBError::DBError(Box::new(e)))?;
+            if topics.is_empty() {
+                break;
+            }
+
+            for topic in topics.drain(0..) {
+                self.new_fts_topic(&topic.name).await?;
+            }
+            page += 1;
+        }
+
         Ok(())
     }
 }
@@ -254,6 +389,7 @@ impl SCDatabase for Database {
         .execute(&self.pool)
         .await
         .map_err(map_register_err)?;
+        self.new_fts_user(u.username).await?;
 
         Ok(())
     }
@@ -374,6 +510,9 @@ impl SCDatabase for Database {
         .await
         .map_err(map_register_err)?;
 
+        self.new_fts_repositories(r.name, r.description, r.website, r.html_link)
+            .await?;
+
         if let Some(topics) = &r.tags {
             for topic in topics.iter() {
                 sqlx::query!(
@@ -383,6 +522,8 @@ impl SCDatabase for Database {
                 .execute(&self.pool)
                 .await
                 .map_err(map_register_err)?;
+
+                self.new_fts_topic(topic).await?;
 
                 sqlx::query!(
                     "
@@ -406,6 +547,7 @@ impl SCDatabase for Database {
     /// delete user
     async fn delete_user(&self, username: &str, url: &Url) -> DBResult<()> {
         let url = db_core::clean_url(url);
+        // TODO fts delete user
         sqlx::query!(
             " DELETE FROM starchart_users WHERE username = $1 AND 
                 hostname_id = (SELECT ID FROM starchart_forges WHERE hostname = $2)",
@@ -421,6 +563,7 @@ impl SCDatabase for Database {
     /// delete repository
     async fn delete_repository(&self, owner: &str, name: &str, url: &Url) -> DBResult<()> {
         let url = db_core::clean_url(url);
+        // TODO fts delete repo
         sqlx::query!(
             " DELETE FROM starchart_repositories
                     WHERE 
@@ -441,25 +584,6 @@ impl SCDatabase for Database {
 
     /// Get all repositories
     async fn get_all_repositories(&self, offset: u32, limit: u32) -> DBResult<Vec<Repository>> {
-        #[allow(non_snake_case)]
-        struct InnerRepository {
-            /// html link to the repository
-            pub html_url: String,
-            /// url of the forge instance: with scheme but remove trailing slash
-            /// url can be derived  from html_link also, but used to link to user's forge instance
-            pub hostname: String,
-            /// repository name
-            pub name: String,
-            /// repository owner
-            pub username: String,
-            /// repository description, if any
-            pub description: Option<String>,
-            /// repository website, if any
-            pub website: Option<String>,
-            pub ID: i64,
-            pub imported: bool,
-        }
-
         let mut db_res = sqlx::query_as!(
             InnerRepository,
             "SELECT 
@@ -533,6 +657,90 @@ impl SCDatabase for Database {
 
         Ok(res)
     }
+
+    /// Search all repositories
+    async fn search_repository(&self, query: &str) -> DBResult<Vec<Repository>> {
+        struct FTSRepository {
+            html_url: String,
+        }
+        let mut fts_repos = sqlx::query_as_unchecked!(
+            FTSRepository,
+            "SELECT html_url FROM fts_repositories WHERE html_url MATCH $1;",
+            query
+        )
+        .fetch_all(&self.pool)
+        .await
+        .map_err(|e| DBError::DBError(Box::new(e)))?;
+
+        let mut res = Vec::with_capacity(fts_repos.len());
+        for fts_repo in fts_repos.drain(0..) {
+            let repo = sqlx::query_as!(
+                InnerRepository,
+                "SELECT 
+                starchart_forges.hostname,
+                starchart_users.username,
+                starchart_repositories.name,
+                starchart_repositories.description,
+                starchart_repositories.html_url,
+                starchart_repositories.ID,
+                starchart_repositories.website,
+                starchart_repositories.imported
+            FROM
+                starchart_repositories
+            INNER JOIN
+                starchart_forges
+            ON
+                starchart_repositories.hostname_id = starchart_forges.id
+            INNER JOIN
+                starchart_users
+            ON
+                starchart_repositories.owner_id =  starchart_users.id
+            WHERE starchart_repositories.html_url =  $1
+                ;",
+                fts_repo.html_url
+            )
+            .fetch_one(&self.pool)
+            .await
+            .map_err(map_register_err)?;
+
+            struct Topics {
+                name: String,
+            }
+
+            let mut db_topics = sqlx::query_as!(
+                Topics,
+                "SELECT name FROM starchart_project_topics WHERE ID = (
+                SELECT topic_id FROM starchart_repository_topic_mapping WHERE repository_id = $1
+            )",
+                repo.ID
+            )
+            .fetch_all(&self.pool)
+            .await
+            .map_err(map_register_err)?;
+
+            let topics = if db_topics.is_empty() {
+                None
+            } else {
+                let mut topics = Vec::with_capacity(db_topics.len());
+                for t in db_topics.drain(0..) {
+                    topics.push(t.name);
+                }
+
+                Some(topics)
+            };
+            res.push(Repository {
+                html_url: repo.html_url,
+                url: repo.hostname,
+                name: repo.name,
+                username: repo.username,
+                description: repo.description,
+                website: repo.website,
+                tags: topics,
+                import: repo.imported,
+            });
+        }
+        Ok(res)
+    }
 }
 
 fn now_unix_time_stamp() -> i64 {
@@ -555,4 +763,23 @@ impl From<InnerForge> for Forge {
             import: f.imported,
         }
     }
+}
+
+#[allow(non_snake_case)]
+struct InnerRepository {
+    /// html link to the repository
+    pub html_url: String,
+    /// url of the forge instance: with scheme but remove trailing slash
+    /// url can be derived  from html_link also, but used to link to user's forge instance
+    pub hostname: String,
+    /// repository name
+    pub name: String,
+    /// repository owner
+    pub username: String,
+    /// repository description, if any
+    pub description: Option<String>,
+    /// repository website, if any
+    pub website: Option<String>,
+    pub ID: i64,
+    pub imported: bool,
 }

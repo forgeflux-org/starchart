@@ -1,0 +1,16 @@
+CREATE VIRTUAL TABLE IF NOT EXISTS fts_repositories USING fts4(
+		name TEXT NOT NULL,
+		description TEXT DEFAULT NULL,
+		website TEXT DEFAULT NULL,
+		html_url TEXT NOT NULL UNIQUE,
+);
+
+
+CREATE VIRTUAL TABLE IF NOT EXISTS fts_project_topics USING fts4(
+	name VARCHAR(50) NOT NULL UNIQUE
+);
+
+
+CREATE VIRTUAL TABLE IF NOT EXISTS fts_users USING fts4(
+	username TEXT NOT NULL
+);
