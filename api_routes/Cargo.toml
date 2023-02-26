@@ -15,3 +15,6 @@ license = "AGPLv3 or later version"
 [dependencies.serde]
 features = ["derive"]
 version = "1"
+
+[dependencies.db-core]
+path = "../db/db-core"

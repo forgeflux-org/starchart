@@ -22,6 +22,7 @@ use actix_web_codegen_const_routes::get;
 pub use api_routes::*;
 
 use crate::errors::*;
+use crate::search;
 use crate::WebFederate;
 
 #[get(path = "ROUTES.get_latest")]
@@ -32,4 +33,5 @@ pub async fn lastest(federate: WebFederate) -> ServiceResult<impl Responder> {
 
 pub fn services(cfg: &mut web::ServiceConfig) {
     cfg.service(lastest);
+    search::services(cfg);
 }

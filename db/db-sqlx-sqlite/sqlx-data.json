@@ -1,5 +1,15 @@
 {
   "db": "SQLite",
+  "069a127ffb1062321bba5a915a4ead3e0bbe4dabf6e0f684d8cc6a6d8a68ad5b": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Right": 4
+      }
+    },
+    "query": "INSERT OR IGNORE INTO fts_repositories ( name, description, website, html_url ) \n            VALUES ( $1, $2, $3, $4 );"
+  },
   "0bb37cc79d5ef803285d05d06e6ef93b62c0b532c0298148fe436178761fd70a": {
     "describe": {
       "columns": [
@@ -17,6 +27,16 @@
       }
     },
     "query": "SELECT ID FROM starchart_forges WHERE hostname = $1"
+  },
+  "0f68a0cf8dbe0566dd6e0962c656382095694428dcf8990dc20d88601b56445b": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Right": 1
+      }
+    },
+    "query": "INSERT OR IGNORE INTO fts_project_topics ( name ) VALUES ( $1 );"
   },
   "0fbcc736f60b14d55fbd88031a2929d04de02f5244345c2bc0f0e58d4c29cb14": {
     "describe": {
@@ -264,6 +284,16 @@
     },
     "query": "SELECT \n                starchart_forges.hostname,\n                starchart_users.username,\n                starchart_repositories.name,\n                starchart_repositories.description,\n                starchart_repositories.html_url,\n                starchart_repositories.ID,\n                starchart_repositories.website,\n                starchart_repositories.imported\n            FROM\n                starchart_repositories\n            INNER JOIN\n                starchart_forges\n            ON\n                starchart_repositories.hostname_id = starchart_forges.id\n            INNER JOIN\n                starchart_users\n            ON\n                starchart_repositories.owner_id =  starchart_users.id\n            ORDER BY\n                starchart_repositories.ID\n            LIMIT $1 OFFSET $2\n                ;"
   },
+  "989fdcfc0088ac19ffbe29bba5349d2dcade134fa2b450769ec617d91f88ffe1": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Right": 1
+      }
+    },
+    "query": "INSERT OR IGNORE INTO fts_users ( username ) VALUES ( $1 );"
+  },
   "9978a056397522cf1375900bb00c55bc17685dcc9cb22127b21a24b194a1e536": {
     "describe": {
       "columns": [],
@@ -273,6 +303,24 @@
       }
     },
     "query": "INSERT INTO\n            starchart_forges (hostname, verified_on, forge_type, imported) \n            VALUES ($1, $2, (SELECT ID FROM starchart_forge_type WHERE name = $3), $4)"
+  },
+  "a60479593819cc7dc7ec87a2d7a25a8960dc2efa1f59c5187d2084c79e26e3f8": {
+    "describe": {
+      "columns": [
+        {
+          "name": "name",
+          "ordinal": 0,
+          "type_info": "Text"
+        }
+      ],
+      "nullable": [
+        false
+      ],
+      "parameters": {
+        "Right": 2
+      }
+    },
+    "query": "SELECT name FROM starchart_project_topics ORDER BY ID LIMIT $1 OFFSET $2;"
   },
   "a81dd4b5df666e22fac211092e7b8425d838dd9023aa2b17659352f30831944d": {
     "describe": {
@@ -292,6 +340,66 @@
     },
     "query": "SELECT ID FROM starchart_users WHERE username = $1 AND \n                hostname_id = (SELECT ID FROM starchart_forges WHERE hostname = $2)"
   },
+  "ae9295f46da1753fe91a633b5738533084005ad32915c19635f896c454284b6b": {
+    "describe": {
+      "columns": [
+        {
+          "name": "hostname",
+          "ordinal": 0,
+          "type_info": "Text"
+        },
+        {
+          "name": "username",
+          "ordinal": 1,
+          "type_info": "Text"
+        },
+        {
+          "name": "name",
+          "ordinal": 2,
+          "type_info": "Text"
+        },
+        {
+          "name": "description",
+          "ordinal": 3,
+          "type_info": "Text"
+        },
+        {
+          "name": "html_url",
+          "ordinal": 4,
+          "type_info": "Text"
+        },
+        {
+          "name": "ID",
+          "ordinal": 5,
+          "type_info": "Int64"
+        },
+        {
+          "name": "website",
+          "ordinal": 6,
+          "type_info": "Text"
+        },
+        {
+          "name": "imported",
+          "ordinal": 7,
+          "type_info": "Bool"
+        }
+      ],
+      "nullable": [
+        false,
+        false,
+        false,
+        true,
+        false,
+        false,
+        true,
+        false
+      ],
+      "parameters": {
+        "Right": 1
+      }
+    },
+    "query": "SELECT \n                starchart_forges.hostname,\n                starchart_users.username,\n                starchart_repositories.name,\n                starchart_repositories.description,\n                starchart_repositories.html_url,\n                starchart_repositories.ID,\n                starchart_repositories.website,\n                starchart_repositories.imported\n            FROM\n                starchart_repositories\n            INNER JOIN\n                starchart_forges\n            ON\n                starchart_repositories.hostname_id = starchart_forges.id\n            INNER JOIN\n                starchart_users\n            ON\n                starchart_repositories.owner_id =  starchart_users.id\n            WHERE starchart_repositories.html_url =  $1\n                ;"
+  },
   "ca22e5f6e7065cf2d4ffdbfac0084f9871de8cd9073d470cbf7eac2de2a73c47": {
     "describe": {
       "columns": [],
@@ -302,6 +410,24 @@
     },
     "query": "INSERT INTO \n                starchart_repositories (\n                    hostname_id, owner_id, name, description, html_url, website, created,\n                    last_crawl, imported\n                )\n                VALUES (\n                    (SELECT ID FROM starchart_forges WHERE hostname = $1),\n                    (SELECT ID FROM starchart_users WHERE username = $2),\n                    $3, $4, $5, $6, $7, $8, $9\n                );"
   },
+  "d22d18f0c2b49a570ac95e1af5ba398b3d1c7a1a5a6780d6dc646077e466714c": {
+    "describe": {
+      "columns": [
+        {
+          "name": "username",
+          "ordinal": 0,
+          "type_info": "Text"
+        }
+      ],
+      "nullable": [
+        false
+      ],
+      "parameters": {
+        "Right": 2
+      }
+    },
+    "query": "SELECT username FROM starchart_users ORDER BY ID LIMIT $1 OFFSET $2"
+  },
   "e30ccfaa6aeda8cf30a2b3e9134abd0c0420441c5ed05189c3be605b1405c8e9": {
     "describe": {
       "columns": [],
@@ -311,6 +437,24 @@
       }
     },
     "query": "\n                        INSERT INTO starchart_repository_topic_mapping ( topic_id, repository_id )\n                        VALUES (\n                            (SELECT ID FROM starchart_project_topics WHERE name = $1),\n                            (SELECT ID FROM starchart_repositories WHERE html_url = $2)\n                        );"
+  },
+  "e570081e9603b61c9df03d5cbcfcc4bb23b1f6ba077448ed1b743ef3e0cfbf39": {
+    "describe": {
+      "columns": [
+        {
+          "name": "html_url",
+          "ordinal": 0,
+          "type_info": "Null"
+        }
+      ],
+      "nullable": [
+        true
+      ],
+      "parameters": {
+        "Right": 1
+      }
+    },
+    "query": "SELECT html_url FROM fts_repositories WHERE html_url MATCH $1;"
   },
   "ed20e6fcac091172778119cdfc68c8e511224205a0bb7c74df192dcdfbfe63f2": {
     "describe": {

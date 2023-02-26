@@ -17,21 +17,47 @@
  */
 use serde::{Deserialize, Serialize};
 
+use db_core::Repository;
+
 pub const ROUTES: Api = Api::new();
+
+#[derive(Deserialize, Serialize, Clone, Debug, Eq, PartialEq)]
+pub struct Search {
+    pub repository: &'static str,
+}
+
+impl Search {
+    const fn new() -> Search {
+        let repository = "/api/v1/search/repository";
+        Search { repository }
+    }
+}
 
 #[derive(Deserialize, Serialize, Clone, Debug, Eq, PartialEq)]
 pub struct Api {
     pub get_latest: &'static str,
+    pub search: Search,
 }
 
 impl Api {
     const fn new() -> Api {
         let get_latest = "/api/v1/federated/latest";
-        Api { get_latest }
+        let search = Search::new();
+        Api { get_latest, search }
     }
 }
 
 #[derive(Deserialize, Serialize, Clone, Debug, Eq, PartialEq)]
 pub struct LatestResp {
     pub latest: String,
+}
+
+#[derive(Deserialize, Serialize, Clone, Debug, PartialEq)]
+pub struct SearchRepositoryReq {
+    pub query: String,
+}
+
+#[derive(Deserialize, Serialize, Clone, Debug, PartialEq)]
+pub struct SearchRepositoryResp {
+    pub repositories: Vec<Repository>,
 }
