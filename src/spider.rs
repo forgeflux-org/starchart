@@ -189,7 +189,7 @@ impl Crawler {
                     break;
                 }
 
-                let forges = c.db.get_all_forges(offset, LIMIT).await.unwrap();
+                let forges = c.db.get_all_forges(false, offset, LIMIT).await.unwrap();
                 if forges.is_empty() {
                     c.federate.tar().await.unwrap();
                     page = 0;

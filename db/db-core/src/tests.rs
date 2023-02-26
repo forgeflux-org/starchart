@@ -35,7 +35,7 @@ pub async fn adding_forge_works<'a, T: SCDatabase>(
 
     {
         let forge = db.get_forge(&create_forge_msg.url).await.unwrap();
-        let forges = db.get_all_forges(0, 10).await.unwrap();
+        let forges = db.get_all_forges(true, 0, 10).await.unwrap();
         assert_eq!(forges.len(), 1);
 
         assert_eq!(

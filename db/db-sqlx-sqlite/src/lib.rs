@@ -307,10 +307,16 @@ impl SCDatabase for Database {
     }
 
     /// Get all forges
-    async fn get_all_forges(&self, offset: u32, limit: u32) -> DBResult<Vec<Forge>> {
-        let mut inter_forges = sqlx::query_as!(
-            InnerForge,
-            "SELECT
+    async fn get_all_forges(
+        &self,
+        with_imports: bool,
+        offset: u32,
+        limit: u32,
+    ) -> DBResult<Vec<Forge>> {
+        let mut inter_forges = if with_imports {
+            sqlx::query_as!(
+                InnerForge,
+                "SELECT
                 hostname,
                 last_crawl_on,
                 starchart_forge_type.name,
@@ -325,12 +331,39 @@ impl SCDatabase for Database {
                 starchart_forges.ID
             LIMIT $1 OFFSET $2;
         ",
-            limit,
-            offset
-        )
-        .fetch_all(&self.pool)
-        .await
-        .map_err(|e| DBError::DBError(Box::new(e)))?;
+                limit,
+                offset
+            )
+            .fetch_all(&self.pool)
+            .await
+            .map_err(|e| DBError::DBError(Box::new(e)))?
+        } else {
+            sqlx::query_as!(
+                InnerForge,
+                "SELECT
+                hostname,
+                last_crawl_on,
+                starchart_forge_type.name,
+                imported
+            FROM
+                starchart_forges
+            INNER JOIN
+                starchart_forge_type
+            ON
+                starchart_forges.forge_type = starchart_forge_type.id
+            WHERE 
+                starchart_forges.imported = false
+            ORDER BY
+                starchart_forges.ID
+            LIMIT $1 OFFSET $2;
+        ",
+                limit,
+                offset
+            )
+            .fetch_all(&self.pool)
+            .await
+            .map_err(|e| DBError::DBError(Box::new(e)))?
+        };
 
         let mut forges: Vec<Forge> = Vec::with_capacity(inter_forges.len());
         inter_forges.drain(0..).for_each(|f| forges.push(f.into()));

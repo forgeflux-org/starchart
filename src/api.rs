@@ -33,7 +33,7 @@ pub async fn forges(db: WebDB, q: web::Query<OptionalPage>) -> ServiceResult<imp
     let q = q.into_inner();
     let q: Page = q.into();
     let offset = q.page * LIMIT;
-    let forges = db.get_all_forges(offset, LIMIT).await?;
+    let forges = db.get_all_forges(false, offset, LIMIT).await?;
 
     Ok(HttpResponse::Ok().json(forges))
 }
