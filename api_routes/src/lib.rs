@@ -36,14 +36,20 @@ impl Search {
 #[derive(Deserialize, Serialize, Clone, Debug, Eq, PartialEq)]
 pub struct Api {
     pub get_latest: &'static str,
+    pub forges: &'static str,
     pub search: Search,
 }
 
 impl Api {
     const fn new() -> Api {
         let get_latest = "/api/v1/federated/latest";
+        let forges = "/api/v1/forges/list";
         let search = Search::new();
-        Api { get_latest, search }
+        Api {
+            get_latest,
+            search,
+            forges,
+        }
     }
 }
 
