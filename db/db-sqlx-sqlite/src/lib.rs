@@ -103,7 +103,23 @@ impl Migrate for Database {
     }
 }
 
+struct FTSRepository {
+    html_url: String,
+}
+
 impl Database {
+    async fn get_fts_repository(&self, query: &str) -> DBResult<Vec<FTSRepository>> {
+        let fts_repos = sqlx::query_as_unchecked!(
+            FTSRepository,
+            "SELECT html_url FROM fts_repositories WHERE html_url MATCH $1;",
+            query
+        )
+        .fetch_all(&self.pool)
+        .await
+        .map_err(|e| DBError::DBError(Box::new(e)))?;
+        Ok(fts_repos)
+    }
+
     async fn new_fts_repositories(
         &self,
         name: &str,
@@ -111,6 +127,9 @@ impl Database {
         website: Option<&str>,
         html_url: &str,
     ) -> DBResult<()> {
+        if !self.get_fts_repository(html_url).await?.is_empty() {
+            return Ok(());
+        }
         sqlx::query!(
             "INSERT OR IGNORE INTO fts_repositories ( name, description, website, html_url ) 
             VALUES ( $1, $2, $3, $4 );",
@@ -262,18 +281,42 @@ impl SCDatabase for Database {
         let now = now_unix_time_stamp();
         let url = db_core::clean_url(&f.url);
         let forge_type = f.forge_type.to_str();
-        sqlx::query!(
-            "INSERT INTO
-            starchart_forges (hostname, verified_on, forge_type, imported) 
-            VALUES ($1, $2, (SELECT ID FROM starchart_forge_type WHERE name = $3), $4)",
-            url,
-            now,
-            forge_type,
-            f.import,
-        )
-        .execute(&self.pool)
-        .await
-        .map_err(map_register_err)?;
+        if let Some(instance_url) = f.starchart_url {
+            sqlx::query!(
+                "INSERT INTO starchart_forges
+                    (hostname, verified_on, forge_type, starchart_instance)
+                VALUES (
+                        $1,
+                        $2,
+                        (SELECT ID FROM starchart_forge_type WHERE name = $3),
+                        (SELECT ID FROM starchart_introducer WHERE instance_url = $4)
+                    )",
+                url,
+                now,
+                forge_type,
+                instance_url
+            )
+            .execute(&self.pool)
+            .await
+            .map_err(map_register_err)?;
+        } else {
+            sqlx::query!(
+                "INSERT INTO starchart_forges
+                    (hostname, verified_on, forge_type, starchart_instance)
+                VALUES
+                    (
+                        $1, $2,
+                     (SELECT ID FROM starchart_forge_type WHERE name = $3),
+                     $4)",
+                url,
+                now,
+                forge_type,
+                f.starchart_url
+            )
+            .execute(&self.pool)
+            .await
+            .map_err(map_register_err)?;
+        }
 
         Ok(())
     }
@@ -286,7 +329,7 @@ impl SCDatabase for Database {
             "SELECT 
                 hostname,
                 last_crawl_on,
-                imported,
+                starchart_introducer.instance_url,
                 starchart_forge_type.name
             FROM
                 starchart_forges
@@ -294,6 +337,10 @@ impl SCDatabase for Database {
                 starchart_forge_type
             ON
                 starchart_forges.forge_type = starchart_forge_type.id
+            LEFT JOIN
+                starchart_introducer
+            ON
+                starchart_introducer.ID = starchart_forges.starchart_instance
             WHERE
                 hostname = $1;
             ",
@@ -320,13 +367,17 @@ impl SCDatabase for Database {
                 hostname,
                 last_crawl_on,
                 starchart_forge_type.name,
-                imported
+                starchart_introducer.instance_url
             FROM
                 starchart_forges
             INNER JOIN
                 starchart_forge_type
             ON
                 starchart_forges.forge_type = starchart_forge_type.id
+            LEFT JOIN
+                starchart_introducer
+            ON
+                starchart_introducer.ID = starchart_forges.starchart_instance
             ORDER BY
                 starchart_forges.ID
             LIMIT $1 OFFSET $2;
@@ -343,14 +394,18 @@ impl SCDatabase for Database {
                 "SELECT
                 hostname,
                 last_crawl_on,
-                starchart_forge_type.name,
-                imported
+                starchart_introducer.instance_url,
+                starchart_forge_type.name
             FROM
                 starchart_forges
             INNER JOIN
                 starchart_forge_type
             ON
                 starchart_forges.forge_type = starchart_forge_type.id
+            LEFT JOIN
+                starchart_introducer
+            ON
+                starchart_introducer.ID = starchart_forges.starchart_instance
             WHERE 
                 starchart_forges.imported = false
             ORDER BY
@@ -494,12 +549,12 @@ impl SCDatabase for Database {
         let url = db_core::clean_url(url);
         match sqlx::query!(
             "SELECT ID FROM starchart_repositories
-                    WHERE 
-                        name = $1
-                    AND
-                        owner_id = ( SELECT ID FROM starchart_users WHERE username = $2)
-                    AND
-                        hostname_id = (SELECT ID FROM starchart_forges WHERE hostname = $3)",
+                WHERE
+                    name = $1
+                AND
+                    owner_id = ( SELECT ID FROM starchart_users WHERE username = $2)
+                AND
+                    hostname_id = (SELECT ID FROM starchart_forges WHERE hostname = $3)",
             name,
             owner,
             url,
@@ -693,18 +748,7 @@ impl SCDatabase for Database {
 
     /// Search all repositories
     async fn search_repository(&self, query: &str) -> DBResult<Vec<Repository>> {
-        struct FTSRepository {
-            html_url: String,
-        }
-        let mut fts_repos = sqlx::query_as_unchecked!(
-            FTSRepository,
-            "SELECT html_url FROM fts_repositories WHERE html_url MATCH $1;",
-            query
-        )
-        .fetch_all(&self.pool)
-        .await
-        .map_err(|e| DBError::DBError(Box::new(e)))?;
-
+        let mut fts_repos = self.get_fts_repository(query).await?;
         let mut res = Vec::with_capacity(fts_repos.len());
         for fts_repo in fts_repos.drain(0..) {
             let repo = sqlx::query_as!(
@@ -774,6 +818,19 @@ impl SCDatabase for Database {
         }
         Ok(res)
     }
+
+    /// Add Starchart instance to introducer
+    async fn add_starchart_to_introducer(&self, url: &Url) -> DBResult<()> {
+        let url = url.as_str();
+        sqlx::query!(
+            "INSERT INTO starchart_introducer (instance_url) VALUES ($1);",
+            url
+        )
+        .execute(&self.pool)
+        .await
+        .map_err(map_register_err)?;
+        Ok(())
+    }
 }
 
 fn now_unix_time_stamp() -> i64 {
@@ -784,7 +841,7 @@ struct InnerForge {
     hostname: String,
     last_crawl_on: Option<i64>,
     name: String,
-    imported: bool,
+    instance_url: String,
 }
 
 impl From<InnerForge> for Forge {
@@ -793,7 +850,7 @@ impl From<InnerForge> for Forge {
             url: f.hostname,
             last_crawl_on: f.last_crawl_on,
             forge_type: ForgeImplementation::from_str(&f.name).unwrap(),
-            import: f.imported,
+            starchart_url: Some(f.instance_url),
         }
     }
 }
