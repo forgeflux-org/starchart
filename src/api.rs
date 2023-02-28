@@ -22,9 +22,9 @@ use actix_web_codegen_const_routes::get;
 pub use api_routes::*;
 
 use crate::pages::chart::home::{OptionalPage, Page};
-use crate::search;
 use crate::WebFederate;
 use crate::{errors::*, WebDB};
+use crate::{introduce, search};
 
 const LIMIT: u32 = 50;
 
@@ -48,6 +48,7 @@ pub fn services(cfg: &mut web::ServiceConfig) {
     cfg.service(lastest);
     cfg.service(forges);
     search::services(cfg);
+    introduce::services(cfg);
 }
 
 #[cfg(test)]

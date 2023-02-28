@@ -34,10 +34,23 @@ impl Search {
 }
 
 #[derive(Deserialize, Serialize, Clone, Debug, Eq, PartialEq)]
+pub struct Introducer {
+    pub list: &'static str,
+}
+
+impl Introducer {
+    const fn new() -> Introducer {
+        let list = "/api/v1/introducer/list";
+        Introducer { list }
+    }
+}
+
+#[derive(Deserialize, Serialize, Clone, Debug, Eq, PartialEq)]
 pub struct Api {
     pub get_latest: &'static str,
     pub forges: &'static str,
     pub search: Search,
+    pub introducer: Introducer,
 }
 
 impl Api {
@@ -45,10 +58,12 @@ impl Api {
         let get_latest = "/api/v1/federated/latest";
         let forges = "/api/v1/forges/list";
         let search = Search::new();
+        let introducer = Introducer::new();
         Api {
             get_latest,
             search,
             forges,
+            introducer,
         }
     }
 }
