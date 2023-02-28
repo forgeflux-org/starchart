@@ -20,6 +20,7 @@ use std::collections::HashSet;
 use actix_web::web;
 use actix_web::{HttpResponse, Responder};
 use actix_web_codegen_const_routes::get;
+use actix_web_codegen_const_routes::post;
 use url::Url;
 
 pub use api_routes::*;
@@ -81,8 +82,19 @@ pub async fn list_introductions(
     Ok(HttpResponse::Ok().json(starcharts))
 }
 
+#[post(path = "ROUTES.introducer.introduce")]
+pub async fn new_introduction(
+    db: WebDB,
+    payload: web::Json<Starchart>,
+) -> ServiceResult<impl Responder> {
+    db.add_starchart_to_introducer(&Url::parse(&payload.instance_url)?)
+        .await?;
+    Ok(HttpResponse::Ok())
+}
+
 pub fn services(cfg: &mut web::ServiceConfig) {
     cfg.service(list_introductions);
+    cfg.service(new_introduction);
 }
 
 #[cfg(test)]
@@ -93,7 +105,6 @@ mod tests {
 
     use actix_web::http::StatusCode;
     use actix_web::test;
-    use db_core::prelude::*;
     use url::Url;
 
     #[actix_rt::test]
@@ -105,6 +116,22 @@ mod tests {
         db.add_starchart_to_introducer(&Url::parse(STARCHART_URL).unwrap())
             .await
             .unwrap();
+
+        let payload = Starchart {
+            instance_url: STARCHART_URL.into(),
+        };
+
+        let resp = test::call_service(
+            &app,
+            post_request!(&payload, ROUTES.introducer.introduce).to_request(),
+        )
+        .await;
+        if resp.status() != StatusCode::OK {
+            let resp_err: ErrorToResponse = test::read_body_json(resp).await;
+            panic!("{}", resp_err.error);
+        }
+        assert_eq!(resp.status(), StatusCode::OK);
+
         let introductions_resp = get_request!(&app, ROUTES.introducer.list);
         assert_eq!(introductions_resp.status(), StatusCode::OK);
         let introductions: Vec<Starchart> = test::read_body_json(introductions_resp).await;

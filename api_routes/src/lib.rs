@@ -36,12 +36,14 @@ impl Search {
 #[derive(Deserialize, Serialize, Clone, Debug, Eq, PartialEq)]
 pub struct Introducer {
     pub list: &'static str,
+    pub introduce: &'static str,
 }
 
 impl Introducer {
     const fn new() -> Introducer {
         let list = "/api/v1/introducer/list";
-        Introducer { list }
+        let introduce = "/api/v1/introducer/new";
+        Introducer { list, introduce }
     }
 }
 

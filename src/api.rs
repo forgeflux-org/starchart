@@ -1,6 +1,6 @@
 /*
  * ForgeFlux StarChart - A federated software forge spider
- * Copyright (C) 2022  Aravinth Manivannan <realaravinth@batsense.net>
+ * Copyright (C) 2023  Aravinth Manivannan <realaravinth@batsense.net>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -43,6 +43,7 @@ pub async fn lastest(federate: WebFederate) -> ServiceResult<impl Responder> {
     let latest = federate.latest_tar_json().await.unwrap();
     Ok(HttpResponse::Ok().json(latest))
 }
+
 
 pub fn services(cfg: &mut web::ServiceConfig) {
     cfg.service(lastest);
