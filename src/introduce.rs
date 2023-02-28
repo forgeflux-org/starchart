@@ -33,6 +33,42 @@ use crate::{errors::*, WebDB};
 const LIMIT: u32 = 50;
 
 impl Ctx {
+    pub async fn import_forges(
+        &self,
+        starchart_url: Url,
+        db: &Box<dyn SCDatabase>,
+    ) -> ServiceResult<()> {
+        let mut page = 1;
+        loop {
+            let clean_starchart_url = clean_url(&starchart_url);
+            let mut url = starchart_url.clone();
+            url.set_path(ROUTES.forges);
+            url.set_query(Some(&format!("page={page}")));
+            let mut forges: Vec<Forge> = self
+                .client
+                .get(url)
+                .send()
+                .await
+                .unwrap()
+                .json()
+                .await
+                .unwrap();
+            page += 1;
+            if forges.is_empty() {
+                break;
+            }
+
+            for f in forges.drain(0..) {
+                let msg = CreateForge {
+                    starchart_url: Some(&clean_starchart_url),
+                    url: Url::parse(&f.url).unwrap(),
+                    forge_type: f.forge_type,
+                };
+                db.create_forge_instance(&msg).await?;
+            }
+        }
+        Ok(())
+    }
     pub async fn bootstrap(&self, db: &Box<dyn SCDatabase>) -> ServiceResult<()> {
         let mut known_starcharts = HashSet::with_capacity(self.settings.introducer.nodes.len());
         for starchart in self.settings.introducer.nodes.iter() {
@@ -69,8 +105,9 @@ impl Ctx {
                     let node_url = Url::parse(&node.instance_url)?;
                     db.add_starchart_to_introducer(&node_url).await?;
                     if known_starcharts.get(&node_url).is_none() {
-                        known_starcharts.insert(node_url);
+                        known_starcharts.insert(node_url.clone());
                     }
+                    self.import_forges(node_url, db).await?;
                 }
                 page += 1;
             }
