@@ -50,6 +50,18 @@ impl Ctx {
                     .json()
                     .await
                     .unwrap();
+
+                let mut introduce_url = starchart.clone();
+                introduce_url.set_path(ROUTES.introducer.introduce);
+                let introduction_payload = Starchart {
+                    instance_url: self.settings.introducer.public_url.to_string(),
+                };
+                self.client
+                    .post(introduce_url)
+                    .json(&introduction_payload)
+                    .send()
+                    .await
+                    .unwrap();
                 if nodes.is_empty() {
                     break;
                 }

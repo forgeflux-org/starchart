@@ -44,7 +44,6 @@ pub async fn lastest(federate: WebFederate) -> ServiceResult<impl Responder> {
     Ok(HttpResponse::Ok().json(latest))
 }
 
-
 pub fn services(cfg: &mut web::ServiceConfig) {
     cfg.service(lastest);
     cfg.service(forges);

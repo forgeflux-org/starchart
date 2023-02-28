@@ -129,6 +129,7 @@ pub struct Crawler {
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct Introducer {
     pub nodes: Vec<Url>,
+    pub public_url: Url,
 }
 
 #[derive(Debug, Validate, Clone, PartialEq, Serialize, Deserialize)]
