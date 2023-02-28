@@ -126,6 +126,11 @@ pub struct Crawler {
     pub wait_before_next_api_call: u64,
 }
 
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct Introducer {
+    pub nodes: Vec<Url>,
+}
+
 #[derive(Debug, Validate, Clone, PartialEq, Serialize, Deserialize)]
 pub struct Settings {
     pub log: LogLevel,
@@ -138,6 +143,7 @@ pub struct Settings {
     #[validate(email)]
     pub admin_email: String,
     pub crawler: Crawler,
+    pub introducer: Introducer,
 }
 
 #[cfg(not(tarpaulin_include))]

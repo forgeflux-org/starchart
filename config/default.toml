@@ -37,5 +37,8 @@ items_per_api_call = 20
 client_timeout = 60 # of HTTP client involved in crawling. In seconds.
 wait_before_next_api_call = 2 # in seconds
 
+[introducer]
+nodes = []
+
 [repository]
 root = "/tmp/starchart.forgeflux.org"
