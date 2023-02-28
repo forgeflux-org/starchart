@@ -30,12 +30,12 @@ pub async fn search_repository(
     db: WebDB,
 ) -> ServiceResult<impl Responder> {
     let payload = payload.into_inner();
-    let query = if !payload.query.contains('*') {
+    let query = if payload.query.contains('*') {
         payload.query
     } else {
         format!("*{}*", payload.query)
     };
-    println!("{}", query);
+    println!("search query: {}", query);
     let resp = db.search_repository(&query).await?;
     println!("search_repository method: {:?}", resp);
     Ok(HttpResponse::Ok().json(resp))
@@ -63,9 +63,8 @@ mod tests {
         const HTML_PROFILE_URL: &str = "https://search-works-test.example.com/user1";
         const USERNAME: &str = "user1";
 
-        const REPO_NAME: &str = "asdlkfjaldsfjaksdf";
-        const HTML_REPO_URL: &str =
-            "https://search-works-test.example.com/user1/asdlkfjaldsfjaksdf";
+        const REPO_NAME: &str = "searchsasdf2";
+        const HTML_REPO_URL: &str = "https://search-works-test.example.com/user1/searchsasdf2";
         const TAGS: [&str; 3] = ["test", "starchart", "spider"];
 
         let (db, ctx, federate, _tmpdir) = sqlx_sqlite::get_ctx().await;
@@ -76,7 +75,7 @@ mod tests {
         let create_forge_msg = CreateForge {
             url: url.clone(),
             forge_type: ForgeImplementation::Gitea,
-            import: false,
+            starchart_url: None,
         };
 
         let add_user_msg = AddUser {
