@@ -258,15 +258,23 @@
     },
     "query": "SELECT ID FROM starchart_repositories\n                WHERE\n                    name = $1\n                AND\n                    owner_id = ( SELECT ID FROM starchart_users WHERE username = $2)\n                AND\n                    hostname_id = (SELECT ID FROM starchart_forges WHERE hostname = $3)"
   },
-  "7f61c8a9befb15076c783601325de9f761bec88e726243a323714ebb645d8f0e": {
+  "96e6de65010251e364c654901cd627a9ce25e98cf0277b10e97fec36ed6db25c": {
     "describe": {
-      "columns": [],
-      "nullable": [],
+      "columns": [
+        {
+          "name": "instance_url",
+          "ordinal": 0,
+          "type_info": "Text"
+        }
+      ],
+      "nullable": [
+        false
+      ],
       "parameters": {
-        "Right": 1
+        "Right": 2
       }
     },
-    "query": "INSERT INTO starchart_introducer (instance_url) VALUES ($1);"
+    "query": "SELECT\n                instance_url\n            FROM\n                starchart_introducer\n            LIMIT $1 OFFSET $2;\n        "
   },
   "989fdcfc0088ac19ffbe29bba5349d2dcade134fa2b450769ec617d91f88ffe1": {
     "describe": {
@@ -521,6 +529,16 @@
       }
     },
     "query": " DELETE FROM starchart_repositories\n                    WHERE \n                        name = $1\n                    AND\n                        owner_id = ( SELECT ID FROM starchart_users WHERE username = $2)\n                    AND\n                        hostname_id = (SELECT ID FROM starchart_forges WHERE hostname = $3)"
+  },
+  "efefccb1c7c44cecb34a6b2548662715695d7c07cea06a23090b3b0c0a21d1e2": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Right": 1
+      }
+    },
+    "query": "INSERT OR IGNORE INTO\n                starchart_introducer (instance_url)\n            VALUES ($1);"
   },
   "f162b8469f951609e5fa026fa14b074361a4c206b34a8e6ed048d2e54157f4bb": {
     "describe": {

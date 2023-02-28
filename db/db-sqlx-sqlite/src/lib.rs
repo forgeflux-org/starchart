@@ -823,7 +823,9 @@ impl SCDatabase for Database {
     async fn add_starchart_to_introducer(&self, url: &Url) -> DBResult<()> {
         let url = url.as_str();
         sqlx::query!(
-            "INSERT INTO starchart_introducer (instance_url) VALUES ($1);",
+            "INSERT OR IGNORE INTO
+                starchart_introducer (instance_url)
+            VALUES ($1);",
             url
         )
         .execute(&self.pool)
