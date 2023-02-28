@@ -28,8 +28,10 @@ pub mod db;
 pub mod dns;
 pub mod errors;
 pub mod federate;
+pub mod introduce;
 pub mod pages;
 pub mod routes;
+pub mod search;
 pub mod settings;
 pub mod spider;
 pub mod static_assets;
@@ -82,8 +84,14 @@ async fn main() {
 
     let crawler_fut = tokio::spawn(spider::Crawler::start(crawler.clone()));
     let ctx = WebCtx::new(ctx);
+    ctx.bootstrap(&db).await.unwrap();
+
+    let c = ctx.clone();
+    let d = db.clone();
+    let f = federate.clone();
+
     let socket_addr = settings.server.get_ip();
-    HttpServer::new(move || {
+    let server_fut = HttpServer::new(move || {
         App::new()
             .wrap(middleware::Logger::default())
             .wrap(middleware::Compress::default())
@@ -98,10 +106,19 @@ async fn main() {
     })
     .bind(&socket_addr)
     .unwrap()
-    .run()
+    .run();
+    //    .await
+    //    .unwrap();
+
+    let s = tokio::spawn(server_fut);
+    f.import(
+        url::Url::parse("http://localhost:7000").unwrap(),
+        &c.client,
+        &d,
+    )
     .await
     .unwrap();
-
     kill_crawler.send(true).unwrap();
     crawler_fut.await.unwrap().await;
+    s.await.unwrap().unwrap();
 }

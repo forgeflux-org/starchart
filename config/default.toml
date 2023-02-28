@@ -38,6 +38,7 @@ client_timeout = 60 # of HTTP client involved in crawling. In seconds.
 wait_before_next_api_call = 2 # in seconds
 
 [introducer]
+#nodes = ["http://localhost:7000"]
 nodes = []
 
 [repository]

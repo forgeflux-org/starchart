@@ -15,18 +15,56 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
+use std::collections::HashSet;
+
 use actix_web::web;
 use actix_web::{HttpResponse, Responder};
 use actix_web_codegen_const_routes::get;
+use url::Url;
 
 pub use api_routes::*;
+use db_core::prelude::*;
 
+use crate::ctx::Ctx;
 use crate::pages::chart::home::{OptionalPage, Page};
-use crate::search;
-use crate::WebFederate;
 use crate::{errors::*, WebDB};
 
 const LIMIT: u32 = 50;
+
+impl Ctx {
+    pub async fn bootstrap(&self, db: &Box<dyn SCDatabase>) -> ServiceResult<()> {
+        let mut known_starcharts = HashSet::with_capacity(self.settings.introducer.nodes.len());
+        for starchart in self.settings.introducer.nodes.iter() {
+            let mut page = 1;
+            loop {
+                let mut url = starchart.clone();
+                url.set_path(ROUTES.introducer.list);
+                url.set_query(Some(&format!("page={page}")));
+                let mut nodes: Vec<Starchart> = self
+                    .client
+                    .get(url)
+                    .send()
+                    .await
+                    .unwrap()
+                    .json()
+                    .await
+                    .unwrap();
+                if nodes.is_empty() {
+                    break;
+                }
+                for node in nodes.drain(0..) {
+                    let node_url = Url::parse(&node.instance_url)?;
+                    db.add_starchart_to_introducer(&node_url).await?;
+                    if known_starcharts.get(&node_url).is_none() {
+                        known_starcharts.insert(node_url);
+                    }
+                }
+                page += 1;
+            }
+        }
+        Ok(())
+    }
+}
 
 #[get(path = "ROUTES.introducer.list")]
 pub async fn list_introductions(
