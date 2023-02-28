@@ -60,13 +60,15 @@ pub mod dev {
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 /// create a new forge on the database
-pub struct CreateForge {
+pub struct CreateForge<'a> {
+    /// url of the Starchart instance
+    /// None = local instance
+    /// Some(&'a str) = foreign instance
+    pub starchart_url: Option<&'a str>,
     /// url of the forge instance: with scheme but remove trailing slash
     pub url: Url,
     /// forge type: which software is the instance running?
     pub forge_type: ForgeImplementation,
-    /// is this forge an import
-    pub import: bool,
 }
 
 /// Get url from URL
@@ -136,14 +138,16 @@ pub struct AddRepository<'a> {
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 /// data representing a forge instance
 pub struct Forge {
+    /// url of the Starchart instance
+    /// None = local instance
+    /// Some(&'a str) = foreign instance
+    pub starchart_url: Option<String>,
     /// url of the forge
     pub url: String,
     /// type of the forge
     pub forge_type: ForgeImplementation,
     /// last crawl
     pub last_crawl_on: Option<i64>,
-    /// is this forge an import
-    pub import: bool,
 }
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
@@ -225,6 +229,9 @@ pub trait SCDatabase: std::marker::Send + std::marker::Sync + CloneSPDatabase {
 
     /// Search all repositories
     async fn search_repository(&self, query: &str) -> DBResult<Vec<Repository>>;
+
+    /// Add Starchart instance to introducer
+    async fn add_starchart_to_introducer(&self, url: &Url) -> DBResult<()>;
 }
 
 /// Trait to clone SCDatabase

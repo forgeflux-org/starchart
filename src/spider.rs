@@ -48,7 +48,7 @@ impl Ctx {
             let msg = CreateForge {
                 url: url.clone(),
                 forge_type: forge.forge_type(),
-                import: false,
+                starchart_url: None,
             };
 
             db.create_forge_instance(&msg).await.unwrap();
@@ -57,7 +57,7 @@ impl Ctx {
             let msg = CreateForge {
                 url: url.clone(),
                 forge_type: forge.forge_type,
-                import: false,
+                starchart_url: None,
             };
             federate.create_forge_instance(&msg).await.unwrap();
         }

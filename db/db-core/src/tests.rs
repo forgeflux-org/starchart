@@ -21,7 +21,7 @@ use crate::prelude::*;
 /// adding forge works
 pub async fn adding_forge_works<'a, T: SCDatabase>(
     db: &T,
-    create_forge_msg: CreateForge,
+    create_forge_msg: CreateForge<'a>,
     add_user_msg: AddUser<'a>,
     add_user_msg2: AddUser<'a>,
     add_repo_msg: AddRepository<'a>,
@@ -35,20 +35,13 @@ pub async fn adding_forge_works<'a, T: SCDatabase>(
 
     {
         let forge = db.get_forge(&create_forge_msg.url).await.unwrap();
-        let forges = db.get_all_forges(true, 0, 10).await.unwrap();
-        assert_eq!(forges.len(), 1);
+        let forges = db.get_all_forges(true, 0, 100).await.unwrap();
+        assert!(forges
+            .iter()
+            .any(|f| f.url == create_forge_msg.url.to_string()));
 
-        assert_eq!(
-            forges.get(0).as_ref().unwrap().forge_type,
-            create_forge_msg.forge_type
-        );
-        assert_eq!(
-            forges.get(0).as_ref().unwrap().url,
-            crate::clean_url(&create_forge_msg.url)
-        );
-
-        assert_eq!(forge.url, crate::clean_url(&create_forge_msg.url));
         assert_eq!(forge.forge_type, create_forge_msg.forge_type);
+        assert_eq!(forge.url, crate::clean_url(&create_forge_msg.url));
     }
 
     // add user

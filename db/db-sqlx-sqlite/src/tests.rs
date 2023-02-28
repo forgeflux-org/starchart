@@ -40,7 +40,7 @@ async fn everything_works() {
     let create_forge_msg = CreateForge {
         url: url.clone(),
         forge_type: ForgeImplementation::Gitea,
-        import: false,
+        starchart_url: None,
     };
 
     let add_user_msg = AddUser {

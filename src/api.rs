@@ -80,7 +80,7 @@ mod tests {
         let create_forge_msg = CreateForge {
             url: url.clone(),
             forge_type: ForgeImplementation::Gitea,
-            import: false,
+            starchart_url: None,
         };
 
         let _ = db.delete_forge_instance(&create_forge_msg.url).await;
