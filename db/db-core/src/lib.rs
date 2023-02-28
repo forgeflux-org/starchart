@@ -59,6 +59,13 @@ pub mod dev {
 }
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+/// Data related to a Starchart instance
+pub struct Starchart {
+    /// URL of the Starchart instance
+    pub instance_url: String,
+}
+
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 /// create a new forge on the database
 pub struct CreateForge<'a> {
     /// url of the Starchart instance
@@ -232,6 +239,13 @@ pub trait SCDatabase: std::marker::Send + std::marker::Sync + CloneSPDatabase {
 
     /// Add Starchart instance to introducer
     async fn add_starchart_to_introducer(&self, url: &Url) -> DBResult<()>;
+
+    /// Get all introduced Starchart instances
+    async fn get_all_introduced_starchart_instances(
+        &self,
+        offset: u32,
+        limit: u32,
+    ) -> DBResult<Vec<Starchart>>;
 }
 
 /// Trait to clone SCDatabase

@@ -831,6 +831,29 @@ impl SCDatabase for Database {
         .map_err(map_register_err)?;
         Ok(())
     }
+
+    /// Get all introduced Starchart instances
+    async fn get_all_introduced_starchart_instances(
+        &self,
+        offset: u32,
+        limit: u32,
+    ) -> DBResult<Vec<Starchart>> {
+        let s = sqlx::query_as!(
+            Starchart,
+            "SELECT
+                instance_url
+            FROM
+                starchart_introducer
+            LIMIT $1 OFFSET $2;
+        ",
+            limit,
+            offset
+        )
+        .fetch_all(&self.pool)
+        .await
+        .map_err(|e| DBError::DBError(Box::new(e)))?;
+        Ok(s)
+    }
 }
 
 fn now_unix_time_stamp() -> i64 {

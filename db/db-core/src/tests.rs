@@ -108,3 +108,15 @@ pub async fn forge_type_exists_helper<T: SCDatabase>(db: &T) {
     println!("Testing forge implementation exists for: {}", f.to_str());
     assert!(db.forge_type_exists(&f).await.unwrap());
 }
+
+/// test if all instance introducer methods work
+pub async fn instance_introducer_helper<T: SCDatabase>(db: &T, instance_url: &Url) {
+    db.add_starchart_to_introducer(instance_url).await.unwrap();
+    let instances = db
+        .get_all_introduced_starchart_instances(0, 100)
+        .await
+        .unwrap();
+    assert!(instances
+        .iter()
+        .any(|i| i.instance_url == instance_url.as_str()));
+}

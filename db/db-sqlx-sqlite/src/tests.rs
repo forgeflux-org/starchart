@@ -90,6 +90,17 @@ async fn everything_works() {
 }
 
 #[actix_rt::test]
+async fn introducer_works() {
+    let url = env::var("SQLITE_DATABASE_URL").expect("Set SQLITE_DATABASE_URL env var");
+    let pool_options = SqlitePoolOptions::new().max_connections(2);
+    let connection_options = ConnectionOptions::Fresh(Fresh { pool_options, url });
+    let db = connection_options.connect().await.unwrap();
+
+    let instance_url = Url::parse("https://introducer_works_sqlite_sqlx.example.com").unwrap();
+    instance_introducer_helper(&db, &instance_url).await;
+}
+
+#[actix_rt::test]
 async fn forge_type_exists() {
     let url = env::var("SQLITE_DATABASE_URL").expect("Set SQLITE_DATABASE_URL env var");
     let pool_options = SqlitePoolOptions::new().max_connections(2);
