@@ -856,6 +856,60 @@ impl SCDatabase for Database {
         .map_err(|e| DBError::DBError(Box::new(e)))?;
         Ok(s)
     }
+
+    /// Add word to mini index
+    async fn add_word_to_mini_index(&self, word: &str) -> DBResult<()> {
+        sqlx::query!(
+            "INSERT OR IGNORE INTO starchart_mini_index ( word ) 
+            VALUES ( $1);",
+            word,
+        )
+        .execute(&self.pool)
+        .await
+        .map_err(map_register_err)?;
+        Ok(())
+    }
+
+    /// Remove word from mini index
+    async fn rm_word_from_mini_index(&self, word: &str) -> DBResult<()> {
+        sqlx::query!("DELETE FROM starchart_mini_index WHERE word = ($1)", word)
+            .execute(&self.pool)
+            .await
+            .map_err(|e| DBError::DBError(Box::new(e)))?;
+        Ok(())
+    }
+
+    /// Check if word exists in mini index
+    async fn is_word_mini_indexed(&self, word: &str) -> DBResult<bool> {
+        match sqlx::query!("SELECT ID FROM starchart_mini_index WHERE word = $1", word)
+            .fetch_one(&self.pool)
+            .await
+        {
+            Ok(_) => Ok(true),
+            Err(Error::RowNotFound) => Ok(false),
+            Err(e) => Err(DBError::DBError(Box::new(e).into())),
+        }
+    }
+
+    /// consolidate and export mini index
+    async fn export_mini_index(&self) -> DBResult<String> {
+        struct Words {
+            word: String,
+        }
+        let mut words = sqlx::query_as!(Words, "SELECT word FROM starchart_mini_index")
+            .fetch_all(&self.pool)
+            .await
+            .map_err(|e| DBError::DBError(Box::new(e)))?;
+        let mut mini_index = String::default();
+        words.drain(0..).for_each(|w| {
+            mini_index = if mini_index.is_empty() {
+                w.word
+            } else {
+                format!("{mini_index} {}", w.word)
+            }
+        });
+        Ok(mini_index)
+    }
 }
 
 fn now_unix_time_stamp() -> i64 {

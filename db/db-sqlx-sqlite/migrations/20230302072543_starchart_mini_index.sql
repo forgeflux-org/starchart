@@ -1,0 +1,4 @@
+CREATE TABLE IF NOT EXISTS starchart_mini_index (
+    word TEXT NOT NULL UNIQUE,
+    ID INTEGER PRIMARY KEY NOT NULL
+);

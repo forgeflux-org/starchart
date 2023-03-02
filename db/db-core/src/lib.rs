@@ -246,6 +246,18 @@ pub trait SCDatabase: std::marker::Send + std::marker::Sync + CloneSPDatabase {
         offset: u32,
         limit: u32,
     ) -> DBResult<Vec<Starchart>>;
+
+    /// Add word to mini index
+    async fn add_word_to_mini_index(&self, word: &str) -> DBResult<()>;
+
+    /// Remove word from mini index
+    async fn rm_word_from_mini_index(&self, word: &str) -> DBResult<()>;
+
+    /// Check if word exists in mini index
+    async fn is_word_mini_indexed(&self, word: &str) -> DBResult<bool>;
+
+    /// consolidate and export mini index
+    async fn export_mini_index(&self) -> DBResult<String>;
 }
 
 /// Trait to clone SCDatabase

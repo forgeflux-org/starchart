@@ -120,3 +120,22 @@ pub async fn instance_introducer_helper<T: SCDatabase>(db: &T, instance_url: &Ur
         .iter()
         .any(|i| i.instance_url == instance_url.as_str()));
 }
+
+/// test if all instance introducer methods work
+pub async fn mini_index_helper<T: SCDatabase>(db: &T) {
+    // batman is repeated twice but mini-index should contain it only once
+    // Batman is different from Batman; mini-index is case-sensitive
+    const WORDS: [&str; 5] = ["batman", "superman", "aquaman", "Batman", "batman"];
+
+    let expected_mini_index = "superman aquaman Batman batman";
+
+    for w in WORDS.iter() {
+        db.rm_word_from_mini_index(w).await.unwrap();
+        assert!(!db.is_word_mini_indexed(w).await.unwrap());
+        db.add_word_to_mini_index(w).await.unwrap();
+        assert!(db.is_word_mini_indexed(w).await.unwrap());
+    }
+
+    let mini_index = db.export_mini_index().await.unwrap();
+    assert_eq!(mini_index, expected_mini_index);
+}

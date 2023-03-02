@@ -10,6 +10,24 @@
     },
     "query": "INSERT OR IGNORE INTO fts_repositories ( name, description, website, html_url ) \n            VALUES ( $1, $2, $3, $4 );"
   },
+  "0b179588df37779f563f0ad8c43e920a8bc22b3eed682778cef9dd05608f9691": {
+    "describe": {
+      "columns": [
+        {
+          "name": "ID",
+          "ordinal": 0,
+          "type_info": "Int64"
+        }
+      ],
+      "nullable": [
+        false
+      ],
+      "parameters": {
+        "Right": 1
+      }
+    },
+    "query": "SELECT ID FROM starchart_mini_index WHERE word = $1"
+  },
   "0bb37cc79d5ef803285d05d06e6ef93b62c0b532c0298148fe436178761fd70a": {
     "describe": {
       "columns": [
@@ -239,6 +257,16 @@
       }
     },
     "query": "SELECT\n                hostname,\n                last_crawl_on,\n                starchart_forge_type.name,\n                starchart_introducer.instance_url\n            FROM\n                starchart_forges\n            INNER JOIN\n                starchart_forge_type\n            ON\n                starchart_forges.forge_type = starchart_forge_type.id\n            LEFT JOIN\n                starchart_introducer\n            ON\n                starchart_introducer.ID = starchart_forges.starchart_instance\n            ORDER BY\n                starchart_forges.ID\n            LIMIT $1 OFFSET $2;\n        "
+  },
+  "7a2ad86f18ed9106b21566cfe810adc7f907143939409cadf361aec1572f76e3": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Right": 1
+      }
+    },
+    "query": "DELETE FROM starchart_mini_index WHERE word = ($1)"
   },
   "7ee4e3e06dc7dea3b514c0d7632c916ee0d9346fd52af43563d47f3c4deff22d": {
     "describe": {
@@ -567,5 +595,33 @@
       }
     },
     "query": "DELETE FROM starchart_forges WHERE hostname = ($1)"
+  },
+  "f9aad84b4586954c224ddb0c2a60409c77589d856acd74c14fcec3799aa23407": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Right": 1
+      }
+    },
+    "query": "INSERT OR IGNORE INTO starchart_mini_index ( word ) \n            VALUES ( $1);"
+  },
+  "f9fb014c5e0a32d7f51b78c08439a06b30f46ebadd28b062b313a7faf0f0aef1": {
+    "describe": {
+      "columns": [
+        {
+          "name": "word",
+          "ordinal": 0,
+          "type_info": "Text"
+        }
+      ],
+      "nullable": [
+        false
+      ],
+      "parameters": {
+        "Right": 0
+      }
+    },
+    "query": "SELECT word FROM starchart_mini_index"
   }
 }
