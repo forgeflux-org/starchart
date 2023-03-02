@@ -33,26 +33,34 @@ use crate::{errors::*, WebDB};
 const LIMIT: u32 = 50;
 
 impl Ctx {
+    async fn client_get_forges(
+        &self,
+        starchart_url: &Url,
+        page: usize,
+    ) -> ServiceResult<Vec<Forge>> {
+        let mut url = starchart_url.clone();
+        url.set_path(ROUTES.forges);
+        url.set_query(Some(&format!("page={page}")));
+        Ok(self
+            .client
+            .get(url)
+            .send()
+            .await
+            .unwrap()
+            .json()
+            .await
+            .unwrap())
+    }
     pub async fn import_forges(
         &self,
         starchart_url: Url,
         db: &Box<dyn SCDatabase>,
     ) -> ServiceResult<()> {
+        let clean_starchart_url = clean_url(&starchart_url);
         let mut page = 1;
         loop {
-            let clean_starchart_url = clean_url(&starchart_url);
-            let mut url = starchart_url.clone();
-            url.set_path(ROUTES.forges);
-            url.set_query(Some(&format!("page={page}")));
-            let mut forges: Vec<Forge> = self
-                .client
-                .get(url)
-                .send()
-                .await
-                .unwrap()
-                .json()
-                .await
-                .unwrap();
+            let mut forges = self.client_get_forges(&starchart_url, page).await?;
+
             page += 1;
             if forges.is_empty() {
                 break;
@@ -69,35 +77,50 @@ impl Ctx {
         }
         Ok(())
     }
+
+    async fn client_get_introducions(
+        &self,
+        mut starchart_url: Url,
+        page: usize,
+    ) -> ServiceResult<Vec<Starchart>> {
+        starchart_url.set_path(ROUTES.introducer.list);
+        starchart_url.set_query(Some(&format!("page={page}")));
+        Ok(self
+            .client
+            .get(starchart_url)
+            .send()
+            .await
+            .unwrap()
+            .json()
+            .await
+            .unwrap())
+    }
+    pub async fn client_introduce_starchart(&self, mut starchart_url: Url) -> ServiceResult<()> {
+        starchart_url.set_path(ROUTES.introducer.introduce);
+        let introduction_payload = Starchart {
+            instance_url: self.settings.introducer.public_url.to_string(),
+        };
+        self.client
+            .post(starchart_url)
+            .json(&introduction_payload)
+            .send()
+            .await
+            .unwrap();
+
+        Ok(())
+    }
+
     pub async fn bootstrap(&self, db: &Box<dyn SCDatabase>) -> ServiceResult<()> {
         let mut known_starcharts = HashSet::with_capacity(self.settings.introducer.nodes.len());
         for starchart in self.settings.introducer.nodes.iter() {
             let mut page = 1;
             loop {
-                let mut url = starchart.clone();
-                url.set_path(ROUTES.introducer.list);
-                url.set_query(Some(&format!("page={page}")));
-                let mut nodes: Vec<Starchart> = self
-                    .client
-                    .get(url)
-                    .send()
-                    .await
-                    .unwrap()
-                    .json()
-                    .await
-                    .unwrap();
+                let mut nodes = self
+                    .client_get_introducions(starchart.clone(), page)
+                    .await?;
 
-                let mut introduce_url = starchart.clone();
-                introduce_url.set_path(ROUTES.introducer.introduce);
-                let introduction_payload = Starchart {
-                    instance_url: self.settings.introducer.public_url.to_string(),
-                };
-                self.client
-                    .post(introduce_url)
-                    .json(&introduction_payload)
-                    .send()
-                    .await
-                    .unwrap();
+                self.client_introduce_starchart(starchart.clone()).await?;
+
                 if nodes.is_empty() {
                     break;
                 }
