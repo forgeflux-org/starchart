@@ -73,8 +73,8 @@ async fn everything_works() {
         name: REPO_NAME,
         tags: Some(TAGS.into()),
         owner: USERNAME,
-        website: None,
-        description: None,
+        website: "https://starcahrt-sqlite-test.example.org".into(),
+        description: "starchart sqlite test repo sescription".into(),
         url,
         import: false,
     };

@@ -66,6 +66,7 @@ pub async fn adding_forge_works<'a, T: SCDatabase>(
         .user_exists(add_user_msg.username, Some(&add_user_msg.url))
         .await
         .unwrap());
+    assert!(db.is_word_mini_indexed(&add_user_msg2.username).await.unwrap());
 
     // add repository
     db.create_repository(&add_repo_msg).await.unwrap();
@@ -74,6 +75,10 @@ pub async fn adding_forge_works<'a, T: SCDatabase>(
         .repository_exists(add_repo_msg.name, add_repo_msg.owner, &add_repo_msg.url)
         .await
         .unwrap());
+    assert!(db.is_word_mini_indexed(&add_repo_msg.owner).await.unwrap());
+    assert!(db.is_word_mini_indexed(&add_repo_msg.name).await.unwrap());
+    assert!(db.is_word_mini_indexed(&add_repo_msg.description.unwrap()).await.unwrap());
+    assert!(db.is_word_mini_indexed(&add_repo_msg.website.unwrap()).await.unwrap());
 
     assert!(db.get_all_repositories(00, 1000).await.unwrap().len() >= 1);
     let repo_search = db.search_repository(add_repo_msg.name).await.unwrap();
@@ -137,5 +142,5 @@ pub async fn mini_index_helper<T: SCDatabase>(db: &T) {
     }
 
     let mini_index = db.export_mini_index().await.unwrap();
-    assert_eq!(mini_index, expected_mini_index);
+    assert!(mini_index.contains(expected_mini_index));
 }

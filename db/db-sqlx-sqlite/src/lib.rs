@@ -273,6 +273,7 @@ impl SCDatabase for Database {
             .execute(&self.pool)
             .await
             .map_err(|e| DBError::DBError(Box::new(e)))?;
+        self.rm_word_from_mini_index(&url).await?;
         Ok(())
     }
 
@@ -317,6 +318,8 @@ impl SCDatabase for Database {
             .await
             .map_err(map_register_err)?;
         }
+
+        self.add_word_to_mini_index(&url).await?;
 
         Ok(())
     }
@@ -478,6 +481,7 @@ impl SCDatabase for Database {
         .await
         .map_err(map_register_err)?;
         self.new_fts_user(u.username).await?;
+        self.add_word_to_mini_index(u.username).await?;
 
         Ok(())
     }
@@ -600,6 +604,13 @@ impl SCDatabase for Database {
 
         self.new_fts_repositories(r.name, r.description, r.website, r.html_link)
             .await?;
+        if let Some(description) = r.description {
+            self.add_word_to_mini_index(description).await?;
+        }
+        self.add_word_to_mini_index(r.name).await?;
+        if let Some(website) = r.website {
+            self.add_word_to_mini_index(website).await?;
+        }
 
         if let Some(topics) = &r.tags {
             for topic in topics.iter() {
@@ -612,6 +623,7 @@ impl SCDatabase for Database {
                 .map_err(map_register_err)?;
 
                 self.new_fts_topic(topic).await?;
+                self.add_word_to_mini_index(topic).await?;
 
                 sqlx::query!(
                     "
@@ -634,8 +646,12 @@ impl SCDatabase for Database {
 
     /// delete user
     async fn delete_user(&self, username: &str, url: &Url) -> DBResult<()> {
+        let user = self.get_user(username, &url).await?;
+        self.rm_word_from_mini_index(&user.username).await?;
+
         let url = db_core::clean_url(url);
         // TODO fts delete user
+
         sqlx::query!(
             " DELETE FROM starchart_users WHERE username = $1 AND 
                 hostname_id = (SELECT ID FROM starchart_forges WHERE hostname = $2)",
@@ -652,6 +668,23 @@ impl SCDatabase for Database {
     async fn delete_repository(&self, owner: &str, name: &str, url: &Url) -> DBResult<()> {
         let url = db_core::clean_url(url);
         // TODO fts delete repo
+
+        let repo = self.search_repository(&url).await?;
+        if !repo.is_empty() {
+            if let Some(r) = repo
+                .iter()
+                .find(|r| r.username == owner && r.name == name && r.url == url)
+            {
+                if let Some(description) = &r.description {
+                    self.add_word_to_mini_index(description).await?;
+                }
+                self.add_word_to_mini_index(&r.name).await?;
+                if let Some(website) = &r.website {
+                    self.add_word_to_mini_index(website).await?;
+                }
+            }
+        }
+
         sqlx::query!(
             " DELETE FROM starchart_repositories
                     WHERE 
