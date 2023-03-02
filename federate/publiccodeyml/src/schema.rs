@@ -145,12 +145,9 @@ impl Repository {
             .get("en")
             .as_ref()
             .unwrap()
-            .short_description.as_deref();
-        let website = self
-            .description
-            .get("en")
-            .unwrap()
-            .documentation.as_deref();
+            .short_description
+            .as_deref();
+        let website = self.description.get("en").unwrap().documentation.as_deref();
         AddRepository {
             html_link: self.url.as_str(),
             tags,

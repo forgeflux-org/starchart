@@ -15,18 +15,40 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-use crate::errors::*;
+use crate::{errors::*, WebCtx};
 use actix_web::web;
 use actix_web::{HttpResponse, Responder};
 use actix_web_codegen_const_routes::post;
+use db_core::Repository;
+use url::Url;
 
+use crate::Ctx;
 use crate::WebDB;
 
 pub use crate::api::{SearchRepositoryReq, ROUTES};
 
+impl Ctx {
+    async fn client_federated_search(
+        &self,
+        mut starchart_url: Url,
+    ) -> ServiceResult<Vec<Repository>> {
+        starchart_url.set_path(ROUTES.forges);
+        Ok(self
+            .client
+            .get(starchart_url)
+            .send()
+            .await
+            .unwrap()
+            .json()
+            .await
+            .unwrap())
+    }
+}
+
 #[post(path = "ROUTES.search.repository")]
 pub async fn search_repository(
     payload: web::Json<SearchRepositoryReq>,
+    ctx: WebCtx,
     db: WebDB,
 ) -> ServiceResult<impl Responder> {
     let payload = payload.into_inner();
@@ -36,7 +58,16 @@ pub async fn search_repository(
         format!("*{}*", payload.query)
     };
     let local_resp = db.search_repository(&query).await?;
-    Ok(HttpResponse::Ok().json(local_resp))
+    let mut federated_resp = Vec::default();
+
+    for starchart in db.search_mini_index(&query).await?.iter() {
+        let resp = ctx.client_federated_search(Url::parse(starchart)?).await?;
+        federated_resp.extend(resp);
+    }
+
+    federated_resp.extend(local_resp);
+
+    Ok(HttpResponse::Ok().json(federated_resp))
 }
 
 pub fn services(cfg: &mut web::ServiceConfig) {
