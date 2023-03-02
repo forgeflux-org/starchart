@@ -258,6 +258,19 @@ pub trait SCDatabase: std::marker::Send + std::marker::Sync + CloneSPDatabase {
 
     /// consolidate and export mini index
     async fn export_mini_index(&self) -> DBResult<String>;
+
+    /// Import mini-index
+    async fn import_mini_index(
+        &self,
+        starchart_instance_url: &Url,
+        mini_index: &str,
+    ) -> DBResult<()>;
+
+    /// Delete imported mini-index
+    async fn rm_imported_mini_index(&self, starchart_instance_url: &Url) -> DBResult<()>;
+
+    /// Search mini index
+    async fn search_mini_index(&self, query: &str) -> DBResult<Vec<String>>;
 }
 
 /// Trait to clone SCDatabase

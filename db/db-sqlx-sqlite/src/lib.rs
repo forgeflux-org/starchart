@@ -108,6 +108,35 @@ struct FTSRepository {
 }
 
 impl Database {
+    async fn get_federated_mini_index_matrches(&self, query: &str) -> DBResult<Vec<String>> {
+        struct Match {
+            instance_url: String,
+        }
+        let mut fts_mini_index_matches = sqlx::query_as!(
+            Match,
+            "SELECT
+                starchart_introducer.instance_url
+            FROM 
+                starchart_federated_mini_index
+            INNER JOIN
+                starchart_introducer
+            ON
+                starchart_introducer.ID = starchart_instance 
+            WHERE
+                mini_index MATCH $1",
+            query
+        )
+        .fetch_all(&self.pool)
+        .await
+        .map_err(|e| DBError::DBError(Box::new(e)))?;
+
+        let mut res = Vec::with_capacity(fts_mini_index_matches.len());
+        fts_mini_index_matches
+            .drain(0..)
+            .for_each(|m| res.push(m.instance_url));
+
+        Ok(res)
+    }
     async fn get_fts_repository(&self, query: &str) -> DBResult<Vec<FTSRepository>> {
         let fts_repos = sqlx::query_as_unchecked!(
             FTSRepository,
@@ -942,6 +971,52 @@ impl SCDatabase for Database {
             }
         });
         Ok(mini_index)
+    }
+
+    /// Import mini-index
+    async fn import_mini_index(
+        &self,
+        starchart_instance_url: &Url,
+        mini_index: &str,
+    ) -> DBResult<()> {
+        // delete old index before importing fresh index
+        let _ = self.rm_imported_mini_index(&starchart_instance_url).await;
+        let url = db_core::clean_url(starchart_instance_url);
+        sqlx::query!(
+            "INSERT OR IGNORE INTO
+                starchart_federated_mini_index
+            (mini_index, starchart_instance)
+            VALUES ($1, (SELECT ID FROM starchart_introducer WHERE instance_url = $2));",
+            mini_index,
+            url
+        )
+        .execute(&self.pool)
+        .await
+        .map_err(map_register_err)?;
+        Ok(())
+    }
+
+    /// Delete imported mini-index
+    async fn rm_imported_mini_index(&self, starchart_instance_url: &Url) -> DBResult<()> {
+        let url = db_core::clean_url(starchart_instance_url);
+        sqlx::query!(
+            "
+                DELETE FROM starchart_federated_mini_index
+                WHERE 
+                    starchart_instance = (
+                        SELECT ID FROM starchart_introducer
+                        WHERE instance_url = $1
+                    )",
+            url
+        )
+        .execute(&self.pool)
+        .await
+        .map_err(|e| DBError::DBError(Box::new(e)))?;
+        Ok(())
+    }
+    /// Search mini index
+    async fn search_mini_index(&self, query: &str) -> DBResult<Vec<String>> {
+        self.get_federated_mini_index_matrches(query).await
     }
 }
 

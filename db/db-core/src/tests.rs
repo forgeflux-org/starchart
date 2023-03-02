@@ -66,7 +66,10 @@ pub async fn adding_forge_works<'a, T: SCDatabase>(
         .user_exists(add_user_msg.username, Some(&add_user_msg.url))
         .await
         .unwrap());
-    assert!(db.is_word_mini_indexed(&add_user_msg2.username).await.unwrap());
+    assert!(db
+        .is_word_mini_indexed(&add_user_msg2.username)
+        .await
+        .unwrap());
 
     // add repository
     db.create_repository(&add_repo_msg).await.unwrap();
@@ -77,8 +80,14 @@ pub async fn adding_forge_works<'a, T: SCDatabase>(
         .unwrap());
     assert!(db.is_word_mini_indexed(&add_repo_msg.owner).await.unwrap());
     assert!(db.is_word_mini_indexed(&add_repo_msg.name).await.unwrap());
-    assert!(db.is_word_mini_indexed(&add_repo_msg.description.unwrap()).await.unwrap());
-    assert!(db.is_word_mini_indexed(&add_repo_msg.website.unwrap()).await.unwrap());
+    assert!(db
+        .is_word_mini_indexed(&add_repo_msg.description.unwrap())
+        .await
+        .unwrap());
+    assert!(db
+        .is_word_mini_indexed(&add_repo_msg.website.unwrap())
+        .await
+        .unwrap());
 
     assert!(db.get_all_repositories(00, 1000).await.unwrap().len() >= 1);
     let repo_search = db.search_repository(add_repo_msg.name).await.unwrap();
@@ -116,6 +125,7 @@ pub async fn forge_type_exists_helper<T: SCDatabase>(db: &T) {
 
 /// test if all instance introducer methods work
 pub async fn instance_introducer_helper<T: SCDatabase>(db: &T, instance_url: &Url) {
+    const MINI_INDEX: &str = "instance_introducer_helper test mini index uniquerq2342";
     db.add_starchart_to_introducer(instance_url).await.unwrap();
     let instances = db
         .get_all_introduced_starchart_instances(0, 100)
@@ -124,6 +134,13 @@ pub async fn instance_introducer_helper<T: SCDatabase>(db: &T, instance_url: &Ur
     assert!(instances
         .iter()
         .any(|i| i.instance_url == instance_url.as_str()));
+
+    db.import_mini_index(instance_url, MINI_INDEX)
+        .await
+        .unwrap();
+    let matching_instances = db.search_mini_index("uniquerq2342").await.unwrap();
+    assert_eq!(matching_instances.len(), 1);
+    assert_eq!(matching_instances.first().unwrap(), instance_url.as_str());
 }
 
 /// test if all instance introducer methods work
