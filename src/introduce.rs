@@ -95,7 +95,20 @@ impl Ctx {
             .await
             .unwrap())
     }
-    pub async fn client_introduce_starchart(&self, mut starchart_url: Url) -> ServiceResult<()> {
+    async fn client_get_mini_index(&self, mut starchart_url: Url) -> ServiceResult<MiniIndex> {
+        starchart_url.set_path(ROUTES.introducer.introduce);
+        Ok(self
+            .client
+            .get(starchart_url)
+            .send()
+            .await
+            .unwrap()
+            .json()
+            .await
+            .unwrap())
+    }
+
+    async fn client_introduce_starchart(&self, mut starchart_url: Url) -> ServiceResult<()> {
         starchart_url.set_path(ROUTES.introducer.introduce);
         let introduction_payload = Starchart {
             instance_url: self.settings.introducer.public_url.to_string(),
@@ -131,6 +144,10 @@ impl Ctx {
                         known_starcharts.insert(node_url.clone());
                     }
                     self.import_forges(node_url, db).await?;
+                    let mini_index = self.client_get_mini_index(starchart.clone()).await?;
+                    db.rm_imported_mini_index(&starchart).await?;
+                    db.import_mini_index(&starchart, &mini_index.mini_index)
+                        .await?;
                 }
                 page += 1;
             }
