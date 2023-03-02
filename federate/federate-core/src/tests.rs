@@ -21,7 +21,7 @@ use crate::*;
 /// adding forge works
 pub async fn adding_forge_works<'a, T: Federate>(
     ff: &T,
-    create_forge_msg: CreateForge,
+    create_forge_msg: CreateForge<'a>,
     create_user_msg: AddUser<'a>,
     add_repo_msg: AddRepository<'a>,
 ) {

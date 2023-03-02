@@ -16,11 +16,18 @@ path = "src/lib.rs"
 [dependencies]
 async-trait = "0.1.51"
 serde = { version = "1", features = ["derive"]}
-serde_yaml = "0.8.24"
+serde_yaml = "0.9"
 tokio = { version = "1.18.2", features = ["fs"]}
 thiserror = "1.0.30"
 url = { version  = "2.2.2", features = ["serde"] }
 tar = "0.4.38"
+log = "0.4.16"
+mktemp = "0.4.1"
+
+[dependencies.reqwest]
+features = ["rustls-tls-native-roots", "gzip", "deflate", "brotli", "json"]
+version = "0.11.10"
+
 
 [dependencies.db-core]
 path = "../../db/db-core"

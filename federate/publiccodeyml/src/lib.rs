@@ -15,16 +15,23 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
+use std::fs as StdFs;
 use std::path::{Path, PathBuf};
 
 use async_trait::async_trait;
+use log::info;
+use mktemp::Temp;
+use reqwest::Client;
 use serde::Serialize;
+use tar::Archive;
 use tokio::fs;
+use tokio::io::AsyncWriteExt;
 use url::Url;
 
 use db_core::prelude::*;
 
 use federate_core::Federate;
+use federate_core::{LatestResp, ROUTES};
 
 pub mod errors;
 pub mod schema;
@@ -294,5 +301,123 @@ impl Federate for PccFederate {
 
         let latest = times.pop().unwrap();
         Ok(format!("{}.tar", latest))
+    }
+
+    /// import archive from another Starchart instance
+    async fn import(
+        &self,
+        mut starchart_url: Url,
+        client: &Client,
+        db: &Box<dyn SCDatabase>,
+    ) -> Result<(), Self::Error> {
+        info!("[import][{starchart_url}] import latest tarball from starchart instance");
+
+        let mut url = starchart_url.clone();
+        url.set_path(ROUTES.get_latest);
+        let resp: LatestResp = client.get(url).send().await.unwrap().json().await.unwrap();
+        let mut url = starchart_url.clone();
+        url.set_path(&format!("/federate/{}", resp.latest));
+        println!("{:?}", url);
+        let file = client.get(url).send().await.unwrap().bytes().await.unwrap();
+        let tmp = Temp::new_dir().unwrap();
+        let import_file = tmp.as_path().join("import.tar.gz");
+        {
+            let mut f = fs::File::create(&import_file).await.unwrap();
+            f.write_all(&file).await.unwrap();
+        }
+
+        let f = StdFs::File::open(&import_file).unwrap();
+        let uncompressed = tmp.as_path().join("untar");
+        fs::create_dir(&uncompressed).await.unwrap();
+
+        let mut ar = Archive::new(f);
+        ar.unpack(&uncompressed).unwrap();
+
+        let mut instance_dir_contents = fs::read_dir(&uncompressed).await.unwrap();
+        while let Some(instance_dir_entry) = instance_dir_contents.next_entry().await.unwrap() {
+            if !instance_dir_entry.file_type().await.unwrap().is_dir() {
+                continue;
+            }
+
+            let instance_file = instance_dir_entry.path().join(INSTANCE_INFO_FILE);
+            let instance = fs::read_to_string(instance_file).await.unwrap();
+            let mut instance: CreateForge = serde_yaml::from_str(&instance).unwrap();
+            instance.starchart_url = Some(starchart_url.as_str());
+
+            if !db.forge_exists(&instance.url).await.unwrap() {
+                info!("[import][{}] Creating forge", &instance.url);
+
+                db.create_forge_instance(&instance).await.unwrap();
+            } else if !self.forge_exists(&instance.url).await.unwrap() {
+                self.create_forge_instance(&instance).await.unwrap();
+            }
+
+            let mut dir_contents = fs::read_dir(&instance_dir_entry.path()).await.unwrap();
+            while let Some(dir_entry) = dir_contents.next_entry().await.unwrap() {
+                if !dir_entry.file_type().await.unwrap().is_dir() {
+                    continue;
+                }
+                let username = dir_entry.file_name();
+                let username = username.to_str().unwrap();
+
+                if !db.user_exists(username, Some(&instance.url)).await.unwrap() {
+                    info!("[import][{}] Creating user: {username}", instance.url);
+
+                    let user_file = instance_dir_entry
+                        .path()
+                        .join(&username)
+                        .join(USER_INFO_FILE);
+                    let user_file_content = fs::read_to_string(user_file).await.unwrap();
+                    let mut user: AddUser<'_> = serde_yaml::from_str(&user_file_content).unwrap();
+                    user.import = true;
+
+                    db.add_user(&user).await.unwrap();
+                }
+                if !self.user_exists(username, &instance.url).await.unwrap() {
+                    let user_file = instance_dir_entry
+                        .path()
+                        .join(&username)
+                        .join(USER_INFO_FILE);
+                    let user_file_content = fs::read_to_string(user_file).await.unwrap();
+                    let mut user: AddUser<'_> = serde_yaml::from_str(&user_file_content).unwrap();
+                    user.import = true;
+
+                    self.create_user(&user).await.unwrap();
+                }
+
+                let mut repositories = fs::read_dir(dir_entry.path()).await.unwrap();
+                while let Some(repo) = repositories.next_entry().await.unwrap() {
+                    if !repo.file_type().await.unwrap().is_dir() {
+                        continue;
+                    }
+                    let repo_file = repo.path().join(REPO_INFO_FILE);
+                    println!("repo_file: {:?}", repo_file);
+                    let publiccodeyml_repository: schema::Repository =
+                        serde_yaml::from_str(&fs::read_to_string(repo_file).await.unwrap())
+                            .unwrap();
+                    let add_repo = publiccodeyml_repository.to_add_repository(true);
+
+                    if !db
+                        .repository_exists(add_repo.name, username, &add_repo.url)
+                        .await
+                        .unwrap()
+                    {
+                        info!(
+                            "[import][{}] Creating repository: {}",
+                            instance.url, add_repo.name
+                        );
+                        db.create_repository(&add_repo).await.unwrap();
+                    }
+                    if !self
+                        .repository_exists(add_repo.name, username, &add_repo.url)
+                        .await
+                        .unwrap()
+                    {
+                        self.create_repository(&add_repo).await.unwrap();
+                    }
+                }
+            }
+        }
+        Ok(())
     }
 }
