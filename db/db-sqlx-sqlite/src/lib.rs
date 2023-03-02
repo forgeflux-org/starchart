@@ -1000,13 +1000,12 @@ impl SCDatabase for Database {
     async fn rm_imported_mini_index(&self, starchart_instance_url: &Url) -> DBResult<()> {
         let url = db_core::clean_url(starchart_instance_url);
         sqlx::query!(
-            "
-                DELETE FROM starchart_federated_mini_index
-                WHERE 
-                    starchart_instance = (
-                        SELECT ID FROM starchart_introducer
-                        WHERE instance_url = $1
-                    )",
+            "DELETE FROM starchart_federated_mini_index
+             WHERE 
+                starchart_instance = (
+                    SELECT ID FROM starchart_introducer
+                    WHERE instance_url = $1
+                )",
             url
         )
         .execute(&self.pool)
@@ -1017,6 +1016,57 @@ impl SCDatabase for Database {
     /// Search mini index
     async fn search_mini_index(&self, query: &str) -> DBResult<Vec<String>> {
         self.get_federated_mini_index_matrches(query).await
+    }
+
+    /// Mark a Starchart instance as imported
+    async fn record_starchart_imports(&self, starchart_url: &Url) -> DBResult<()> {
+        let url = db_core::clean_url(starchart_url);
+        sqlx::query!(
+            "INSERT OR IGNORE INTO
+                starchart_imported_starcharts (starchart_instance)
+            VALUES ((SELECT ID FROM starchart_introducer WHERE instance_url = $1));",
+            url
+        )
+        .execute(&self.pool)
+        .await
+        .map_err(map_register_err)?;
+        Ok(())
+    }
+
+    /// Unmark a Starchart instance as imported
+    async fn rm_starchart_import(&self, starchart_url: &Url) -> DBResult<()> {
+        let url = db_core::clean_url(starchart_url);
+        sqlx::query!(
+            "DELETE FROM
+                starchart_imported_starcharts
+            WHERE starchart_instance =(SELECT ID FROM starchart_introducer WHERE instance_url = $1);",
+            url
+        )
+        .execute(&self.pool)
+        .await
+        .map_err(map_register_err)?;
+        Ok(())
+    }
+
+    /// Check if Starchart instance is imported
+    async fn is_starchart_imported(&self, starchart_url: &Url) -> DBResult<bool> {
+        let url = db_core::clean_url(starchart_url);
+
+        match sqlx::query!(
+            "SELECT
+                ID
+            FROM
+                starchart_imported_starcharts
+            WHERE
+                starchart_instance = (SELECT ID FROM starchart_introducer WHERE instance_url = $1);",
+            url)
+            .fetch_one(&self.pool)
+            .await
+        {
+            Ok(_) => Ok(true),
+            Err(Error::RowNotFound) => Ok(false),
+            Err(e) => Err(DBError::DBError(Box::new(e).into())),
+        }
     }
 }
 

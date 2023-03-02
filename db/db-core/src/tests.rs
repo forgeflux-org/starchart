@@ -141,6 +141,13 @@ pub async fn instance_introducer_helper<T: SCDatabase>(db: &T, instance_url: &Ur
     let matching_instances = db.search_mini_index("uniquerq2342").await.unwrap();
     assert_eq!(matching_instances.len(), 1);
     assert_eq!(matching_instances.first().unwrap(), instance_url.as_str());
+
+    db.rm_starchart_import(instance_url).await.unwrap();
+    assert!(!db.is_starchart_imported(instance_url).await.unwrap());
+    db.record_starchart_imports(instance_url).await.unwrap();
+    assert!(db.is_starchart_imported(instance_url).await.unwrap());
+    db.rm_starchart_import(instance_url).await.unwrap();
+    assert!(!db.is_starchart_imported(instance_url).await.unwrap());
 }
 
 /// test if all instance introducer methods work

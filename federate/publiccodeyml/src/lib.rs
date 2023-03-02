@@ -418,6 +418,7 @@ impl Federate for PccFederate {
                 }
             }
         }
+        db.record_starchart_imports(&starchart_url).await?;
         Ok(())
     }
 }

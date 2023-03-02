@@ -271,6 +271,15 @@ pub trait SCDatabase: std::marker::Send + std::marker::Sync + CloneSPDatabase {
 
     /// Search mini index
     async fn search_mini_index(&self, query: &str) -> DBResult<Vec<String>>;
+
+    /// Mark a Starchart instance as imported
+    async fn record_starchart_imports(&self, starchart_url: &Url) -> DBResult<()>;
+
+    /// Unmark a Starchart instance as imported
+    async fn rm_starchart_import(&self, starchart_url: &Url) -> DBResult<()>;
+
+    /// Check if Starchart instance is imported
+    async fn is_starchart_imported(&self, starchart_url: &Url) -> DBResult<bool>;
 }
 
 /// Trait to clone SCDatabase

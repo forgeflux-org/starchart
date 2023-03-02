@@ -1,5 +1,23 @@
 {
   "db": "SQLite",
+  "014aceff8492c04498b55ce10f7f71d376be18967a5eaf637fae1cd5a46dc210": {
+    "describe": {
+      "columns": [
+        {
+          "name": "instance_url",
+          "ordinal": 0,
+          "type_info": "Text"
+        }
+      ],
+      "nullable": [
+        false
+      ],
+      "parameters": {
+        "Right": 1
+      }
+    },
+    "query": "SELECT\n                starchart_introducer.instance_url\n            FROM \n                starchart_federated_mini_index\n            INNER JOIN\n                starchart_introducer\n            ON\n                starchart_introducer.ID = starchart_instance \n            WHERE\n                mini_index MATCH $1"
+  },
   "069a127ffb1062321bba5a915a4ead3e0bbe4dabf6e0f684d8cc6a6d8a68ad5b": {
     "describe": {
       "columns": [],
@@ -142,6 +160,34 @@
     },
     "query": " DELETE FROM starchart_users WHERE username = $1 AND \n                hostname_id = (SELECT ID FROM starchart_forges WHERE hostname = $2)"
   },
+  "3d65424ec78936842b54492893560dc5fc324cc776de7686a52c9b8e382e6a36": {
+    "describe": {
+      "columns": [
+        {
+          "name": "ID",
+          "ordinal": 0,
+          "type_info": "Int64"
+        }
+      ],
+      "nullable": [
+        false
+      ],
+      "parameters": {
+        "Right": 1
+      }
+    },
+    "query": "SELECT\n                ID\n            FROM\n                starchart_imported_starcharts\n            WHERE\n                starchart_instance = (SELECT ID FROM starchart_introducer WHERE instance_url = $1);"
+  },
+  "4bf5f81ac904e1738975f85b202f9b0640374d562730af5318b0119368b356b5": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Right": 1
+      }
+    },
+    "query": "DELETE FROM\n                starchart_imported_starcharts\n            WHERE starchart_instance =(SELECT ID FROM starchart_introducer WHERE instance_url = $1);"
+  },
   "6f5ca3d71a541eb6f33e37a5889c048536ab6ad7e81a6236d73aa71433c13717": {
     "describe": {
       "columns": [],
@@ -161,6 +207,16 @@
       }
     },
     "query": "INSERT INTO starchart_forges\n                    (hostname, verified_on, forge_type, starchart_instance)\n                VALUES\n                    (\n                        $1, $2,\n                     (SELECT ID FROM starchart_forge_type WHERE name = $3),\n                     $4)"
+  },
+  "7590630f5fe7e05014b70ac0047f9b6c724b88e35e1b1306fb89760612929d55": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Right": 2
+      }
+    },
+    "query": "INSERT OR IGNORE INTO\n                starchart_federated_mini_index\n            (mini_index, starchart_instance)\n            VALUES ($1, (SELECT ID FROM starchart_introducer WHERE instance_url = $2));"
   },
   "78e53b067f8706f326fe06d184f8d94dd2c1869f89706e88afa9a0b19717229c": {
     "describe": {
@@ -420,6 +476,16 @@
     },
     "query": "SELECT \n                starchart_forges.hostname,\n                starchart_users.username,\n                starchart_repositories.name,\n                starchart_repositories.description,\n                starchart_repositories.html_url,\n                starchart_repositories.ID,\n                starchart_repositories.website,\n                starchart_repositories.imported\n            FROM\n                starchart_repositories\n            INNER JOIN\n                starchart_forges\n            ON\n                starchart_repositories.hostname_id = starchart_forges.id\n            INNER JOIN\n                starchart_users\n            ON\n                starchart_repositories.owner_id =  starchart_users.id\n            WHERE starchart_repositories.html_url =  $1\n                ;"
   },
+  "aeb26b35a2fc69fe8f6496e1904d6f0408a29359fb141ee67d49269152fd381b": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Right": 1
+      }
+    },
+    "query": "INSERT OR IGNORE INTO\n                starchart_imported_starcharts (starchart_instance)\n            VALUES ((SELECT ID FROM starchart_introducer WHERE instance_url = $1));"
+  },
   "c6793ce32409465bc6cce5949059f36fcef96e1b6ec1e865506d8e42802403fb": {
     "describe": {
       "columns": [
@@ -623,5 +689,15 @@
       }
     },
     "query": "SELECT word FROM starchart_mini_index"
+  },
+  "fdf87490759150d528139b13eb1a28532b5bebb546ade00bcb6a7d648abcd445": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Right": 1
+      }
+    },
+    "query": "DELETE FROM starchart_federated_mini_index\n             WHERE \n                starchart_instance = (\n                    SELECT ID FROM starchart_introducer\n                    WHERE instance_url = $1\n                )"
   }
 }
