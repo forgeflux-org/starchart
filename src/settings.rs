@@ -25,7 +25,7 @@ use serde::{Deserialize, Serialize};
 use url::Url;
 use validator::Validate;
 
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct Server {
     pub port: u32,
     pub domain: String,
@@ -40,7 +40,7 @@ impl Server {
     }
 }
 
-#[derive(Debug, Display, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Display, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "lowercase")]
 pub enum LogLevel {
     #[display(fmt = "debug")]
@@ -64,7 +64,7 @@ impl LogLevel {
     }
 }
 
-#[derive(Debug, PartialEq, Clone, Deserialize, Serialize)]
+#[derive(Debug, PartialEq, Eq, Clone, Deserialize, Serialize)]
 pub struct Repository {
     pub root: String,
 }
@@ -74,11 +74,11 @@ impl Repository {
         let root = Path::new(&self.root);
         if root.exists() {
             if !root.is_dir() {
-                fs::remove_file(&root).unwrap();
-                fs::create_dir_all(&root).unwrap();
+                fs::remove_file(root).unwrap();
+                fs::create_dir_all(root).unwrap();
             }
         } else {
-            fs::create_dir_all(&root).unwrap();
+            fs::create_dir_all(root).unwrap();
         }
         self.create_license_file();
     }
@@ -102,7 +102,7 @@ impl Repository {
     }
 }
 
-#[derive(Debug, Display, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Display, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "lowercase")]
 pub enum DBType {
     #[display(fmt = "postgres")]
@@ -111,14 +111,14 @@ pub enum DBType {
     Sqlite,
 }
 
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct Database {
     pub url: String,
     pub pool: u32,
     pub database_type: DBType,
 }
 
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct Crawler {
     pub ttl: u64,
     pub client_timeout: u64,
@@ -126,13 +126,13 @@ pub struct Crawler {
     pub wait_before_next_api_call: u64,
 }
 
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct Introducer {
     pub nodes: Vec<Url>,
     pub public_url: Url,
 }
 
-#[derive(Debug, Validate, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Validate, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct Settings {
     pub log: LogLevel,
     pub database: Database,

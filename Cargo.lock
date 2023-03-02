@@ -311,6 +311,7 @@ dependencies = [
 name = "api_routes"
 version = "0.1.0"
 dependencies = [
+ "db-core",
  "serde",
 ]
 

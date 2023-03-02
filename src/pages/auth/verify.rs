@@ -45,7 +45,7 @@ impl CtxError for VerifyChallenge {
     }
 }
 
-#[derive(Clone, Debug, PartialEq, Deserialize, Serialize)]
+#[derive(Clone, Debug, PartialEq, Eq, Deserialize, Serialize)]
 pub struct VerifyChallengePayload {
     pub hostname: Url,
 }

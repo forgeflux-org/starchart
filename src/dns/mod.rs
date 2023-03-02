@@ -17,7 +17,7 @@
  */
 use serde::{Deserialize, Serialize};
 
-#[derive(Debug, Default, PartialEq, Clone, Serialize, Deserialize)]
+#[derive(Debug, Default, PartialEq, Eq, Clone, Serialize, Deserialize)]
 pub struct Configuration {
     pub spidering: bool,
     pub rate: Option<u64>,

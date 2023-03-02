@@ -141,7 +141,7 @@ macro_rules! get_app {
             .wrap(actix_web::middleware::NormalizePath::new(
                 actix_web::middleware::TrailingSlash::Trim,
             ))
-            .configure(crate::routes::services)
+            .configure($crate::routes::services)
     };
 
     ($settings:ident) => {
@@ -150,9 +150,9 @@ macro_rules! get_app {
     ($ctx:expr, $db:expr, $federate:expr) => {
         test::init_service(
             get_app!("APP", &$ctx.settings)
-                .app_data(crate::WebDB::new($db.clone()))
-                .app_data(crate::WebCtx::new($ctx.clone()))
-                .app_data(crate::WebFederate::new($federate.clone())),
+                .app_data($crate::WebDB::new($db.clone()))
+                .app_data($crate::WebCtx::new($ctx.clone()))
+                .app_data($crate::WebFederate::new($federate.clone())),
         )
     };
 }

@@ -58,14 +58,14 @@ pub mod dev {
     pub use async_trait::async_trait;
 }
 
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 /// Data related to a Starchart instance
 pub struct Starchart {
     /// URL of the Starchart instance
     pub instance_url: String,
 }
 
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 /// create a new forge on the database
 pub struct CreateForge<'a> {
     /// url of the Starchart instance
@@ -88,7 +88,7 @@ pub fn clean_url(url: &Url) -> String {
     url.as_str().to_string()
 }
 
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 /// user data
 pub struct User {
     /// url of the forge instance: with scheme but remove trailing slash
@@ -104,7 +104,7 @@ pub struct User {
     pub import: bool,
 }
 
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 /// add new user to database
 pub struct AddUser<'a> {
     /// url of the forge instance: with scheme but remove trailing slash
@@ -120,7 +120,7 @@ pub struct AddUser<'a> {
     pub import: bool,
 }
 
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 /// add new repository to database
 pub struct AddRepository<'a> {
     /// html link to the repository
@@ -142,7 +142,7 @@ pub struct AddRepository<'a> {
     pub import: bool,
 }
 
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 /// data representing a forge instance
 pub struct Forge {
     /// url of the Starchart instance
@@ -157,7 +157,7 @@ pub struct Forge {
     pub last_crawl_on: Option<i64>,
 }
 
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 /// repository
 pub struct Repository {
     /// html link to the repository
@@ -295,7 +295,7 @@ impl Clone for Box<dyn SCDatabase> {
 }
 
 /// Forge type: Gitea, Sourcehut, GitLab, etc. Support is currently only available for Gitea
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "lowercase")]
 pub enum ForgeImplementation {
     /// [Gitea](https://gitea.io) softare forge

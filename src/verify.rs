@@ -41,8 +41,6 @@ pub struct TXTChallenge {
     pub value: String,
 }
 
-const VALUES_LEN: usize = 30;
-
 impl TXTChallenge {
     pub fn get_challenge_txt_key_prefix(ctx: &ArcCtx) -> String {
         // starchart-{{ starchart instance's hostname}}.{{ forge instance's hostname }}

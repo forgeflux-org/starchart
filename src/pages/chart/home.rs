@@ -47,7 +47,7 @@ impl CtxError for HomePage {
     }
 }
 
-#[derive(Clone, Debug, PartialEq, Default, Deserialize, Serialize)]
+#[derive(Clone, Debug, PartialEq, Eq, Default, Deserialize, Serialize)]
 pub struct HomePagePayload {
     pub repos: Vec<Repository>,
     pub next_page: String,
@@ -76,7 +76,7 @@ pub fn services(cfg: &mut web::ServiceConfig) {
     cfg.service(home);
 }
 
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct Page {
     pub page: u32,
 }
@@ -95,7 +95,7 @@ impl Page {
     }
 }
 
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct OptionalPage {
     pub page: Option<u32>,
 }

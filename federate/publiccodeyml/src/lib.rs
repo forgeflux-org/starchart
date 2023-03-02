@@ -306,7 +306,7 @@ impl Federate for PccFederate {
     /// import archive from another Starchart instance
     async fn import(
         &self,
-        mut starchart_url: Url,
+        starchart_url: Url,
         client: &Client,
         db: &Box<dyn SCDatabase>,
     ) -> Result<(), Self::Error> {
@@ -365,7 +365,7 @@ impl Federate for PccFederate {
 
                     let user_file = instance_dir_entry
                         .path()
-                        .join(&username)
+                        .join(username)
                         .join(USER_INFO_FILE);
                     let user_file_content = fs::read_to_string(user_file).await.unwrap();
                     let mut user: AddUser<'_> = serde_yaml::from_str(&user_file_content).unwrap();
@@ -376,7 +376,7 @@ impl Federate for PccFederate {
                 if !self.user_exists(username, &instance.url).await.unwrap() {
                     let user_file = instance_dir_entry
                         .path()
-                        .join(&username)
+                        .join(username)
                         .join(USER_INFO_FILE);
                     let user_file_content = fs::read_to_string(user_file).await.unwrap();
                     let mut user: AddUser<'_> = serde_yaml::from_str(&user_file_content).unwrap();

@@ -43,7 +43,7 @@ impl CtxError for AddChallenge {
     }
 }
 
-#[derive(Clone, Debug, PartialEq, Deserialize, Serialize)]
+#[derive(Clone, Debug, PartialEq, Eq, Deserialize, Serialize)]
 pub struct AddChallengePayload {
     pub hostname: Url,
 }
@@ -84,7 +84,7 @@ pub fn services(cfg: &mut web::ServiceConfig) {
 pub async fn add_submit(
     payload: web::Form<AddChallengePayload>,
 ) -> PageResult<impl Responder, AddChallenge> {
-    let link = PAGES.auth.verify_get(&payload.hostname.to_string());
+    let link = PAGES.auth.verify_get(payload.hostname.as_ref());
 
     Ok(HttpResponse::Found()
         .insert_header((http::header::LOCATION, link))

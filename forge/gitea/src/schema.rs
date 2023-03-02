@@ -95,21 +95,21 @@ pub struct Repository {
     pub repo_transfer: Option<Team>,
 }
 
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct InternalIssueTracker {
     pub enable_time_tracker: bool,
     pub allow_only_contributors_to_track_time: bool,
     pub enable_issue_dependencies: bool,
 }
 
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct RepoTransfer {
     pub doer: User,
     pub recipient: User,
     pub teams: Option<Team>,
 }
 
-#[derive(Debug, Clone, PartialEq, Serialize, Hash, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Hash, Deserialize)]
 pub struct Organization {
     pub avatar_url: String,
     pub description: String,
@@ -122,7 +122,7 @@ pub struct Organization {
     pub website: String,
 }
 
-#[derive(Debug, Clone, PartialEq, Serialize, Hash, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Hash, Deserialize)]
 #[serde(rename_all = "lowercase")]
 pub enum Permission {
     None,
@@ -132,7 +132,7 @@ pub enum Permission {
     Owner,
 }
 
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct Team {
     pub can_create_org_repo: bool,
     pub description: String,
@@ -145,7 +145,7 @@ pub struct Team {
     pub units_map: HashMap<String, String>,
 }
 
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct Topics {
     pub topics: Vec<String>,
 }

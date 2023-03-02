@@ -86,12 +86,12 @@ pub struct LatestResp {
     pub latest: String,
 }
 
-#[derive(Deserialize, Serialize, Clone, Debug, PartialEq)]
+#[derive(Deserialize, Serialize, Clone, Debug, PartialEq, Eq)]
 pub struct SearchRepositoryReq {
     pub query: String,
 }
 
-#[derive(Deserialize, Serialize, Clone, Debug, PartialEq)]
+#[derive(Deserialize, Serialize, Clone, Debug, PartialEq, Eq)]
 pub struct SearchRepositoryResp {
     pub repositories: Vec<Repository>,
 }

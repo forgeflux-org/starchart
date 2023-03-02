@@ -67,7 +67,7 @@ pub async fn adding_forge_works<'a, T: SCDatabase>(
         .await
         .unwrap());
     assert!(db
-        .is_word_mini_indexed(&add_user_msg2.username)
+        .is_word_mini_indexed(add_user_msg2.username)
         .await
         .unwrap());
 
@@ -78,18 +78,18 @@ pub async fn adding_forge_works<'a, T: SCDatabase>(
         .repository_exists(add_repo_msg.name, add_repo_msg.owner, &add_repo_msg.url)
         .await
         .unwrap());
-    assert!(db.is_word_mini_indexed(&add_repo_msg.owner).await.unwrap());
-    assert!(db.is_word_mini_indexed(&add_repo_msg.name).await.unwrap());
+    assert!(db.is_word_mini_indexed(add_repo_msg.owner).await.unwrap());
+    assert!(db.is_word_mini_indexed(add_repo_msg.name).await.unwrap());
     assert!(db
-        .is_word_mini_indexed(&add_repo_msg.description.unwrap())
+        .is_word_mini_indexed(add_repo_msg.description.unwrap())
         .await
         .unwrap());
     assert!(db
-        .is_word_mini_indexed(&add_repo_msg.website.unwrap())
+        .is_word_mini_indexed(add_repo_msg.website.unwrap())
         .await
         .unwrap());
 
-    assert!(db.get_all_repositories(00, 1000).await.unwrap().len() >= 1);
+    assert!(!db.get_all_repositories(00, 1000).await.unwrap().is_empty());
     let repo_search = db.search_repository(add_repo_msg.name).await.unwrap();
 
     assert!(!repo_search.is_empty());

@@ -186,8 +186,8 @@ impl Database {
             for repo in repositories.drain(0..) {
                 self.new_fts_repositories(
                     &repo.name,
-                    repo.description.as_ref().map(|d| d.as_str()),
-                    repo.website.as_ref().map(|s| s.as_str()),
+                    repo.description.as_deref(),
+                    repo.website.as_deref(),
                     &repo.html_url,
                 )
                 .await?;
@@ -675,7 +675,7 @@ impl SCDatabase for Database {
 
     /// delete user
     async fn delete_user(&self, username: &str, url: &Url) -> DBResult<()> {
-        let user = self.get_user(username, &url).await?;
+        let user = self.get_user(username, url).await?;
         self.rm_word_from_mini_index(&user.username).await?;
 
         let url = db_core::clean_url(url);
@@ -980,7 +980,7 @@ impl SCDatabase for Database {
         mini_index: &str,
     ) -> DBResult<()> {
         // delete old index before importing fresh index
-        let _ = self.rm_imported_mini_index(&starchart_instance_url).await;
+        let _ = self.rm_imported_mini_index(starchart_instance_url).await;
         let url = db_core::clean_url(starchart_instance_url);
         sqlx::query!(
             "INSERT OR IGNORE INTO

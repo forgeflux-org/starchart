@@ -17,7 +17,7 @@
  */
 use std::collections::HashSet;
 
-use actix_web::web::{self, get};
+use actix_web::web;
 use actix_web::{HttpResponse, Responder};
 use actix_web_codegen_const_routes::get;
 use actix_web_codegen_const_routes::post;
@@ -145,8 +145,8 @@ impl Ctx {
                     }
                     self.import_forges(node_url, db).await?;
                     let mini_index = self.client_get_mini_index(starchart.clone()).await?;
-                    db.rm_imported_mini_index(&starchart).await?;
-                    db.import_mini_index(&starchart, &mini_index.mini_index)
+                    db.rm_imported_mini_index(starchart).await?;
+                    db.import_mini_index(starchart, &mini_index.mini_index)
                         .await?;
                 }
                 page += 1;
