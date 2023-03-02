@@ -1,1 +1,1 @@
-initSidebarItems({"enum":[["FederateErorr","Error data structure grouping various error subtypes"]],"type":[["BoxDynError","Convenience type alias for grouping driver-specific errors"],["FResult","Generic result data structure"]]});
+window.SIDEBAR_ITEMS = {"enum":[["FederateErorr","Error data structure grouping various error subtypes"]],"type":[["BoxDynError","Convenience type alias for grouping driver-specific errors"],["FResult","Generic result data structure"]]};

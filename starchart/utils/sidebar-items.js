@@ -1,1 +1,1 @@
-initSidebarItems({"fn":[["get_random",""]]});
+window.SIDEBAR_ITEMS = {"fn":[["get_random",""]]};

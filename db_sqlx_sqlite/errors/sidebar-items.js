@@ -1,1 +1,1 @@
-initSidebarItems({"fn":[["map_register_err",""]]});
+window.SIDEBAR_ITEMS = {"fn":[["map_register_err",""]]};

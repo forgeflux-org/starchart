@@ -1,1 +1,1 @@
-initSidebarItems({"fn":[["get_federate",""]],"type":[["ArcFederate",""]]});
+window.SIDEBAR_ITEMS = {"fn":[["get_federate",""]],"type":[["ArcFederate",""]]};

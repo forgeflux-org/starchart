@@ -1,1 +1,1 @@
-initSidebarItems({"struct":[["Crawler",""]]});
+window.SIDEBAR_ITEMS = {"struct":[["Crawler",""]]};

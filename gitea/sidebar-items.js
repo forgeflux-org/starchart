@@ -1,1 +1,1 @@
-initSidebarItems({"mod":[["schema",""]],"struct":[["Gitea",""]]});
+window.SIDEBAR_ITEMS = {"mod":[["schema",""]],"struct":[["Gitea",""]]};

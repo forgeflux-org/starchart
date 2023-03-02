@@ -1,1 +1,1 @@
-initSidebarItems({"constant":[["HOME",""],["REPO_INFO",""],["TITLE",""]],"fn":[["services",""]],"struct":[["HomePage",""],["HomePagePayload",""],["OptionalPage",""],["Page",""],["home",""]]});
+window.SIDEBAR_ITEMS = {"constant":[["HOME",""],["REPO_INFO",""],["TITLE",""]],"fn":[["services",""]],"struct":[["HomePage",""],["HomePagePayload",""],["OptionalPage",""],["Page",""],["home",""]]};

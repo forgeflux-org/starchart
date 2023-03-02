@@ -1,1 +1,1 @@
-initSidebarItems({"enum":[["ConnectionOptions","Connect to databse"]],"mod":[["dev",""],["errors",""],["prelude",""]],"struct":[["Conn","Use an existing database pool"],["Database",""],["Fresh",""]]});
+window.SIDEBAR_ITEMS = {"enum":[["ConnectionOptions","Connect to databse"]],"mod":[["dev",""],["errors",""],["prelude",""]],"struct":[["Conn","Use an existing database pool"],["Database",""],["Fresh",""]]};

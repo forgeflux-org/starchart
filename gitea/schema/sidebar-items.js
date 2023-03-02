@@ -1,1 +1,1 @@
-initSidebarItems({"enum":[["Permission",""]],"struct":[["InternalIssueTracker",""],["Organization",""],["RepoTransfer",""],["Repository",""],["SearchResults",""],["Team",""],["Topics",""],["User",""]]});
+window.SIDEBAR_ITEMS = {"enum":[["Permission",""]],"struct":[["InternalIssueTracker",""],["Organization",""],["RepoTransfer",""],["Repository",""],["SearchResults",""],["Team",""],["Topics",""],["User",""]]};

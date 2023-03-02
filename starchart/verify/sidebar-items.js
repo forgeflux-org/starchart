@@ -1,1 +1,1 @@
-initSidebarItems({"constant":[["VALUES_LEN",""]],"struct":[["TXTChallenge",""]]});
+window.SIDEBAR_ITEMS = {"struct":[["Challenge","represents a DNS challenge"],["TXTChallenge",""]]};

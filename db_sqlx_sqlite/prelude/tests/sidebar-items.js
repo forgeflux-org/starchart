@@ -1,1 +1,1 @@
-initSidebarItems({"fn":[["adding_forge_works","adding forge works"],["forge_type_exists_helper","test if all forge type implementations are loaded into DB"]]});
+window.SIDEBAR_ITEMS = {"fn":[["adding_forge_works","adding forge works"],["forge_type_exists_helper","test if all forge type implementations are loaded into DB"],["instance_introducer_helper","test if all instance introducer methods work"],["mini_index_helper","test if all instance introducer methods work"]]};

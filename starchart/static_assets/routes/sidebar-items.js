@@ -1,1 +1,1 @@
-initSidebarItems({"struct":[["ASSETS",""],["Assets","Top-level routes data structure for V1 AP1"]]});
+window.SIDEBAR_ITEMS = {"struct":[["ASSETS",""],["Assets","Top-level routes data structure for V1 AP1"]]};

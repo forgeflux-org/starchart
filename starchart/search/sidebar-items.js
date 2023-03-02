@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"constant":[["ROUTES",""]],"fn":[["services",""]],"struct":[["SearchRepositoryReq",""],["search_repository",""]]};

@@ -1,1 +1,1 @@
-initSidebarItems({"fn":[["adding_forge_works","adding forge works"]]});
+window.SIDEBAR_ITEMS = {"fn":[["adding_forge_works","adding forge works"]]};

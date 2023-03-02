@@ -1,1 +1,1 @@
-initSidebarItems({"constant":[["AUTH_CHALLENGE",""],["TITLE",""]],"fn":[["_get_challenge",""],["services",""]],"struct":[["VerifyChallenge",""],["VerifyChallengePayload",""],["get_verify",""],["submit_verify",""]]});
+window.SIDEBAR_ITEMS = {"constant":[["AUTH_CHALLENGE",""],["TITLE",""]],"fn":[["services",""]],"struct":[["VerifyChallenge",""],["VerifyChallengePayload",""],["get_verify",""],["submit_verify",""]]};

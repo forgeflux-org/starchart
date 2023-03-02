@@ -1,1 +1,1 @@
-initSidebarItems({"constant":[["CLIENT_TIMEOUT","in seconds"]],"struct":[["Ctx",""],["USER_AGENT",""]]});
+window.SIDEBAR_ITEMS = {"constant":[["CLIENT_TIMEOUT","in seconds"]],"struct":[["Ctx",""],["USER_AGENT",""]]};

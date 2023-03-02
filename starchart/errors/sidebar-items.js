@@ -1,1 +1,1 @@
-initSidebarItems({"enum":[["ServiceError",""]],"struct":[["DBErrorWrapper",""],["ErrorToResponse",""]],"type":[["ServiceResult",""]]});
+window.SIDEBAR_ITEMS = {"enum":[["ServiceError",""]],"struct":[["DBErrorWrapper",""],["ErrorToResponse",""]],"type":[["ServiceResult",""]]};

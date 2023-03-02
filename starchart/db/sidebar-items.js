@@ -1,1 +1,1 @@
-initSidebarItems({"mod":[["sqlite",""]],"type":[["BoxDB",""]]});
+window.SIDEBAR_ITEMS = {"mod":[["sqlite",""]],"type":[["BoxDB",""]]};

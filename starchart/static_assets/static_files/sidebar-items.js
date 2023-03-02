@@ -1,1 +1,1 @@
-initSidebarItems({"fn":[["handle_assets",""]],"mod":[["assets",""]],"struct":[["Asset",""],["static_files",""]]});
+window.SIDEBAR_ITEMS = {"fn":[["handle_assets",""]],"mod":[["assets",""]],"struct":[["Asset",""],["static_files",""]]};

@@ -1,1 +1,1 @@
-initSidebarItems({"constant":[["ERROR_KEY",""]],"fn":[["register_templates",""],["services",""]],"mod":[["home",""]]});
+window.SIDEBAR_ITEMS = {"constant":[["ERROR_KEY",""]],"fn":[["register_templates",""],["services",""]],"mod":[["home",""]]};

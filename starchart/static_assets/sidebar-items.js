@@ -1,1 +1,1 @@
-initSidebarItems({"fn":[["services",""]],"mod":[["filemap",""],["routes",""],["static_files",""]]});
+window.SIDEBAR_ITEMS = {"fn":[["services",""]],"mod":[["filemap",""],["routes",""],["static_files",""]]};
