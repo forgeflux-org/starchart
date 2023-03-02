@@ -35,10 +35,8 @@ pub async fn search_repository(
     } else {
         format!("*{}*", payload.query)
     };
-    println!("search query: {}", query);
-    let resp = db.search_repository(&query).await?;
-    println!("search_repository method: {:?}", resp);
-    Ok(HttpResponse::Ok().json(resp))
+    let local_resp = db.search_repository(&query).await?;
+    Ok(HttpResponse::Ok().json(local_resp))
 }
 
 pub fn services(cfg: &mut web::ServiceConfig) {
@@ -129,6 +127,12 @@ mod tests {
         println!("{:?}", search_res);
         assert!(!search_res.is_empty());
         assert_eq!(search_res.first().as_ref().unwrap().name, REPO_NAME);
+
+        let mini_index_resp = get_request!(&app, ROUTES.introducer.get_mini_index);
+        assert_eq!(mini_index_resp.status(), StatusCode::OK);
+        let mini_index: api_routes::MiniIndex = test::read_body_json(mini_index_resp).await;
+        assert!(!mini_index.mini_index.is_empty());
+        assert!(mini_index.mini_index.contains(USERNAME));
 
         // test ends
     }

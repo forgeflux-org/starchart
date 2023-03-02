@@ -17,7 +17,7 @@
  */
 use std::collections::HashSet;
 
-use actix_web::web;
+use actix_web::web::{self, get};
 use actix_web::{HttpResponse, Responder};
 use actix_web_codegen_const_routes::get;
 use actix_web_codegen_const_routes::post;
@@ -116,6 +116,15 @@ impl Ctx {
     }
 }
 
+#[get(path = "ROUTES.introducer.get_mini_index")]
+pub async fn get_mini_index(db: WebDB) -> ServiceResult<impl Responder> {
+    let mini_index = db.export_mini_index().await?;
+
+    let resp = MiniIndex { mini_index };
+
+    Ok(HttpResponse::Ok().json(resp))
+}
+
 #[get(path = "ROUTES.introducer.list")]
 pub async fn list_introductions(
     db: WebDB,
@@ -144,6 +153,7 @@ pub async fn new_introduction(
 pub fn services(cfg: &mut web::ServiceConfig) {
     cfg.service(list_introductions);
     cfg.service(new_introduction);
+    cfg.service(get_mini_index);
 }
 
 #[cfg(test)]

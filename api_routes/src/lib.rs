@@ -37,14 +37,25 @@ impl Search {
 pub struct Introducer {
     pub list: &'static str,
     pub introduce: &'static str,
+    pub get_mini_index: &'static str,
 }
 
 impl Introducer {
     const fn new() -> Introducer {
         let list = "/api/v1/introducer/list";
         let introduce = "/api/v1/introducer/new";
-        Introducer { list, introduce }
+        let get_mini_index = "/api/v1/introducer/mini-index";
+        Introducer {
+            list,
+            introduce,
+            get_mini_index,
+        }
     }
+}
+
+#[derive(Deserialize, Serialize, Clone, Debug, Eq, PartialEq)]
+pub struct MiniIndex {
+    pub mini_index: String,
 }
 
 #[derive(Deserialize, Serialize, Clone, Debug, Eq, PartialEq)]
