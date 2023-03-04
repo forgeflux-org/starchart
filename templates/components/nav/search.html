@@ -1,0 +1,17 @@
+<form class="search__bar" action="{{ page.search }}" method="post">
+    <input
+      placeholder="Search for repositories, builders, and all things software development!"
+      type="text/submit/hidden/button"
+      name="query"
+      required
+      id="query"
+      {% if search_query %}
+      value="{{ search_query }}"
+      {% else %}
+        value=""
+      {% endif %}
+    />
+    <button class="search__button" type="submit">
+      <img class="search__icon" src="search/icon" alt="Search icon" />
+    </button>
+</form>

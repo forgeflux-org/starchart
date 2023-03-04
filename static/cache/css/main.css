@@ -97,6 +97,7 @@ a:hover {
 
 .nav__link {
   text-decoration: none;
+  margin: 0 5px;
 }
 
 a {
@@ -254,9 +255,6 @@ button {
   border: none;
 }
 
-
-
-
 /* Inline #1 | http://localhost:7000/ */
 
 .repository__container {
@@ -282,3 +280,43 @@ button {
   border-radius: 5px;
 }
 
+.search__bar {
+  height: 1.6rem;
+  width: 70%;
+  padding: 0;
+  margin: 0 auto;
+  display: flex;
+}
+
+#search {
+  width: 100%;
+  margin: auto;
+  height: 1.3rem;
+}
+
+#search:placeholder-shown {
+  margin: auto;
+  padding-left: 5px;
+  display: inline-block;
+  font-size: 0.8rem;
+}
+
+.search__button {
+  position: relative;
+  left: -30px;
+  background: none;
+  border: none;
+  align-items: center;
+  display: flex;
+}
+
+.search__icon {
+  margin: auto;
+  filter: invert(47%) sepia(1%) saturate(0%) hue-rotate(278deg) brightness(92%)
+    contrast(88%);
+  height: 55%;
+}
+
+.search__icon:hover {
+  cursor: pointer;
+}
