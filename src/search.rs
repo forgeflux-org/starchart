@@ -1,3 +1,5 @@
+use crate::counter::AddSearch;
+use crate::master::{AddCounter, GetSite};
 /*
  * ForgeFlux StarChart - A federated software forge spider
  * Copyright (C) 2022  Aravinth Manivannan <realaravinth@batsense.net>
@@ -15,11 +17,11 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-use crate::{errors::*, WebCtx};
+use crate::{counter, errors::*, WebCtx};
 use actix_web::web;
 use actix_web::{HttpResponse, Responder};
 use actix_web_codegen_const_routes::post;
-use db_core::Repository;
+use db_core::prelude::*;
 use url::Url;
 
 use crate::Ctx;
@@ -43,6 +45,53 @@ impl Ctx {
             .await
             .unwrap())
     }
+
+    pub async fn search_repository(
+        &self,
+        db: &Box<dyn SCDatabase>,
+        query: String,
+    ) -> ServiceResult<Vec<Repository>> {
+        let query = if query.contains('*') {
+            query
+        } else {
+            format!("*{}*", query)
+        };
+        let local_resp = db.search_repository(&query).await?;
+        let mut federated_resp = Vec::default();
+
+        for starchart in db.search_mini_index(&query).await?.iter() {
+            if db.is_starchart_imported(&Url::parse(&starchart)?).await? {
+                log::debug!("{starchart} is imported");
+                continue;
+            }
+            let addr = if let Some(addr) = self.master.send(GetSite(starchart.clone())).await? {
+                addr
+            } else {
+                self.master
+                    .send(AddCounter {
+                        id: starchart.clone(),
+                        counter: counter::Count {
+                            duration: 54,
+                            search_threshold: 0,
+                        }
+                        .into(),
+                    })
+                    .await?;
+                self.master.send(GetSite(starchart.clone())).await?.unwrap()
+            };
+
+            let count = addr.send(AddSearch).await?;
+            if count > 50 {
+                todo!("Clone index");
+            } else {
+                let resp = self.client_federated_search(Url::parse(starchart)?).await?;
+                federated_resp.extend(resp);
+            }
+        }
+
+        federated_resp.extend(local_resp);
+        Ok(federated_resp)
+    }
 }
 
 #[post(path = "ROUTES.search.repository")]
@@ -51,23 +100,10 @@ pub async fn search_repository(
     ctx: WebCtx,
     db: WebDB,
 ) -> ServiceResult<impl Responder> {
-    let payload = payload.into_inner();
-    let query = if payload.query.contains('*') {
-        payload.query
-    } else {
-        format!("*{}*", payload.query)
-    };
-    let local_resp = db.search_repository(&query).await?;
-    let mut federated_resp = Vec::default();
-
-    for starchart in db.search_mini_index(&query).await?.iter() {
-        let resp = ctx.client_federated_search(Url::parse(starchart)?).await?;
-        federated_resp.extend(resp);
-    }
-
-    federated_resp.extend(local_resp);
-
-    Ok(HttpResponse::Ok().json(federated_resp))
+    let resp = ctx
+        .search_repository(&db, payload.into_inner().query)
+        .await?;
+    Ok(HttpResponse::Ok().json(resp))
 }
 
 pub fn services(cfg: &mut web::ServiceConfig) {
@@ -76,12 +112,11 @@ pub fn services(cfg: &mut web::ServiceConfig) {
 
 #[cfg(test)]
 mod tests {
-    use actix_web::http::StatusCode;
     use actix_web::test;
     use url::Url;
 
     use super::*;
-    use db_core::prelude::*;
+    use actix_web::http::StatusCode;
 
     use crate::tests::*;
     use crate::*;

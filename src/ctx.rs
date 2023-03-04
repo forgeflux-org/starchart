@@ -18,9 +18,11 @@
 use std::sync::Arc;
 use std::time::Duration;
 
+use actix::dev::*;
 use lazy_static::lazy_static;
 use reqwest::{Client, ClientBuilder};
 
+use crate::master::Master;
 use crate::settings::Settings;
 use crate::{DOMAIN, PKG_NAME, VERSION};
 
@@ -34,6 +36,7 @@ const CLIENT_TIMEOUT: u64 = 60;
 pub struct Ctx {
     pub client: Client,
     pub settings: Settings,
+    pub master: Addr<Master>,
 }
 
 impl Ctx {
@@ -48,6 +51,12 @@ impl Ctx {
             .build()
             .unwrap();
 
-        Arc::new(Self { client, settings })
+        let master = Master::new(45).start();
+
+        Arc::new(Self {
+            client,
+            settings,
+            master,
+        })
     }
 }
