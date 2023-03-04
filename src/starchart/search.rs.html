@@ -168,7 +168,44 @@
 <a href="#168" id="168">168</a>
 <a href="#169" id="169">169</a>
 <a href="#170" id="170">170</a>
-</pre><pre class="rust"><code><span class="comment">/*
+<a href="#171" id="171">171</a>
+<a href="#172" id="172">172</a>
+<a href="#173" id="173">173</a>
+<a href="#174" id="174">174</a>
+<a href="#175" id="175">175</a>
+<a href="#176" id="176">176</a>
+<a href="#177" id="177">177</a>
+<a href="#178" id="178">178</a>
+<a href="#179" id="179">179</a>
+<a href="#180" id="180">180</a>
+<a href="#181" id="181">181</a>
+<a href="#182" id="182">182</a>
+<a href="#183" id="183">183</a>
+<a href="#184" id="184">184</a>
+<a href="#185" id="185">185</a>
+<a href="#186" id="186">186</a>
+<a href="#187" id="187">187</a>
+<a href="#188" id="188">188</a>
+<a href="#189" id="189">189</a>
+<a href="#190" id="190">190</a>
+<a href="#191" id="191">191</a>
+<a href="#192" id="192">192</a>
+<a href="#193" id="193">193</a>
+<a href="#194" id="194">194</a>
+<a href="#195" id="195">195</a>
+<a href="#196" id="196">196</a>
+<a href="#197" id="197">197</a>
+<a href="#198" id="198">198</a>
+<a href="#199" id="199">199</a>
+<a href="#200" id="200">200</a>
+<a href="#201" id="201">201</a>
+<a href="#202" id="202">202</a>
+<a href="#203" id="203">203</a>
+<a href="#204" id="204">204</a>
+<a href="#205" id="205">205</a>
+</pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::counter::AddSearch;
+<span class="kw">use </span><span class="kw">crate</span>::master::{AddCounter, GetSite};
+<span class="comment">/*
  * ForgeFlux StarChart - A federated software forge spider
  * Copyright (C) 2022  Aravinth Manivannan &lt;realaravinth@batsense.net&gt;
  *
@@ -185,11 +222,11 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see &lt;https://www.gnu.org/licenses/&gt;.
  */
-</span><span class="kw">use crate</span>::{errors::<span class="kw-2">*</span>, WebCtx};
+</span><span class="kw">use crate</span>::{counter, errors::<span class="kw-2">*</span>, WebCtx};
 <span class="kw">use </span>actix_web::web;
 <span class="kw">use </span>actix_web::{HttpResponse, Responder};
 <span class="kw">use </span>actix_web_codegen_const_routes::post;
-<span class="kw">use </span>db_core::Repository;
+<span class="kw">use </span>db_core::prelude::<span class="kw-2">*</span>;
 <span class="kw">use </span>url::Url;
 
 <span class="kw">use </span><span class="kw">crate</span>::Ctx;
@@ -213,6 +250,53 @@
             .<span class="kw">await
             </span>.unwrap())
     }
+
+    <span class="kw">pub async fn </span>search_repository(
+        <span class="kw-2">&amp;</span><span class="self">self</span>,
+        db: <span class="kw-2">&amp;</span>Box&lt;<span class="kw">dyn </span>SCDatabase&gt;,
+        query: String,
+    ) -&gt; ServiceResult&lt;Vec&lt;Repository&gt;&gt; {
+        <span class="kw">let </span>query = <span class="kw">if </span>query.contains(<span class="string">&#39;*&#39;</span>) {
+            query
+        } <span class="kw">else </span>{
+            <span class="macro">format!</span>(<span class="string">&quot;*{}*&quot;</span>, query)
+        };
+        <span class="kw">let </span>local_resp = db.search_repository(<span class="kw-2">&amp;</span>query).<span class="kw">await</span><span class="question-mark">?</span>;
+        <span class="kw">let </span><span class="kw-2">mut </span>federated_resp = Vec::default();
+
+        <span class="kw">for </span>starchart <span class="kw">in </span>db.search_mini_index(<span class="kw-2">&amp;</span>query).<span class="kw">await</span><span class="question-mark">?</span>.iter() {
+            <span class="kw">if </span>db.is_starchart_imported(<span class="kw-2">&amp;</span>Url::parse(<span class="kw-2">&amp;</span>starchart)<span class="question-mark">?</span>).<span class="kw">await</span><span class="question-mark">? </span>{
+                <span class="macro">log::debug!</span>(<span class="string">&quot;{starchart} is imported&quot;</span>);
+                <span class="kw">continue</span>;
+            }
+            <span class="kw">let </span>addr = <span class="kw">if let </span><span class="prelude-val">Some</span>(addr) = <span class="self">self</span>.master.send(GetSite(starchart.clone())).<span class="kw">await</span><span class="question-mark">? </span>{
+                addr
+            } <span class="kw">else </span>{
+                <span class="self">self</span>.master
+                    .send(AddCounter {
+                        id: starchart.clone(),
+                        counter: counter::Count {
+                            duration: <span class="number">54</span>,
+                            search_threshold: <span class="number">0</span>,
+                        }
+                        .into(),
+                    })
+                    .<span class="kw">await</span><span class="question-mark">?</span>;
+                <span class="self">self</span>.master.send(GetSite(starchart.clone())).<span class="kw">await</span><span class="question-mark">?</span>.unwrap()
+            };
+
+            <span class="kw">let </span>count = addr.send(AddSearch).<span class="kw">await</span><span class="question-mark">?</span>;
+            <span class="kw">if </span>count &gt; <span class="number">50 </span>{
+                <span class="macro">todo!</span>(<span class="string">&quot;Clone index&quot;</span>);
+            } <span class="kw">else </span>{
+                <span class="kw">let </span>resp = <span class="self">self</span>.client_federated_search(Url::parse(starchart)<span class="question-mark">?</span>).<span class="kw">await</span><span class="question-mark">?</span>;
+                federated_resp.extend(resp);
+            }
+        }
+
+        federated_resp.extend(local_resp);
+        <span class="prelude-val">Ok</span>(federated_resp)
+    }
 }
 
 <span class="attr">#[post(path = <span class="string">&quot;ROUTES.search.repository&quot;</span>)]
@@ -221,23 +305,10 @@
     ctx: WebCtx,
     db: WebDB,
 ) -&gt; ServiceResult&lt;<span class="kw">impl </span>Responder&gt; {
-    <span class="kw">let </span>payload = payload.into_inner();
-    <span class="kw">let </span>query = <span class="kw">if </span>payload.query.contains(<span class="string">&#39;*&#39;</span>) {
-        payload.query
-    } <span class="kw">else </span>{
-        <span class="macro">format!</span>(<span class="string">&quot;*{}*&quot;</span>, payload.query)
-    };
-    <span class="kw">let </span>local_resp = db.search_repository(<span class="kw-2">&amp;</span>query).<span class="kw">await</span><span class="question-mark">?</span>;
-    <span class="kw">let </span><span class="kw-2">mut </span>federated_resp = Vec::default();
-
-    <span class="kw">for </span>starchart <span class="kw">in </span>db.search_mini_index(<span class="kw-2">&amp;</span>query).<span class="kw">await</span><span class="question-mark">?</span>.iter() {
-        <span class="kw">let </span>resp = ctx.client_federated_search(Url::parse(starchart)<span class="question-mark">?</span>).<span class="kw">await</span><span class="question-mark">?</span>;
-        federated_resp.extend(resp);
-    }
-
-    federated_resp.extend(local_resp);
-
-    <span class="prelude-val">Ok</span>(HttpResponse::Ok().json(federated_resp))
+    <span class="kw">let </span>resp = ctx
+        .search_repository(<span class="kw-2">&amp;</span>db, payload.into_inner().query)
+        .<span class="kw">await</span><span class="question-mark">?</span>;
+    <span class="prelude-val">Ok</span>(HttpResponse::Ok().json(resp))
 }
 
 <span class="kw">pub fn </span>services(cfg: <span class="kw-2">&amp;mut </span>web::ServiceConfig) {
@@ -246,12 +317,11 @@
 
 <span class="attr">#[cfg(test)]
 </span><span class="kw">mod </span>tests {
-    <span class="kw">use </span>actix_web::http::StatusCode;
     <span class="kw">use </span>actix_web::test;
     <span class="kw">use </span>url::Url;
 
     <span class="kw">use super</span>::<span class="kw-2">*</span>;
-    <span class="kw">use </span>db_core::prelude::<span class="kw-2">*</span>;
+    <span class="kw">use </span>actix_web::http::StatusCode;
 
     <span class="kw">use </span><span class="kw">crate</span>::tests::<span class="kw-2">*</span>;
     <span class="kw">use crate</span>::<span class="kw-2">*</span>;

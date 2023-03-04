@@ -1,0 +1,3 @@
+(function() {var implementors = {
+"starchart":[["impl Actor for <a class=\"struct\" href=\"starchart/counter/struct.Counter.html\" title=\"struct starchart::counter::Counter\">Counter</a>"],["impl Actor for <a class=\"struct\" href=\"starchart/master/struct.Master.html\" title=\"struct starchart::master::Master\">Master</a>"]]
+};if (window.register_implementors) {window.register_implementors(implementors);} else {window.pending_implementors = implementors;}})()
