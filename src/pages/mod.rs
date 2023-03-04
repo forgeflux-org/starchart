@@ -143,7 +143,7 @@ mod tests {
             PUB_NAV,
             auth::AUTH_CHALLENGE,
             auth::AUTH_ADD,
-            chart::HOME,
+            chart::EXPLORE,
             //            auth::AUTH_BASE,
             //            auth::login::LOGIN,
             //            auth::register::REGISTER,

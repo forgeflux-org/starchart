@@ -32,15 +32,17 @@ use crate::*;
 pub use crate::pages::*;
 
 pub const TITLE: &str = "Explore";
-pub const HOME: TemplateFile = TemplateFile::new("home_page", "pages/chart/index.html");
+pub const EXPLORE: TemplateFile = TemplateFile::new("explore_page", "pages/chart/index.html");
 pub const REPO_INFO: TemplateFile =
     TemplateFile::new("repo_info", "pages/chart/components/repo_info.html");
 
-pub struct HomePage {
+pub const SEARCH_BAR: TemplateFile = TemplateFile::new("search_bar", "components/nav/search.html");
+
+pub struct ExplorePage {
     ctx: RefCell<Context>,
 }
 
-impl CtxError for HomePage {
+impl CtxError for ExplorePage {
     fn with_error(&self, e: &ReadableError) -> String {
         self.ctx.borrow_mut().insert(ERROR_KEY, e);
         self.render()
@@ -48,14 +50,14 @@ impl CtxError for HomePage {
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, Default, Deserialize, Serialize)]
-pub struct HomePagePayload {
+pub struct ExplorePagePayload {
     pub repos: Vec<Repository>,
     pub next_page: String,
     pub prev_page: String,
 }
 
-impl HomePage {
-    fn new(settings: &Settings, payload: &HomePagePayload) -> Self {
+impl ExplorePage {
+    fn new(settings: &Settings, payload: &ExplorePagePayload) -> Self {
         let ctx = RefCell::new(ctx(settings));
         ctx.borrow_mut().insert(TITLE_KEY, TITLE);
         ctx.borrow_mut().insert(PAYLOAD_KEY, payload);
@@ -63,17 +65,17 @@ impl HomePage {
     }
 
     pub fn render(&self) -> String {
-        TEMPLATES.render(HOME.name, &self.ctx.borrow()).unwrap()
+        TEMPLATES.render(EXPLORE.name, &self.ctx.borrow()).unwrap()
     }
 
-    pub fn page(s: &Settings, payload: &HomePagePayload) -> String {
+    pub fn page(s: &Settings, payload: &ExplorePagePayload) -> String {
         let p = Self::new(s, payload);
         p.render()
     }
 }
 
 pub fn services(cfg: &mut web::ServiceConfig) {
-    cfg.service(home);
+    cfg.service(explore);
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -109,14 +111,18 @@ impl From<OptionalPage> for Page {
     }
 }
 
-#[get(path = "PAGES.home")]
-pub async fn home(
+#[get(path = "PAGES.explore")]
+pub async fn explore(
     q: web::Query<OptionalPage>,
     ctx: WebCtx,
     db: WebDB,
-) -> PageResult<impl Responder, HomePage> {
+) -> PageResult<impl Responder, ExplorePage> {
     let q = q.into_inner();
-    async fn _home(_ctx: &ArcCtx, db: &BoxDB, p: &Page) -> ServiceResult<Vec<db_core::Repository>> {
+    async fn _explore(
+        _ctx: &ArcCtx,
+        db: &BoxDB,
+        p: &Page,
+    ) -> ServiceResult<Vec<db_core::Repository>> {
         const LIMIT: u32 = 10;
         let offset = p.page * LIMIT;
         let responses = db.get_all_repositories(offset, LIMIT).await?;
@@ -124,17 +130,17 @@ pub async fn home(
     }
     let q: Page = q.into();
 
-    let repos = _home(&ctx, &db, &q).await.map_err(|e| {
-        let x = HomePagePayload::default();
-        PageError::new(HomePage::new(&ctx.settings, &x), e)
+    let repos = _explore(&ctx, &db, &q).await.map_err(|e| {
+        let x = ExplorePagePayload::default();
+        PageError::new(ExplorePage::new(&ctx.settings, &x), e)
     })?;
 
-    let payload = HomePagePayload {
+    let payload = ExplorePagePayload {
         repos,
-        next_page: PAGES.home_next(q.next()),
-        prev_page: PAGES.home_next(q.prev()),
+        next_page: PAGES.explore_next(q.next()),
+        prev_page: PAGES.explore_next(q.prev()),
     };
-    let page = HomePage::page(&ctx.settings, &payload);
+    let page = ExplorePage::page(&ctx.settings, &payload);
 
     let html = ContentType::html();
     Ok(HttpResponse::Ok().content_type(html).body(page))

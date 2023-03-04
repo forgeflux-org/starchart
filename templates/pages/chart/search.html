@@ -7,12 +7,5 @@
       {% for repository in payload.repos %}
         {% include "repo_info" %}
       {% endfor %}
-
-
-      <div class="next_page">
-        <a href="{{ payload.prev_page }}">Back</a>
-        <a href="{{ payload.next_page }}">Next</a>
-      </div>
-
 </section>
 {% endblock %}

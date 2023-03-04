@@ -25,6 +25,8 @@ pub const PAGES: Pages = Pages::new();
 pub struct Pages {
     /// home page
     pub home: &'static str,
+    pub explore: &'static str,
+    pub search: &'static str,
     /// auth routes
     pub auth: Auth,
 }
@@ -32,13 +34,20 @@ pub struct Pages {
 impl Pages {
     /// create new instance of Routes
     const fn new() -> Pages {
-        let home = "/";
+        let explore = "/explore";
+        let home = explore;
+        let search = "/search";
         let auth = Auth::new();
-        Pages { home, auth }
+        Pages {
+            home,
+            auth,
+            explore,
+            search,
+        }
     }
 
-    pub fn home_next(&self, page: u32) -> String {
-        format!("{}?page={page}", self.home)
+    pub fn explore_next(&self, page: u32) -> String {
+        format!("{}?page={page}", self.explore)
     }
 }
 

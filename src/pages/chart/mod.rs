@@ -17,16 +17,22 @@
  */
 
 pub mod home;
-pub use home::HOME;
+pub mod search;
+pub use home::EXPLORE;
 pub use home::REPO_INFO;
+pub use home::SEARCH_BAR;
+pub use search::SEARCH_RESULTS;
 
 pub use super::{ctx, TemplateFile, ERROR_KEY, PAGES, PAYLOAD_KEY, TITLE_KEY};
 
 pub fn register_templates(t: &mut tera::Tera) {
-    HOME.register(t).expect(HOME.name);
+    EXPLORE.register(t).expect(EXPLORE.name);
     REPO_INFO.register(t).expect(REPO_INFO.name);
+    SEARCH_BAR.register(t).expect(SEARCH_BAR.name);
+    SEARCH_RESULTS.register(t).expect(SEARCH_RESULTS.name);
 }
 
 pub fn services(cfg: &mut actix_web::web::ServiceConfig) {
     home::services(cfg);
+    search::services(cfg);
 }
