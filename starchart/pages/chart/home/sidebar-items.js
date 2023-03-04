@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"constant":[["HOME",""],["REPO_INFO",""],["TITLE",""]],"fn":[["services",""]],"struct":[["HomePage",""],["HomePagePayload",""],["OptionalPage",""],["Page",""],["home",""]]};
+window.SIDEBAR_ITEMS = {"constant":[["EXPLORE",""],["REPO_INFO",""],["SEARCH_BAR",""],["TITLE",""]],"fn":[["services",""]],"struct":[["ExplorePage",""],["ExplorePagePayload",""],["OptionalPage",""],["Page",""],["explore",""]]};

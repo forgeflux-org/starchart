@@ -203,6 +203,13 @@
 <a href="#203" id="203">203</a>
 <a href="#204" id="204">204</a>
 <a href="#205" id="205">205</a>
+<a href="#206" id="206">206</a>
+<a href="#207" id="207">207</a>
+<a href="#208" id="208">208</a>
+<a href="#209" id="209">209</a>
+<a href="#210" id="210">210</a>
+<a href="#211" id="211">211</a>
+<a href="#212" id="212">212</a>
 </pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::counter::AddSearch;
 <span class="kw">use </span><span class="kw">crate</span>::master::{AddCounter, GetSite};
 <span class="comment">/*
@@ -238,11 +245,13 @@
     <span class="kw">async fn </span>client_federated_search(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         <span class="kw-2">mut </span>starchart_url: Url,
+        payload: <span class="kw-2">&amp;</span>SearchRepositoryReq,
     ) -&gt; ServiceResult&lt;Vec&lt;Repository&gt;&gt; {
-        starchart_url.set_path(ROUTES.forges);
+        starchart_url.set_path(ROUTES.search.repository);
         <span class="prelude-val">Ok</span>(<span class="self">self
             </span>.client
-            .get(starchart_url)
+            .post(starchart_url)
+            .json(<span class="kw-2">&amp;</span>payload)
             .send()
             .<span class="kw">await
             </span>.unwrap()
@@ -260,6 +269,9 @@
             query
         } <span class="kw">else </span>{
             <span class="macro">format!</span>(<span class="string">&quot;*{}*&quot;</span>, query)
+        };
+        <span class="kw">let </span>federated_search_payload = SearchRepositoryReq {
+            query: query.clone(),
         };
         <span class="kw">let </span>local_resp = db.search_repository(<span class="kw-2">&amp;</span>query).<span class="kw">await</span><span class="question-mark">?</span>;
         <span class="kw">let </span><span class="kw-2">mut </span>federated_resp = Vec::default();
@@ -289,7 +301,9 @@
             <span class="kw">if </span>count &gt; <span class="number">50 </span>{
                 <span class="macro">todo!</span>(<span class="string">&quot;Clone index&quot;</span>);
             } <span class="kw">else </span>{
-                <span class="kw">let </span>resp = <span class="self">self</span>.client_federated_search(Url::parse(starchart)<span class="question-mark">?</span>).<span class="kw">await</span><span class="question-mark">?</span>;
+                <span class="kw">let </span>resp = <span class="self">self
+                    </span>.client_federated_search(Url::parse(starchart)<span class="question-mark">?</span>, <span class="kw-2">&amp;</span>federated_search_payload)
+                    .<span class="kw">await</span><span class="question-mark">?</span>;
                 federated_resp.extend(resp);
             }
         }

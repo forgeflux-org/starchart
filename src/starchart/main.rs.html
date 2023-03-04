@@ -239,14 +239,14 @@
     //    .unwrap();
 
     </span><span class="kw">let </span>s = tokio::spawn(server_fut);
-    f.import(
-        url::Url::parse(<span class="string">&quot;http://localhost:7000&quot;</span>).unwrap(),
-        <span class="kw-2">&amp;</span>c.client,
-        <span class="kw-2">&amp;</span>d,
-    )
-    .<span class="kw">await
-    </span>.unwrap();
-    kill_crawler.send(<span class="bool-val">true</span>).unwrap();
+    <span class="comment">//    f.import(
+    //        url::Url::parse(&quot;http://localhost:7000&quot;).unwrap(),
+    //        &amp;c.client,
+    //        &amp;d,
+    //    )
+    //    .await
+    //    .unwrap();
+    </span>kill_crawler.send(<span class="bool-val">true</span>).unwrap();
     crawler_fut.<span class="kw">await</span>.unwrap().<span class="kw">await</span>;
     s.<span class="kw">await</span>.unwrap().unwrap();
 }

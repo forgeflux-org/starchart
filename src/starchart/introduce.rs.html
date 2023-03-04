@@ -241,6 +241,42 @@
 <a href="#241" id="241">241</a>
 <a href="#242" id="242">242</a>
 <a href="#243" id="243">243</a>
+<a href="#244" id="244">244</a>
+<a href="#245" id="245">245</a>
+<a href="#246" id="246">246</a>
+<a href="#247" id="247">247</a>
+<a href="#248" id="248">248</a>
+<a href="#249" id="249">249</a>
+<a href="#250" id="250">250</a>
+<a href="#251" id="251">251</a>
+<a href="#252" id="252">252</a>
+<a href="#253" id="253">253</a>
+<a href="#254" id="254">254</a>
+<a href="#255" id="255">255</a>
+<a href="#256" id="256">256</a>
+<a href="#257" id="257">257</a>
+<a href="#258" id="258">258</a>
+<a href="#259" id="259">259</a>
+<a href="#260" id="260">260</a>
+<a href="#261" id="261">261</a>
+<a href="#262" id="262">262</a>
+<a href="#263" id="263">263</a>
+<a href="#264" id="264">264</a>
+<a href="#265" id="265">265</a>
+<a href="#266" id="266">266</a>
+<a href="#267" id="267">267</a>
+<a href="#268" id="268">268</a>
+<a href="#269" id="269">269</a>
+<a href="#270" id="270">270</a>
+<a href="#271" id="271">271</a>
+<a href="#272" id="272">272</a>
+<a href="#273" id="273">273</a>
+<a href="#274" id="274">274</a>
+<a href="#275" id="275">275</a>
+<a href="#276" id="276">276</a>
+<a href="#277" id="277">277</a>
+<a href="#278" id="278">278</a>
+<a href="#279" id="279">279</a>
 </pre><pre class="rust"><code><span class="comment">/*
  * ForgeFlux StarChart - A federated software forge spider
  * Copyright (C) 2023  Aravinth Manivannan &lt;realaravinth@batsense.net&gt;
@@ -281,6 +317,9 @@
         starchart_url: <span class="kw-2">&amp;</span>Url,
         page: usize,
     ) -&gt; ServiceResult&lt;Vec&lt;Forge&gt;&gt; {
+        <span class="kw">if </span>starchart_url == <span class="kw-2">&amp;</span><span class="self">self</span>.settings.introducer.public_url {
+            <span class="macro">panic!</span>()
+        }
         <span class="kw">let </span><span class="kw-2">mut </span>url = starchart_url.clone();
         url.set_path(ROUTES.forges);
         url.set_query(<span class="prelude-val">Some</span>(<span class="kw-2">&amp;</span><span class="macro">format!</span>(<span class="string">&quot;page={page}&quot;</span>)));
@@ -299,6 +338,9 @@
         starchart_url: Url,
         db: <span class="kw-2">&amp;</span>Box&lt;<span class="kw">dyn </span>SCDatabase&gt;,
     ) -&gt; ServiceResult&lt;()&gt; {
+        <span class="kw">if </span>starchart_url == <span class="self">self</span>.settings.introducer.public_url {
+            <span class="macro">panic!</span>()
+        }
         <span class="kw">let </span>clean_starchart_url = clean_url(<span class="kw-2">&amp;</span>starchart_url);
         <span class="kw">let </span><span class="kw-2">mut </span>page = <span class="number">1</span>;
         <span class="kw">loop </span>{
@@ -326,6 +368,9 @@
         <span class="kw-2">mut </span>starchart_url: Url,
         page: usize,
     ) -&gt; ServiceResult&lt;Vec&lt;Starchart&gt;&gt; {
+        <span class="kw">if </span>starchart_url == <span class="self">self</span>.settings.introducer.public_url {
+            <span class="macro">panic!</span>()
+        }
         starchart_url.set_path(ROUTES.introducer.list);
         starchart_url.set_query(<span class="prelude-val">Some</span>(<span class="kw-2">&amp;</span><span class="macro">format!</span>(<span class="string">&quot;page={page}&quot;</span>)));
         <span class="prelude-val">Ok</span>(<span class="self">self
@@ -339,7 +384,10 @@
             </span>.unwrap())
     }
     <span class="kw">async fn </span>client_get_mini_index(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="kw-2">mut </span>starchart_url: Url) -&gt; ServiceResult&lt;MiniIndex&gt; {
-        starchart_url.set_path(ROUTES.introducer.introduce);
+        <span class="kw">if </span>starchart_url == <span class="self">self</span>.settings.introducer.public_url {
+            <span class="macro">panic!</span>()
+        }
+        starchart_url.set_path(ROUTES.introducer.get_mini_index);
         <span class="prelude-val">Ok</span>(<span class="self">self
             </span>.client
             .get(starchart_url)
@@ -352,6 +400,9 @@
     }
 
     <span class="kw">async fn </span>client_introduce_starchart(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="kw-2">mut </span>starchart_url: Url) -&gt; ServiceResult&lt;()&gt; {
+        <span class="kw">if </span>starchart_url == <span class="self">self</span>.settings.introducer.public_url {
+            <span class="kw">return </span><span class="prelude-val">Ok</span>(());
+        }
         starchart_url.set_path(ROUTES.introducer.introduce);
         <span class="kw">let </span>introduction_payload = Starchart {
             instance_url: <span class="self">self</span>.settings.introducer.public_url.to_string(),
@@ -380,17 +431,38 @@
                 <span class="kw">if </span>nodes.is_empty() {
                     <span class="kw">break</span>;
                 }
-                <span class="kw">for </span>node <span class="kw">in </span>nodes.drain(<span class="number">0</span>..) {
-                    <span class="kw">let </span>node_url = Url::parse(<span class="kw-2">&amp;</span>node.instance_url)<span class="question-mark">?</span>;
+
+                <span class="kw">async fn </span>_bootstrap(
+                    ctx: <span class="kw-2">&amp;</span>Ctx,
+                    db: <span class="kw-2">&amp;</span>Box&lt;<span class="kw">dyn </span>SCDatabase&gt;,
+                    known_starcharts: <span class="kw-2">&amp;mut </span>HashSet&lt;Url&gt;,
+                    instance_url: <span class="kw-2">&amp;</span>str,
+                ) -&gt; ServiceResult&lt;()&gt; {
+                    <span class="kw">if </span>instance_url == ctx.settings.introducer.public_url.as_str() {
+                        <span class="kw">return </span><span class="prelude-val">Ok</span>(());
+                    }
+
+                    <span class="kw">let </span>node_url = Url::parse(instance_url)<span class="question-mark">?</span>;
                     db.add_starchart_to_introducer(<span class="kw-2">&amp;</span>node_url).<span class="kw">await</span><span class="question-mark">?</span>;
                     <span class="kw">if </span>known_starcharts.get(<span class="kw-2">&amp;</span>node_url).is_none() {
                         known_starcharts.insert(node_url.clone());
                     }
-                    <span class="self">self</span>.import_forges(node_url, db).<span class="kw">await</span><span class="question-mark">?</span>;
-                    <span class="kw">let </span>mini_index = <span class="self">self</span>.client_get_mini_index(starchart.clone()).<span class="kw">await</span><span class="question-mark">?</span>;
-                    db.rm_imported_mini_index(starchart).<span class="kw">await</span><span class="question-mark">?</span>;
-                    db.import_mini_index(starchart, <span class="kw-2">&amp;</span>mini_index.mini_index)
+                    ctx.import_forges(node_url.clone(), db).<span class="kw">await</span><span class="question-mark">?</span>;
+                    <span class="kw">let </span>mini_index = ctx.client_get_mini_index(node_url.clone()).<span class="kw">await</span><span class="question-mark">?</span>;
+                    db.rm_imported_mini_index(<span class="kw-2">&amp;</span>node_url).<span class="kw">await</span><span class="question-mark">?</span>;
+                    db.import_mini_index(<span class="kw-2">&amp;</span>node_url, <span class="kw-2">&amp;</span>mini_index.mini_index)
                         .<span class="kw">await</span><span class="question-mark">?</span>;
+
+                    <span class="prelude-val">Ok</span>(())
+                }
+
+                _bootstrap(<span class="self">self</span>, db, <span class="kw-2">&amp;mut </span>known_starcharts, starchart.as_str()).<span class="kw">await</span><span class="question-mark">?</span>;
+
+                <span class="kw">for </span>node <span class="kw">in </span>nodes.drain(<span class="number">0</span>..) {
+                    <span class="kw">if </span>node.instance_url == <span class="self">self</span>.settings.introducer.public_url.as_str() {
+                        <span class="kw">continue</span>;
+                    }
+                    _bootstrap(<span class="self">self</span>, db, <span class="kw-2">&amp;mut </span>known_starcharts, <span class="kw-2">&amp;</span>node.instance_url).<span class="kw">await</span><span class="question-mark">?</span>;
                 }
                 page += <span class="number">1</span>;
             }

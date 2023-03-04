@@ -6,6 +6,6 @@ var sourcesIndex = JSON.parse('{\
 "forge_core":["",[],["lib.rs"]],\
 "gitea":["",[],["lib.rs","schema.rs"]],\
 "publiccodeyml":["",[],["errors.rs","lib.rs","schema.rs"]],\
-"starchart":["",[["dns",[],["mod.rs"]],["pages",[["auth",[],["add.rs","mod.rs","verify.rs"]],["chart",[],["home.rs","mod.rs"]]],["errors.rs","mod.rs","routes.rs"]],["static_assets",[],["filemap.rs","mod.rs","static_files.rs"]]],["api.rs","counter.rs","ctx.rs","db.rs","errors.rs","federate.rs","introduce.rs","main.rs","master.rs","routes.rs","search.rs","settings.rs","spider.rs","utils.rs","verify.rs"]]\
+"starchart":["",[["dns",[],["mod.rs"]],["pages",[["auth",[],["add.rs","mod.rs","verify.rs"]],["chart",[],["home.rs","mod.rs","search.rs"]]],["errors.rs","mod.rs","routes.rs"]],["static_assets",[],["filemap.rs","mod.rs","static_files.rs"]]],["api.rs","counter.rs","ctx.rs","db.rs","errors.rs","federate.rs","introduce.rs","main.rs","master.rs","routes.rs","search.rs","settings.rs","spider.rs","utils.rs","verify.rs"]]\
 }');
 createSourceSidebar();

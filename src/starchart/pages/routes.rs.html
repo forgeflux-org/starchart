@@ -114,6 +114,15 @@
 <a href="#114" id="114">114</a>
 <a href="#115" id="115">115</a>
 <a href="#116" id="116">116</a>
+<a href="#117" id="117">117</a>
+<a href="#118" id="118">118</a>
+<a href="#119" id="119">119</a>
+<a href="#120" id="120">120</a>
+<a href="#121" id="121">121</a>
+<a href="#122" id="122">122</a>
+<a href="#123" id="123">123</a>
+<a href="#124" id="124">124</a>
+<a href="#125" id="125">125</a>
 </pre><pre class="rust"><code><span class="comment">/*
  * ForgeFlux StarChart - A federated software forge spider
  * Copyright (C) 2022  Aravinth Manivannan &lt;realaravinth@batsense.net&gt;
@@ -141,6 +150,8 @@
 </span><span class="kw">pub struct </span>Pages {
     <span class="doccomment">/// home page
     </span><span class="kw">pub </span>home: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>str,
+    <span class="kw">pub </span>explore: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>str,
+    <span class="kw">pub </span>search: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>str,
     <span class="doccomment">/// auth routes
     </span><span class="kw">pub </span>auth: Auth,
 }
@@ -148,13 +159,20 @@
 <span class="kw">impl </span>Pages {
     <span class="doccomment">/// create new instance of Routes
     </span><span class="kw">const fn </span>new() -&gt; Pages {
-        <span class="kw">let </span>home = <span class="string">&quot;/&quot;</span>;
+        <span class="kw">let </span>explore = <span class="string">&quot;/explore&quot;</span>;
+        <span class="kw">let </span>home = explore;
+        <span class="kw">let </span>search = <span class="string">&quot;/search&quot;</span>;
         <span class="kw">let </span>auth = Auth::new();
-        Pages { home, auth }
+        Pages {
+            home,
+            auth,
+            explore,
+            search,
+        }
     }
 
-    <span class="kw">pub fn </span>home_next(<span class="kw-2">&amp;</span><span class="self">self</span>, page: u32) -&gt; String {
-        <span class="macro">format!</span>(<span class="string">&quot;{}?page={page}&quot;</span>, <span class="self">self</span>.home)
+    <span class="kw">pub fn </span>explore_next(<span class="kw-2">&amp;</span><span class="self">self</span>, page: u32) -&gt; String {
+        <span class="macro">format!</span>(<span class="string">&quot;{}?page={page}&quot;</span>, <span class="self">self</span>.explore)
     }
 }
 

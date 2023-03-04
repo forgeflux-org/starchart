@@ -161,6 +161,12 @@
 <a href="#161" id="161">161</a>
 <a href="#162" id="162">162</a>
 <a href="#163" id="163">163</a>
+<a href="#164" id="164">164</a>
+<a href="#165" id="165">165</a>
+<a href="#166" id="166">166</a>
+<a href="#167" id="167">167</a>
+<a href="#168" id="168">168</a>
+<a href="#169" id="169">169</a>
 </pre><pre class="rust"><code><span class="comment">/*
  * ForgeFlux StarChart - A federated software forge spider
  * Copyright © 2022 Aravinth Manivannan &lt;realaravinth@batsense.net&gt;
@@ -195,15 +201,17 @@
 <span class="kw">pub use </span><span class="kw">crate</span>::pages::<span class="kw-2">*</span>;
 
 <span class="kw">pub const </span>TITLE: <span class="kw-2">&amp;</span>str = <span class="string">&quot;Explore&quot;</span>;
-<span class="kw">pub const </span>HOME: TemplateFile = TemplateFile::new(<span class="string">&quot;home_page&quot;</span>, <span class="string">&quot;pages/chart/index.html&quot;</span>);
+<span class="kw">pub const </span>EXPLORE: TemplateFile = TemplateFile::new(<span class="string">&quot;explore_page&quot;</span>, <span class="string">&quot;pages/chart/index.html&quot;</span>);
 <span class="kw">pub const </span>REPO_INFO: TemplateFile =
     TemplateFile::new(<span class="string">&quot;repo_info&quot;</span>, <span class="string">&quot;pages/chart/components/repo_info.html&quot;</span>);
 
-<span class="kw">pub struct </span>HomePage {
+<span class="kw">pub const </span>SEARCH_BAR: TemplateFile = TemplateFile::new(<span class="string">&quot;search_bar&quot;</span>, <span class="string">&quot;components/nav/search.html&quot;</span>);
+
+<span class="kw">pub struct </span>ExplorePage {
     ctx: RefCell&lt;Context&gt;,
 }
 
-<span class="kw">impl </span>CtxError <span class="kw">for </span>HomePage {
+<span class="kw">impl </span>CtxError <span class="kw">for </span>ExplorePage {
     <span class="kw">fn </span>with_error(<span class="kw-2">&amp;</span><span class="self">self</span>, e: <span class="kw-2">&amp;</span>ReadableError) -&gt; String {
         <span class="self">self</span>.ctx.borrow_mut().insert(ERROR_KEY, e);
         <span class="self">self</span>.render()
@@ -211,14 +219,14 @@
 }
 
 <span class="attr">#[derive(Clone, Debug, PartialEq, Eq, Default, Deserialize, Serialize)]
-</span><span class="kw">pub struct </span>HomePagePayload {
+</span><span class="kw">pub struct </span>ExplorePagePayload {
     <span class="kw">pub </span>repos: Vec&lt;Repository&gt;,
     <span class="kw">pub </span>next_page: String,
     <span class="kw">pub </span>prev_page: String,
 }
 
-<span class="kw">impl </span>HomePage {
-    <span class="kw">fn </span>new(settings: <span class="kw-2">&amp;</span>Settings, payload: <span class="kw-2">&amp;</span>HomePagePayload) -&gt; <span class="self">Self </span>{
+<span class="kw">impl </span>ExplorePage {
+    <span class="kw">fn </span>new(settings: <span class="kw-2">&amp;</span>Settings, payload: <span class="kw-2">&amp;</span>ExplorePagePayload) -&gt; <span class="self">Self </span>{
         <span class="kw">let </span>ctx = RefCell::new(ctx(settings));
         ctx.borrow_mut().insert(TITLE_KEY, TITLE);
         ctx.borrow_mut().insert(PAYLOAD_KEY, payload);
@@ -226,17 +234,17 @@
     }
 
     <span class="kw">pub fn </span>render(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; String {
-        TEMPLATES.render(HOME.name, <span class="kw-2">&amp;</span><span class="self">self</span>.ctx.borrow()).unwrap()
+        TEMPLATES.render(EXPLORE.name, <span class="kw-2">&amp;</span><span class="self">self</span>.ctx.borrow()).unwrap()
     }
 
-    <span class="kw">pub fn </span>page(s: <span class="kw-2">&amp;</span>Settings, payload: <span class="kw-2">&amp;</span>HomePagePayload) -&gt; String {
+    <span class="kw">pub fn </span>page(s: <span class="kw-2">&amp;</span>Settings, payload: <span class="kw-2">&amp;</span>ExplorePagePayload) -&gt; String {
         <span class="kw">let </span>p = <span class="self">Self</span>::new(s, payload);
         p.render()
     }
 }
 
 <span class="kw">pub fn </span>services(cfg: <span class="kw-2">&amp;mut </span>web::ServiceConfig) {
-    cfg.service(home);
+    cfg.service(explore);
 }
 
 <span class="attr">#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -272,14 +280,18 @@
     }
 }
 
-<span class="attr">#[get(path = <span class="string">&quot;PAGES.home&quot;</span>)]
-</span><span class="kw">pub async fn </span>home(
+<span class="attr">#[get(path = <span class="string">&quot;PAGES.explore&quot;</span>)]
+</span><span class="kw">pub async fn </span>explore(
     q: web::Query&lt;OptionalPage&gt;,
     ctx: WebCtx,
     db: WebDB,
-) -&gt; PageResult&lt;<span class="kw">impl </span>Responder, HomePage&gt; {
+) -&gt; PageResult&lt;<span class="kw">impl </span>Responder, ExplorePage&gt; {
     <span class="kw">let </span>q = q.into_inner();
-    <span class="kw">async fn </span>_home(_ctx: <span class="kw-2">&amp;</span>ArcCtx, db: <span class="kw-2">&amp;</span>BoxDB, p: <span class="kw-2">&amp;</span>Page) -&gt; ServiceResult&lt;Vec&lt;db_core::Repository&gt;&gt; {
+    <span class="kw">async fn </span>_explore(
+        _ctx: <span class="kw-2">&amp;</span>ArcCtx,
+        db: <span class="kw-2">&amp;</span>BoxDB,
+        p: <span class="kw-2">&amp;</span>Page,
+    ) -&gt; ServiceResult&lt;Vec&lt;db_core::Repository&gt;&gt; {
         <span class="kw">const </span>LIMIT: u32 = <span class="number">10</span>;
         <span class="kw">let </span>offset = p.page * LIMIT;
         <span class="kw">let </span>responses = db.get_all_repositories(offset, LIMIT).<span class="kw">await</span><span class="question-mark">?</span>;
@@ -287,17 +299,17 @@
     }
     <span class="kw">let </span>q: Page = q.into();
 
-    <span class="kw">let </span>repos = _home(<span class="kw-2">&amp;</span>ctx, <span class="kw-2">&amp;</span>db, <span class="kw-2">&amp;</span>q).<span class="kw">await</span>.map_err(|e| {
-        <span class="kw">let </span>x = HomePagePayload::default();
-        PageError::new(HomePage::new(<span class="kw-2">&amp;</span>ctx.settings, <span class="kw-2">&amp;</span>x), e)
+    <span class="kw">let </span>repos = _explore(<span class="kw-2">&amp;</span>ctx, <span class="kw-2">&amp;</span>db, <span class="kw-2">&amp;</span>q).<span class="kw">await</span>.map_err(|e| {
+        <span class="kw">let </span>x = ExplorePagePayload::default();
+        PageError::new(ExplorePage::new(<span class="kw-2">&amp;</span>ctx.settings, <span class="kw-2">&amp;</span>x), e)
     })<span class="question-mark">?</span>;
 
-    <span class="kw">let </span>payload = HomePagePayload {
+    <span class="kw">let </span>payload = ExplorePagePayload {
         repos,
-        next_page: PAGES.home_next(q.next()),
-        prev_page: PAGES.home_next(q.prev()),
+        next_page: PAGES.explore_next(q.next()),
+        prev_page: PAGES.explore_next(q.prev()),
     };
-    <span class="kw">let </span>page = HomePage::page(<span class="kw-2">&amp;</span>ctx.settings, <span class="kw-2">&amp;</span>payload);
+    <span class="kw">let </span>page = ExplorePage::page(<span class="kw-2">&amp;</span>ctx.settings, <span class="kw-2">&amp;</span>payload);
 
     <span class="kw">let </span>html = ContentType::html();
     <span class="prelude-val">Ok</span>(HttpResponse::Ok().content_type(html).body(page))
