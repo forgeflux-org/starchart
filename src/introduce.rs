@@ -38,6 +38,9 @@ impl Ctx {
         starchart_url: &Url,
         page: usize,
     ) -> ServiceResult<Vec<Forge>> {
+        if starchart_url == &self.settings.introducer.public_url {
+            panic!()
+        }
         let mut url = starchart_url.clone();
         url.set_path(ROUTES.forges);
         url.set_query(Some(&format!("page={page}")));
@@ -56,6 +59,9 @@ impl Ctx {
         starchart_url: Url,
         db: &Box<dyn SCDatabase>,
     ) -> ServiceResult<()> {
+        if starchart_url == self.settings.introducer.public_url {
+            panic!()
+        }
         let clean_starchart_url = clean_url(&starchart_url);
         let mut page = 1;
         loop {
@@ -83,6 +89,9 @@ impl Ctx {
         mut starchart_url: Url,
         page: usize,
     ) -> ServiceResult<Vec<Starchart>> {
+        if starchart_url == self.settings.introducer.public_url {
+            panic!()
+        }
         starchart_url.set_path(ROUTES.introducer.list);
         starchart_url.set_query(Some(&format!("page={page}")));
         Ok(self
@@ -96,7 +105,10 @@ impl Ctx {
             .unwrap())
     }
     async fn client_get_mini_index(&self, mut starchart_url: Url) -> ServiceResult<MiniIndex> {
-        starchart_url.set_path(ROUTES.introducer.introduce);
+        if starchart_url == self.settings.introducer.public_url {
+            panic!()
+        }
+        starchart_url.set_path(ROUTES.introducer.get_mini_index);
         Ok(self
             .client
             .get(starchart_url)
@@ -109,6 +121,9 @@ impl Ctx {
     }
 
     async fn client_introduce_starchart(&self, mut starchart_url: Url) -> ServiceResult<()> {
+        if starchart_url == self.settings.introducer.public_url {
+            return Ok(());
+        }
         starchart_url.set_path(ROUTES.introducer.introduce);
         let introduction_payload = Starchart {
             instance_url: self.settings.introducer.public_url.to_string(),
@@ -137,17 +152,38 @@ impl Ctx {
                 if nodes.is_empty() {
                     break;
                 }
-                for node in nodes.drain(0..) {
-                    let node_url = Url::parse(&node.instance_url)?;
+
+                async fn _bootstrap(
+                    ctx: &Ctx,
+                    db: &Box<dyn SCDatabase>,
+                    known_starcharts: &mut HashSet<Url>,
+                    instance_url: &str,
+                ) -> ServiceResult<()> {
+                    if instance_url == ctx.settings.introducer.public_url.as_str() {
+                        return Ok(());
+                    }
+
+                    let node_url = Url::parse(instance_url)?;
                     db.add_starchart_to_introducer(&node_url).await?;
                     if known_starcharts.get(&node_url).is_none() {
                         known_starcharts.insert(node_url.clone());
                     }
-                    self.import_forges(node_url, db).await?;
-                    let mini_index = self.client_get_mini_index(starchart.clone()).await?;
-                    db.rm_imported_mini_index(starchart).await?;
-                    db.import_mini_index(starchart, &mini_index.mini_index)
+                    ctx.import_forges(node_url.clone(), db).await?;
+                    let mini_index = ctx.client_get_mini_index(node_url.clone()).await?;
+                    db.rm_imported_mini_index(&node_url).await?;
+                    db.import_mini_index(&node_url, &mini_index.mini_index)
                         .await?;
+
+                    Ok(())
+                }
+
+                _bootstrap(self, db, &mut known_starcharts, starchart.as_str()).await?;
+
+                for node in nodes.drain(0..) {
+                    if node.instance_url == self.settings.introducer.public_url.as_str() {
+                        continue;
+                    }
+                    _bootstrap(self, db, &mut known_starcharts, &node.instance_url).await?;
                 }
                 page += 1;
             }

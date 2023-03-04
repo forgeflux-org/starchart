@@ -113,13 +113,13 @@ async fn main() {
     //    .unwrap();
 
     let s = tokio::spawn(server_fut);
-    f.import(
-        url::Url::parse("http://localhost:7000").unwrap(),
-        &c.client,
-        &d,
-    )
-    .await
-    .unwrap();
+    //    f.import(
+    //        url::Url::parse("http://localhost:7000").unwrap(),
+    //        &c.client,
+    //        &d,
+    //    )
+    //    .await
+    //    .unwrap();
     kill_crawler.send(true).unwrap();
     crawler_fut.await.unwrap().await;
     s.await.unwrap().unwrap();
