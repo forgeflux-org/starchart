@@ -23,12 +23,14 @@ use lazy_static::lazy_static;
 use tokio::sync::oneshot;
 
 pub mod api;
+pub mod counter;
 pub mod ctx;
 pub mod db;
 pub mod dns;
 pub mod errors;
 pub mod federate;
 pub mod introduce;
+pub mod master;
 pub mod pages;
 pub mod routes;
 pub mod search;

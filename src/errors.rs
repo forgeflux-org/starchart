@@ -154,4 +154,12 @@ impl From<ParseError> for ServiceError {
 }
 
 #[cfg(not(tarpaulin_include))]
+impl From<actix::MailboxError> for ServiceError {
+    fn from(e: actix::MailboxError) -> Self {
+        log::debug!("Actor mailbox error: {:?}", e);
+        Self::InternalServerError
+    }
+}
+
+#[cfg(not(tarpaulin_include))]
 pub type ServiceResult<V> = std::result::Result<V, ServiceError>;
