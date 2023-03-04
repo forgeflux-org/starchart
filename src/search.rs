@@ -33,11 +33,13 @@ impl Ctx {
     async fn client_federated_search(
         &self,
         mut starchart_url: Url,
+        payload: &SearchRepositoryReq,
     ) -> ServiceResult<Vec<Repository>> {
-        starchart_url.set_path(ROUTES.forges);
+        starchart_url.set_path(ROUTES.search.repository);
         Ok(self
             .client
-            .get(starchart_url)
+            .post(starchart_url)
+            .json(&payload)
             .send()
             .await
             .unwrap()
@@ -55,6 +57,9 @@ impl Ctx {
             query
         } else {
             format!("*{}*", query)
+        };
+        let federated_search_payload = SearchRepositoryReq {
+            query: query.clone(),
         };
         let local_resp = db.search_repository(&query).await?;
         let mut federated_resp = Vec::default();
@@ -84,7 +89,9 @@ impl Ctx {
             if count > 50 {
                 todo!("Clone index");
             } else {
-                let resp = self.client_federated_search(Url::parse(starchart)?).await?;
+                let resp = self
+                    .client_federated_search(Url::parse(starchart)?, &federated_search_payload)
+                    .await?;
                 federated_resp.extend(resp);
             }
         }
