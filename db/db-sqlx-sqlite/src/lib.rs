@@ -313,7 +313,7 @@ impl SCDatabase for Database {
         let forge_type = f.forge_type.to_str();
         if let Some(instance_url) = f.starchart_url {
             sqlx::query!(
-                "INSERT INTO starchart_forges
+                "INSERT OR IGNORE INTO starchart_forges
                     (hostname, verified_on, forge_type, starchart_instance)
                 VALUES (
                         $1,

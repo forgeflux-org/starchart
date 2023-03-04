@@ -370,16 +370,6 @@
     },
     "query": "INSERT OR IGNORE INTO fts_users ( username ) VALUES ( $1 );"
   },
-  "9f95bbc36ece57546b81052765eaf0d6cec38f8cf19cda3d256ba21c46a7bd4f": {
-    "describe": {
-      "columns": [],
-      "nullable": [],
-      "parameters": {
-        "Right": 4
-      }
-    },
-    "query": "INSERT INTO starchart_forges\n                    (hostname, verified_on, forge_type, starchart_instance)\n                VALUES (\n                        $1,\n                        $2,\n                        (SELECT ID FROM starchart_forge_type WHERE name = $3),\n                        (SELECT ID FROM starchart_introducer WHERE instance_url = $4)\n                    )"
-  },
   "a60479593819cc7dc7ec87a2d7a25a8960dc2efa1f59c5187d2084c79e26e3f8": {
     "describe": {
       "columns": [
@@ -415,6 +405,16 @@
       }
     },
     "query": "SELECT ID FROM starchart_users WHERE username = $1 AND \n                hostname_id = (SELECT ID FROM starchart_forges WHERE hostname = $2)"
+  },
+  "a912406491a4e9ea1bbf8a3d0003e948a24df7f101c490aca395f5b86ec64d00": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Right": 4
+      }
+    },
+    "query": "INSERT OR IGNORE INTO starchart_forges\n                    (hostname, verified_on, forge_type, starchart_instance)\n                VALUES (\n                        $1,\n                        $2,\n                        (SELECT ID FROM starchart_forge_type WHERE name = $3),\n                        (SELECT ID FROM starchart_introducer WHERE instance_url = $4)\n                    )"
   },
   "ae9295f46da1753fe91a633b5738533084005ad32915c19635f896c454284b6b": {
     "describe": {
