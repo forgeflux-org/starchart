@@ -34,7 +34,7 @@ pub struct Pages {
 impl Pages {
     /// create new instance of Routes
     const fn new() -> Pages {
-        let explore = "/explore";
+        let explore = "/";
         let home = explore;
         let search = "/search";
         let auth = Auth::new();
