@@ -154,7 +154,7 @@ network.docker-config.init: ## Generate docker-compose for gitea network
 	./gitea.sh > foo.yml
 
 network.init: ## Initialize gitea network
-	python ./scripts/gitea.py
+	@ . ./venv/bin/activate && python ./scripts/gitea.py
 
 help: ## Prints help for targets with comments
 	@cat $(MAKEFILE_LIST) | grep -E '^[a-zA-Z._-]+:.*?## .*$$' | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'
