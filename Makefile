@@ -140,8 +140,21 @@ xml-test-coverage: migrate ## Generate cobertura.xml test coverage
 	$(call cache_bust)
 	cargo tarpaulin -t 1200 --out XMl --skip-clean  --all-features --no-fail-fast --workspace=db/db-sqlx-sqlite,forge/gitea,federate/publiccodeyml,.
 
-network:
+network.up: ## Deploy Gitea network
 	docker-compose -f ./foo.yml up --detach
 
+network.down.rm: ## Remove gitea network, removing containers
+	docker-compose -f ./foo.yml down --remove-orphans -v
+
+network.down: ## Remote Gitea network
+	docker-compose -f ./foo.yml down
+
+network.docker-config.init: ## Generate docker-compose for gitea network
+	rm -rf ./foo.yml || true
+	./gitea.sh > foo.yml
+
+network.init: ## Initialize gitea network
+	python ./scripts/gitea.py
+
 help: ## Prints help for targets with comments
-	@cat $(MAKEFILE_LIST) | grep -E '^[a-zA-Z_-]+:.*?## .*$$' | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'
+	@cat $(MAKEFILE_LIST) | grep -E '^[a-zA-Z._-]+:.*?## .*$$' | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'

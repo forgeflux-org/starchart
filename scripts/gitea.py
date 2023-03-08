@@ -1,11 +1,13 @@
 from urllib.parse import urlunparse, urlparse
 from html.parser import HTMLParser
 from time import sleep
+import concurrent.futures
 import random
 
 from requests import Session
 from requests.auth import HTTPBasicAuth
 import requests
+import threading
 
 GITEA_USER = "bot"
 GITEA_EMAIL = "bot@example.com"
@@ -20,13 +22,13 @@ def check_online(port: int):
     while True:
         try:
             res = requests.get(
-                f"http://localhost:{port}/api/v1/nodeinfo", allow_redirects=False
+                f"http://localhost:{port}/", allow_redirects=False
             )
             if any([res.status_code == 302, res.status_code == 200]):
                 break
         except:
             sleep(2)
-            print(f"Retrying {count} time")
+            print(f"[{port}] Retrying check_online {count} time")
             count += 1
             continue
 
@@ -171,7 +173,7 @@ def create_repositories(port: int, client: HTMLClient):
     for repo in REPOS:
         csrf = client.get_csrf_token(url)
         resp = client.session.post(url, data=get_repository_payload(csrf, repo))
-        print(f"Created repository {repo}")
+        print(f"Created repository {repo} on {url}")
         if resp.status_code != 302 and resp.status_code != 200:
             raise Exception(
                 f"Error while creating repository: {repo} {resp.status_code}"
@@ -191,27 +193,41 @@ def add_tag(port: int, repo: str, client: HTMLClient):
         )
 
 
+def init(gitea):
+    print(f"Initializing gitea: {gitea}")
+    port = gitea + 11000
+    print(f"[{gitea}] Instance online")
+    print(f"[{gitea}]Instance configured and installed")
+    client = HTMLClient()
+#    check_online(port)
+    install(port)
+
+    count = 0
+    while True:
+        try:
+            register(port, client)
+            print("User registered")
+            login(port, client)
+            create_repositories(port, client)
+            break
+        except Exception as e:
+            print(f"Error: {e}")
+            print(f"Retrying {count} time")
+            count += 1
+            sleep(5)
+            continue
+
 if __name__ == "__main__":
+    for i in range(TOTAL_NUM_REPOS):
+        REPOS.append(f"repository_{i}")
+
+    threads = []
     for gitea in range(0,100):
-        for i in range(TOTAL_NUM_REPOS):
-            REPOS.append(f"repository_{i}")
-        port = gitea + 8000
-        check_online(port)
-        print("Instance online")
-        install(port)
-        print("Instance configured and installed")
-        client = HTMLClient()
-        count = 0
-        while True:
-            try:
-                register(port, client)
-                print("User registered")
-                login(port, client)
-                create_repositories(port, client)
-                break
-            except Exception as e:
-                print(f"Error: {e}")
-                print(f"Retrying {count} time")
-                count += 1
-                sleep(5)
-                continue
+        t = threading.Thread(target=init, args=(gitea,))
+        threads.append(t)
+        t.start()
+        if len(threads) == 12:
+            for i, t in enumerate(threads):
+                print(f"waiting on {i}")
+                t.join()
+            threads = []

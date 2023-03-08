@@ -4,7 +4,7 @@ echo 'services:'
 
 for count in {0..100}
 do
-	port=$(expr 8000 + $count)
+	port=$(expr 11000 + $count)
 	docker rm -f server_$count
 echo "  server_$count:"
 echo "    image: gitea/gitea:1.16.5"
