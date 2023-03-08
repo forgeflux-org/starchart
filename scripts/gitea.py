@@ -15,12 +15,12 @@ TOTAL_NUM_REPOS = 100
 REPOS = []
 
 
-def check_online():
+def check_online(port: int):
     count = 0
     while True:
         try:
             res = requests.get(
-                "http://localhost:8080/api/v1/nodeinfo", allow_redirects=False
+                f"http://localhost:{port}/api/v1/nodeinfo", allow_redirects=False
             )
             if any([res.status_code == 302, res.status_code == 200]):
                 break
@@ -31,7 +31,7 @@ def check_online():
             continue
 
 
-def install():
+def install(port: int):
     INSTALL_PAYLOAD = {
         "db_type": "sqlite3",
         "db_host": "localhost:3306",
@@ -49,7 +49,7 @@ def install():
         "domain": "localhost",
         "ssh_port": "2221",
         "http_port": "3000",
-        "app_url": "http://localhost:8080/",
+        "app_url": f"http://localhost:{port}/",
         "log_root_path": "/data/gitea/log",
         "smtp_host": "",
         "smtp_from": "",
@@ -67,7 +67,7 @@ def install():
         "admin_confirm_passwd": "",
         "admin_email": "",
     }
-    requests.post(f"http://localhost:8080", data=INSTALL_PAYLOAD)
+    requests.post(f"http://localhost:{port}", data=INSTALL_PAYLOAD)
 
 
 class ParseCSRFGiteaForm(HTMLParser):
@@ -117,8 +117,8 @@ class HTMLClient:
         return csrf
 
 
-def register(client: HTMLClient):
-    url = "http://localhost:8080/user/sign_up"
+def register(port: int, client: HTMLClient):
+    url = f"http://localhost:{port}/user/sign_up"
     csrf = client.get_csrf_token(url)
     payload = {
         "_csrf": csrf,
@@ -130,8 +130,8 @@ def register(client: HTMLClient):
     resp = client.session.post(url, data=payload, allow_redirects=False)
 
 
-def login(client: HTMLClient):
-    url = "http://localhost:8080/user/login"
+def login(port:int, client: HTMLClient):
+    url = f"http://localhost:{port}/user/login"
     csrf = client.get_csrf_token(url)
     payload = {
         "_csrf": csrf,
@@ -148,7 +148,7 @@ def login(client: HTMLClient):
     raise Exception(f"[ERROR] Authentication failed. status code {resp.status_code}")
 
 
-def create_repositories(client: HTMLClient):
+def create_repositories(port: int, client: HTMLClient):
     print("foo")
 
     def get_repository_payload(csrf: str, name: str):
@@ -167,7 +167,7 @@ def create_repositories(client: HTMLClient):
         }
         return data
 
-    url = "http://localhost:8080/repo/create"
+    url = f"http://localhost:{port}/repo/create"
     for repo in REPOS:
         csrf = client.get_csrf_token(url)
         resp = client.session.post(url, data=get_repository_payload(csrf, repo))
@@ -176,13 +176,13 @@ def create_repositories(client: HTMLClient):
             raise Exception(
                 f"Error while creating repository: {repo} {resp.status_code}"
             )
-        add_tag(repo, client)
+        add_tag(port, repo, client)
 
 
-def add_tag(repo: str, client: HTMLClient):
+def add_tag(port: int, repo: str, client: HTMLClient):
     print("adding tags")
     tag = "testing"
-    url = f"http://{GITEA_USER}:{GITEA_PASSWORD}@localhost:8080/api/v1/repos/{GITEA_USER}/{repo}/topics/{tag}"
+    url = f"http://{GITEA_USER}:{GITEA_PASSWORD}@localhost:{port}/api/v1/repos/{GITEA_USER}/{repo}/topics/{tag}"
     resp = requests.put(url)
     if resp.status_code != 204:
         print(f"Error while adding tags repository: {repo} {resp.status_code}")
@@ -192,24 +192,26 @@ def add_tag(repo: str, client: HTMLClient):
 
 
 if __name__ == "__main__":
-    for i in range(TOTAL_NUM_REPOS):
-        REPOS.append(f"repository_{i}")
-    check_online()
-    print("Instance online")
-    install()
-    print("Instance configured and installed")
-    client = HTMLClient()
-    count = 0
-    while True:
-        try:
-            register(client)
-            print("User registered")
-            login(client)
-            create_repositories(client)
-            break
-        except Exception as e:
-            print(f"Error: {e}")
-            print(f"Retrying {count} time")
-            count += 1
-            sleep(5)
-            continue
+    for gitea in range(0,100):
+        for i in range(TOTAL_NUM_REPOS):
+            REPOS.append(f"repository_{i}")
+        port = gitea + 8000
+        check_online(port)
+        print("Instance online")
+        install(port)
+        print("Instance configured and installed")
+        client = HTMLClient()
+        count = 0
+        while True:
+            try:
+                register(port, client)
+                print("User registered")
+                login(port, client)
+                create_repositories(port, client)
+                break
+            except Exception as e:
+                print(f"Error: {e}")
+                print(f"Retrying {count} time")
+                count += 1
+                sleep(5)
+                continue

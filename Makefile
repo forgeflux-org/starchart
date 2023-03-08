@@ -140,5 +140,8 @@ xml-test-coverage: migrate ## Generate cobertura.xml test coverage
 	$(call cache_bust)
 	cargo tarpaulin -t 1200 --out XMl --skip-clean  --all-features --no-fail-fast --workspace=db/db-sqlx-sqlite,forge/gitea,federate/publiccodeyml,.
 
+network:
+	docker-compose -f ./foo.yml up --detach
+
 help: ## Prints help for targets with comments
 	@cat $(MAKEFILE_LIST) | grep -E '^[a-zA-Z_-]+:.*?## .*$$' | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'
