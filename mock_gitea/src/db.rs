@@ -16,6 +16,7 @@
  */
 #[cfg(not(test))]
 use log::debug;
+use serde::{Deserialize, Serialize};
 use sqlx::sqlite::SqlitePool;
 use sqlx::sqlite::SqlitePoolOptions;
 
@@ -91,12 +92,12 @@ pub struct AddRepository<'a> {
     pub tags: &'a [&'a str],
 }
 
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct Repository {
     pub username: String,
     pub user_id: i64,
     pub repo_id: i64,
     pub name: String,
-    pub tags: Vec<String>,
 }
 
 struct InnerRepository {
@@ -111,15 +112,12 @@ struct InnerTag {
 }
 
 impl InnerRepository {
-    fn to_repository(self, mut tags: Vec<InnerTag>) -> Repository {
-        let tags = tags.drain(0..).map(|t| t.tag).collect();
-
+    fn to_repository(self) -> Repository {
         Repository {
             username: self.username.unwrap(),
             user_id: self.user_id.unwrap(),
             repo_id: self.repo_id.unwrap(),
             name: self.name.unwrap(),
-            tags,
         }
     }
 }
@@ -221,26 +219,32 @@ impl Database {
         let mut res = Vec::with_capacity(repos.len());
 
         for repo in repos.drain(0..) {
-            let repo_name = repo.name.as_ref().unwrap();
-            let tags = sqlx::query_as!(
-                InnerTag,
-                "SELECT
+            res.push(repo.to_repository());
+        }
+
+        Ok(res)
+    }
+
+    pub async fn get_tags(&self, owner: &str, repo_name: &str) -> ServiceResult<Vec<String>> {
+        let mut db_tags = sqlx::query_as!(
+            InnerTag,
+            "SELECT
                     tag
                 FROM
                     mock_gitea_view_repos_tags
                 WHERE
                     name = $1
+                AND
+                    username = $2
             ",
-                repo_name
-            )
-            .fetch_all(&self.pool)
-            .await
-            .unwrap();
-
-            res.push(repo.to_repository(tags));
-        }
-
-        Ok(res)
+            repo_name,
+            owner
+        )
+        .fetch_all(&self.pool)
+        .await
+        .unwrap();
+        let tags = db_tags.drain(0..).map(|t| t.tag).collect();
+        Ok(tags)
     }
 }
 
@@ -278,10 +282,11 @@ mod tests {
         }
 
         let repos = db.get_repositories(0, 100).await.unwrap();
-        assert_eq!(repos.len(), REPO_NAMES.len());
+        assert!(repos.len() > REPO_NAMES.len());
 
         for repo in repos.iter() {
-            assert_eq!(repo.tags.len(), TAGS.len());
+            let tags = db.get_tags(USERNAME, &repo.name).await.unwrap();
+            assert_eq!(tags.len(), TAGS.len());
             assert_eq!(repo.username, USERNAME);
         }
     }

@@ -66,7 +66,7 @@
     },
     "query": "SELECT\n                username,\n                user_id,\n                name,\n                repo_id\n            FROM\n                mock_gitea_view_repos\n            ORDER BY\n                mock_gitea_view_repos.user_id\n            LIMIT $1 OFFSET $2;\n        "
   },
-  "d25601b3327d7acb5fb876c97e38d68bc5fa3cb53910bb3721574fe4dbffde3e": {
+  "c168a60b0498a675b5d18f98e16cdeaf5b84dfb926d122393aa22c90a5b58574": {
     "describe": {
       "columns": [
         {
@@ -79,10 +79,10 @@
         false
       ],
       "parameters": {
-        "Right": 1
+        "Right": 2
       }
     },
-    "query": "SELECT\n                    tag\n                FROM\n                    mock_gitea_view_repos_tags\n                WHERE\n                    name = $1\n            "
+    "query": "SELECT\n                    tag\n                FROM\n                    mock_gitea_view_repos_tags\n                WHERE\n                    name = $1\n                AND\n                    username = $2\n            "
   },
   "fd76e20d99c82f9febdeaa2f1a4b73177b08d922a097498214fe0fb246d2aa65": {
     "describe": {
