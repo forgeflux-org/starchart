@@ -1,0 +1,18 @@
+[package]
+name = "migrator"
+version = "0.1.0"
+edition = "2021"
+homepage = "https://github.com/forgeflux-org/starchart"
+repository = "https://github.com/forgeflux-org/starchart"
+documentation = "https://github.con/forgeflux-org/starchart"
+readme = "https://github.com/forgeflux-org/starchart/blob/master/README.md"
+license = "AGPLv3 or later version"
+authors = ["Aravinth Manivannan <realaravinth@batsense.net>"]
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[workspace]
+
+[dependencies]
+sqlx = { version = "0.6.2", features = [ "runtime-actix-rustls", "sqlite", "postgres", "time", "offline" ] }
+actix-rt = "2"

@@ -1,0 +1,97 @@
+{
+  "db": "SQLite",
+  "19e94facc1365d73cba6c513d77e1d3f2cec97ac7376118f3db30b62f032b683": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Right": 2
+      }
+    },
+    "query": "INSERT OR IGNORE INTO\n                    mock_gitea_tag_repo_mapping\n                (repository_id, topic_id) VALUES (\n                    (SELECT ID FROM mock_gitea_repositories WHERE name = $1),\n                    (SELECT ID FROM mock_gitea_tags WHERE name = $2)\n                );"
+  },
+  "7afe654c9839c258e3beaa369740f64da3e11348409dd4ad8d73f21cd0f2a55c": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Right": 1
+      }
+    },
+    "query": "INSERT OR IGNORE INTO mock_gitea_tags (name) VALUES ($1);"
+  },
+  "86dba1f7e9b04b66f8498b0f8d92699d2147c4df61df278657697f7920326c0d": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Right": 1
+      }
+    },
+    "query": "INSERT OR IGNORE INTO mock_gitea_users (name) VALUES ($1);"
+  },
+  "b1b4cc88dc45fb46c902863b3d9a005494768736485a6446c4e55e7967ef1e7d": {
+    "describe": {
+      "columns": [
+        {
+          "name": "username",
+          "ordinal": 0,
+          "type_info": "Text"
+        },
+        {
+          "name": "user_id",
+          "ordinal": 1,
+          "type_info": "Int64"
+        },
+        {
+          "name": "name",
+          "ordinal": 2,
+          "type_info": "Text"
+        },
+        {
+          "name": "repo_id",
+          "ordinal": 3,
+          "type_info": "Int64"
+        }
+      ],
+      "nullable": [
+        true,
+        true,
+        true,
+        true
+      ],
+      "parameters": {
+        "Right": 2
+      }
+    },
+    "query": "SELECT\n                username,\n                user_id,\n                name,\n                repo_id\n            FROM\n                mock_gitea_view_repos\n            ORDER BY\n                mock_gitea_view_repos.user_id\n            LIMIT $1 OFFSET $2;\n        "
+  },
+  "d25601b3327d7acb5fb876c97e38d68bc5fa3cb53910bb3721574fe4dbffde3e": {
+    "describe": {
+      "columns": [
+        {
+          "name": "tag",
+          "ordinal": 0,
+          "type_info": "Text"
+        }
+      ],
+      "nullable": [
+        false
+      ],
+      "parameters": {
+        "Right": 1
+      }
+    },
+    "query": "SELECT\n                    tag\n                FROM\n                    mock_gitea_view_repos_tags\n                WHERE\n                    name = $1\n            "
+  },
+  "fd76e20d99c82f9febdeaa2f1a4b73177b08d922a097498214fe0fb246d2aa65": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Right": 2
+      }
+    },
+    "query": "INSERT OR IGNORE INTO mock_gitea_repositories\n            (name, user_id) VALUES (\n                $1,\n                (SELECT ID FROM mock_gitea_users WHERE name = $2)\n            );"
+  }
+}
