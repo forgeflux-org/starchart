@@ -19,13 +19,13 @@ use std::collections::HashMap;
 
 use serde::{Deserialize, Serialize};
 
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Default, Clone, PartialEq, Serialize, Deserialize)]
 pub struct SearchResults {
     pub ok: bool,
     pub data: Vec<Repository>,
 }
 
-#[derive(Debug, Clone, PartialEq, Hash, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Default, PartialEq, Hash, Eq, Serialize, Deserialize)]
 pub struct User {
     pub id: usize,
     pub login: String,
@@ -49,7 +49,7 @@ pub struct User {
     pub username: String,
 }
 
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
 pub struct Repository {
     pub name: String,
     pub full_name: String,
@@ -95,21 +95,21 @@ pub struct Repository {
     pub repo_transfer: Option<Team>,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Default, Eq, Serialize, Deserialize)]
 pub struct InternalIssueTracker {
     pub enable_time_tracker: bool,
     pub allow_only_contributors_to_track_time: bool,
     pub enable_issue_dependencies: bool,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Default, Deserialize)]
 pub struct RepoTransfer {
     pub doer: User,
     pub recipient: User,
     pub teams: Option<Team>,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Hash, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Hash, Default, Deserialize)]
 pub struct Organization {
     pub avatar_url: String,
     pub description: String,
@@ -132,7 +132,13 @@ pub enum Permission {
     Owner,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+impl Default for Permission {
+    fn default() -> Self {
+        Self::None
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Default, Deserialize)]
 pub struct Team {
     pub can_create_org_repo: bool,
     pub description: String,
@@ -145,7 +151,7 @@ pub struct Team {
     pub units_map: HashMap<String, String>,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Default, Deserialize)]
 pub struct Topics {
     pub topics: Vec<String>,
 }
