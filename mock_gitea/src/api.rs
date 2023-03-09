@@ -20,6 +20,8 @@ use actix_web::{HttpResponse, Responder};
 use actix_web_codegen_const_routes::get;
 use serde::{Deserialize, Serialize};
 
+use gitea::schema::{self, *};
+
 use crate::errors::*;
 use crate::*;
 
@@ -55,10 +57,35 @@ pub struct OptionalPage {
 }
 
 #[get(path = "ROUTES.repos_search")]
-pub async fn search(db: WebDB, q: web::Query<OptionalPage>) -> ServiceResult<impl Responder> {
+pub async fn search(
+    db: WebDB,
+    ctx: WebCtx,
+    q: web::Query<OptionalPage>,
+) -> ServiceResult<impl Responder> {
     let offset = q.page * q.limit;
-    let repos = db.get_repositories(offset, q.limit).await?;
-    Ok(HttpResponse::Ok().json(repos))
+    let mut repos: Vec<db::Repository> = db.get_repositories(offset, q.limit).await?;
+    let repos: Vec<schema::Repository> = repos
+        .drain(0..)
+        .map(|r| {
+            let mut repo = schema::Repository::default();
+            repo.full_name = format!("{}/{}", r.username, r.name);
+            repo.html_url = format!(
+                "http://{}:{}/{}/{}",
+                ctx.settings.server.domain, ctx.settings.server.port, r.username, r.name
+            );
+            repo.name = r.name;
+            repo.owner.id = r.user_id as usize;
+            repo.owner.username = r.username.clone();
+            repo.owner.login = r.username.clone();
+            repo.owner.full_name = r.username;
+            repo
+        })
+        .collect();
+    let resp = SearchResults {
+        ok: true,
+        data: repos,
+    };
+    Ok(HttpResponse::Ok().json(resp))
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -69,8 +96,9 @@ pub struct RepositoryPath {
 
 #[get(path = "ROUTES.repo_tags")]
 pub async fn tags(db: WebDB, p: web::Path<RepositoryPath>) -> ServiceResult<impl Responder> {
-    let tags = db.get_tags(&p.username, &p.name).await?;
-    Ok(HttpResponse::Ok().json(tags))
+    let topics = db.get_tags(&p.username, &p.name).await?;
+    let res = schema::Topics { topics };
+    Ok(HttpResponse::Ok().json(res))
 }
 
 pub fn services(cfg: &mut actix_web::web::ServiceConfig) {
@@ -122,15 +150,16 @@ mod tests {
 
             let repos_resp = get_request!(&app, &url);
             assert_eq!(repos_resp.status(), StatusCode::OK);
-            let repos: Vec<crate::db::Repository> = test::read_body_json(repos_resp).await;
-            assert!(!repos.is_empty());
+            let repos: schema::SearchResults = test::read_body_json(repos_resp).await;
+            assert!(!repos.data.is_empty());
             page += 1;
 
-            for r in repos.iter() {
-                let tags_resp = get_request!(&app, &ROUTES.get_tags_url(&r.username, &r.name));
+            for r in repos.data.iter() {
+                let tags_resp =
+                    get_request!(&app, &ROUTES.get_tags_url(&r.owner.username, &r.name));
                 assert_eq!(tags_resp.status(), StatusCode::OK);
-                let t: Vec<String> = test::read_body_json(tags_resp).await;
-                assert!(!t.is_empty());
+                let t: schema::Topics = test::read_body_json(tags_resp).await;
+                assert!(!t.topics.is_empty());
             }
         }
         assert_eq!(page, 11);

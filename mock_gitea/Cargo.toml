@@ -40,5 +40,8 @@ version = "1"
 features = ["runtime-actix-rustls", "uuid", "postgres", "time", "offline", "sqlite"]
 version = "0.6.2"
 
+[dependencies.gitea]
+path = "../forge/gitea"
+
 [workspace]
 exclude = ["db/migrator"]
