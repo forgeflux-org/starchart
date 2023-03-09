@@ -28,6 +28,7 @@ use validator::Validate;
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct Server {
     pub port: u32,
+    pub workers: usize,
     pub domain: String,
     pub ip: String,
     pub proxy_has_tls: bool,
@@ -115,7 +116,7 @@ impl Settings {
         }
 
         const CURRENT_DIR: &str = "./config/default.toml";
-        const ETC: &str = "/etc/starchart/config.toml";
+        const ETC: &str = "/etc/mock_gitea/config.toml";
 
         let mut read_file = false;
         if Path::new(CURRENT_DIR).exists() {
@@ -129,7 +130,7 @@ impl Settings {
             read_file = true;
         }
 
-        if let Ok(path) = env::var("STARCHART_CONFIG") {
+        if let Ok(path) = env::var("MGITEA_CONFIG") {
             s = s.add_source(File::with_name(&path));
             read_file = true;
         }
@@ -137,7 +138,7 @@ impl Settings {
             log::warn!("configuration file not found");
         }
 
-        s = s.add_source(Environment::with_prefix("STARCHART").separator("__"));
+        s = s.add_source(Environment::with_prefix("MGITEA").separator("__"));
 
         match env::var("PORT") {
             Ok(val) => s = s.set_override("server.port", val).unwrap(),

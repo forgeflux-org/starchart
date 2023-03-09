@@ -13,7 +13,7 @@ ip= "0.0.0.0"
 domain = "localhost"
 proxy_has_tls = false
 cookie_secret = "f12d9adf4e364648664442b8f50bf478e748e1d77c4797b2ec1f56803278"
-#workers = 2
+workers = 2
 
 [database]
 # This section deals with the database location and how to access it

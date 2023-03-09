@@ -51,6 +51,8 @@ async fn main() {
     let db = WebDB::new(db::get_data(Some(settings.clone())).await);
     let socket_addr = settings.server.get_ip();
 
+    let workers = ctx.settings.server.workers;
+
     let server_fut = HttpServer::new(move || {
         App::new()
             .wrap(middleware::Logger::default())
@@ -62,6 +64,7 @@ async fn main() {
             )
             .configure(routes::services)
     })
+    .workers(workers)
     .bind(&socket_addr)
     .unwrap()
     .run();
