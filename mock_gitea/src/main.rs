@@ -19,15 +19,15 @@ use std::sync::Arc;
 
 use actix_web::{middleware, web::Data, App, HttpServer};
 
+pub mod api;
 pub mod ctx;
 pub mod db;
 pub mod errors;
 pub mod routes;
 pub mod settings;
-pub mod utils;
-
 #[cfg(test)]
 mod tests;
+pub mod utils;
 
 use ctx::Ctx;
 use db::BoxDB;
