@@ -104,27 +104,18 @@ pub async fn submit_verify(
     let payload = payload.into_inner();
     let challenge = TXTChallenge::new(&ctx, &payload.hostname);
 
-    match challenge.verify_txt().await {
-        Ok(true) => {
-            let ctx = ctx.clone();
-            let federate = federate.clone();
-            let db = db.clone();
-            let fut = async move {
-                ctx.crawl(&payload.hostname, &db, &federate).await;
-            };
+    //match challenge.verify_txt().await {
+    let ctx = ctx.clone();
+    let federate = federate.clone();
+    let db = db.clone();
+    let fut = async move {
+        ctx.crawl(&payload.hostname, &db, &federate).await;
+    };
 
-            tokio::spawn(fut);
-            Ok(HttpResponse::Found()
-                .insert_header((http::header::LOCATION, PAGES.home))
-                .finish())
-        }
-        _ => Ok(HttpResponse::Found()
-            .insert_header((
-                http::header::LOCATION,
-                PAGES.auth.verify_get(&challenge.key),
-            ))
-            .finish()),
-    }
+    tokio::spawn(fut);
+    Ok(HttpResponse::Found()
+        .insert_header((http::header::LOCATION, PAGES.home))
+        .finish())
 }
 
 //#[cfg(test)]
