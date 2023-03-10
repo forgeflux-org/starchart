@@ -41,7 +41,8 @@ features = ["runtime-actix-rustls", "uuid", "postgres", "time", "offline", "sqli
 version = "0.6.2"
 
 [dependencies.gitea]
-path = "../forge/gitea"
+git = "https://github.com/forgeflux-org/starchart"
+branch = "starchart-network"
 
 [workspace]
 exclude = ["db/migrator"]

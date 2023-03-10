@@ -26,7 +26,14 @@ docker: ## Build docker images
 		-t forgedfed/starchart-mock-gitea:master \
 		-t forgedfed/starchart-mock-gitea:latest .
 
-docker-publish: docker ## Build and publish docker images
+docker.run.detached: ## Run docker container in detached mode
+	docker run -p 8000:70000 -d forgefed/starchart-mock-gitea:latest
+
+docker.run: ## Run docker container in detached mode
+	docker run -p 8000:7000 forgefed/starchart-mock-gitea:latest
+
+
+docker.publish: docker ## Build and publish docker images
 	docker push forgedfed/starchart-mock-gitea:master 
 	docker push forgedfed/starchart-mock-gitea:latest
 
