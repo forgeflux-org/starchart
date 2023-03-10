@@ -159,7 +159,6 @@ impl Crawler {
                     info!("Closed");
                     true
                 }
-                _ => false,
             }
         } else {
             true

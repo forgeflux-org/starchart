@@ -86,7 +86,11 @@ async fn main() {
 
     let crawler_fut = tokio::spawn(spider::Crawler::start(crawler.clone()));
     let ctx = WebCtx::new(ctx);
-    ctx.bootstrap(&db).await.unwrap();
+    let (kill_introducer, introducer_fut) = ctx
+        .clone()
+        .spawn_bootstrap(db.as_ref().clone())
+        .await
+        .unwrap();
 
     let c = ctx.clone();
     let d = db.clone();
@@ -121,6 +125,8 @@ async fn main() {
     //    .await
     //    .unwrap();
     kill_crawler.send(true).unwrap();
+    kill_introducer.send(true).unwrap();
     crawler_fut.await.unwrap().await;
+    introducer_fut.await;
     s.await.unwrap().unwrap();
 }

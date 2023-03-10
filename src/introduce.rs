@@ -16,11 +16,13 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 use std::collections::HashSet;
+use std::future::Future;
 
 use actix_web::web;
 use actix_web::{HttpResponse, Responder};
 use actix_web_codegen_const_routes::get;
 use actix_web_codegen_const_routes::post;
+use tokio::sync::oneshot::{self, error::TryRecvError, Sender};
 use url::Url;
 
 pub use api_routes::*;
@@ -136,6 +138,37 @@ impl Ctx {
             .unwrap();
 
         Ok(())
+    }
+
+    pub async fn spawn_bootstrap(
+        self,
+        db: Box<dyn SCDatabase>,
+    ) -> ServiceResult<(Sender<bool>, impl Future)> {
+        let (tx, mut rx) = oneshot::channel();
+        let fut = async {
+            loop {
+                let shutdown = match rx.try_recv() {
+                    // The channel is currently empty
+                    Ok(x) => {
+                        log::info!("Received signal from tx");
+                        x
+                    }
+                    Err(TryRecvError::Empty) => false,
+                    Err(TryRecvError::Closed) => {
+                        log::info!("Closed");
+                        true
+                    }
+                };
+                if shutdown {
+                    break;
+                }
+
+                let _ = self.bootstrap(db).await;
+            }
+        };
+
+        let join_handle = tokio::spawn(fut);
+        Ok((tx, join_handle))
     }
 
     pub async fn bootstrap(&self, db: &Box<dyn SCDatabase>) -> ServiceResult<()> {
