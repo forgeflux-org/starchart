@@ -36,7 +36,7 @@ pub struct Api {
 impl Api {
     const fn new() -> Api {
         let repos_search = "/api/v1/repos/search";
-        let repo_tags = "/api/v1/{username}/{name}/topics";
+        let repo_tags = "/api/v1/repos/{username}/{name}/topics";
         Api {
             repos_search,
             repo_tags,
