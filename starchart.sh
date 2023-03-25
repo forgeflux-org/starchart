@@ -38,6 +38,7 @@ do
 	fi
 	echo "      - STARCHART__REPOSITORY__ROOT=/tmp/starchart.forgeflux.org"
 	echo "    restart: always"
+	echo '    network_mode: "host"'
 	echo "    ports:"
 	echo "     - '$port:$port'"
 	if [ $count -gt 0 ]
