@@ -41,6 +41,26 @@ default: ## Debug build
 	$(call cache_bust)
 	cargo build
 
+env.serve:
+	STARCHART__LOG=info \
+	STARCHART__SOURCE_CODE="https://github.com/forgeflux-org/starchart" \
+	STARCHART__ALLOW_NEW_INDEX=true \
+	STARCHART__ADMIN_EMAIL=realaravinth@batsense.net \
+	STARCHART__SERVER__IP=0.0.0.0 \
+	STARCHART__SERVER__PORT=7000 \
+	STARCHART__SERVER__DOMAIN=localhost \
+	STARCHART__SERVER__PROXY_HAS_TLS=false \
+	STARCHART__SERVER__COOKIE_SECRET=7514316e58bfdb2eb2d71bf4af40827a \
+	STARCHART__DATABASE__POOL=5 STARCHART__DATABASE__TYPE=sqlite \
+	STARCHART__CRAWLER__TTL=3600 \
+	STARCHART__CRAWLER__WAIT_BEFORE_NEXT_API_CALL=2 \
+	STARCHART__CRAWLER__CLIENT_TIMEOUT=60 \
+	STARCHART__CRAWLER__ITEMS_PER_API_CALL=20 \
+	STARCHART__INTRODUCER__PUBLIC_URL="http://localhost:7000" \
+	STARCHART__INTRODUCER__NODES=http://localhost:7001,http://localhost:7002 \
+	STARCHART__REPOSITORY__ROOT=/tmp/starchart.forgeflux.org \
+	cargo run
+
 cache-bust: ## Run cache buster on static assets
 	$(call cache_bust)
 

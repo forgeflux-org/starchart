@@ -30,7 +30,7 @@ use db_core::prelude::*;
 
 use crate::ctx::Ctx;
 use crate::pages::chart::home::{OptionalPage, Page};
-use crate::{errors::*, WebDB};
+use crate::{errors::*, WebCtx, WebDB};
 
 const LIMIT: u32 = 50;
 
@@ -141,11 +141,11 @@ impl Ctx {
     }
 
     pub async fn spawn_bootstrap(
-        self,
+        ctx: WebCtx,
         db: Box<dyn SCDatabase>,
     ) -> ServiceResult<(Sender<bool>, impl Future)> {
         let (tx, mut rx) = oneshot::channel();
-        let fut = async {
+        let fut = async move {
             loop {
                 let shutdown = match rx.try_recv() {
                     // The channel is currently empty
@@ -163,7 +163,7 @@ impl Ctx {
                     break;
                 }
 
-                let _ = self.bootstrap(db).await;
+                let _ = ctx.bootstrap(&db).await;
             }
         };
 

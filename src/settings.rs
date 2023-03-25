@@ -18,12 +18,16 @@
 use std::path::Path;
 use std::{env, fs};
 
-use config::{Config, ConfigError, Environment, File};
+use config::{builder::DefaultState, Config, ConfigBuilder, ConfigError, Environment, File};
 use derive_more::Display;
+use log::info;
 use log::warn;
 use serde::{Deserialize, Serialize};
 use url::Url;
 use validator::Validate;
+
+const PREFIX: &str = "STARCHART";
+const SEPARATOR: &str = "__";
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct Server {
@@ -193,7 +197,14 @@ impl Settings {
             log::warn!("configuration file not found");
         }
 
-        s = s.add_source(Environment::with_prefix("STARCHART").separator("__"));
+        s = s.add_source(
+            Environment::with_prefix(PREFIX)
+                .separator(SEPARATOR)
+                .list_separator(",")
+                .try_parsing(true)
+                .with_list_parse_key("introducer.nodes"),
+        );
+        s = set_separator_field(s);
 
         match env::var("PORT") {
             Ok(val) => s = s.set_override("server.port", val).unwrap(),
@@ -225,6 +236,79 @@ impl Settings {
     fn check_url(&self) {
         Url::parse(&self.source_code).expect("Please enter a URL for source_code in settings");
     }
+}
+
+#[cfg(not(tarpaulin_include))]
+fn set_separator_field(mut s: ConfigBuilder<DefaultState>) -> ConfigBuilder<DefaultState> {
+    // ref: https://github.com/mehcode/config-rs/issues/391
+
+    fn from_env(
+        s: ConfigBuilder<DefaultState>,
+        env_name: &str,
+        config_name: &str,
+    ) -> ConfigBuilder<DefaultState> {
+        if let Ok(val) = env::var(env_name) {
+            info!("Overriding {config_name} with data from env var {env_name}");
+            s.set_override(config_name, val)
+                .unwrap_or_else(|_| panic!("Couldn't set {config_name}  from env var {env_name}"))
+        } else {
+            s
+        }
+    }
+    s = from_env(s, &format!("{PREFIX}{SEPARATOR}SOURCE_CODE"), "source_code");
+
+    s = from_env(
+        s,
+        &format!("{PREFIX}{SEPARATOR}ALLOW_NEW_INDEX"),
+        "allow_new_index",
+    );
+    s = from_env(s, &format!("{PREFIX}{SEPARATOR}ADMIN_EMAIL"), "admin_email");
+
+    s = from_env(
+        s,
+        &format!("{PREFIX}{SEPARATOR}DATABASE{SEPARATOR}TYPE"),
+        "database.database_type",
+    );
+
+    s = from_env(
+        s,
+        &format!("{PREFIX}{SEPARATOR}SERVER{SEPARATOR}PROXY_HAS_TLS"),
+        "server.proxy_has_tls",
+    );
+    s = from_env(
+        s,
+        &format!("{PREFIX}{SEPARATOR}SERVER{SEPARATOR}COOKIE_SECRET"),
+        "server.cookie_secret",
+    );
+
+    //    s = from_env(
+    //        s,
+    //        &format!("{PREFIX}{SEPARATOR}INTRODUCER{SEPARATOR}NODES"),
+    //        "introducer.nodes",
+    //    );
+    s = from_env(
+        s,
+        &format!("{PREFIX}{SEPARATOR}INTRODUCER{SEPARATOR}PUBLIC_URL"),
+        "introducer.public_url",
+    );
+
+    s = from_env(
+        s,
+        &format!("{PREFIX}{SEPARATOR}CRAWLER{SEPARATOR}ITEMS_PER_API_CALL"),
+        "crawler.items_per_api_call",
+    );
+
+    s = from_env(
+        s,
+        &format!("{PREFIX}{SEPARATOR}CRAWLER{SEPARATOR}CLIENT_TIMEOUT"),
+        "crawler.client_timeout",
+    );
+    s = from_env(
+        s,
+        &format!("{PREFIX}{SEPARATOR}CRAWLER{SEPARATOR}WAIT_BEFORE_NEXT_API_CALL"),
+        "crawler.wait_before_next_api_call",
+    );
+    s
 }
 
 #[cfg(test)]
