@@ -41,6 +41,7 @@ wait_before_next_api_call = 2 # in seconds
 #nodes = ["http://localhost:7000"]
 public_url = "http://localhost:7000"
 nodes = []
+wait=1
 
 [repository]
 root = "/tmp/starchart.forgeflux.org"

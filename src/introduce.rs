@@ -18,6 +18,7 @@
 use std::collections::HashSet;
 use std::future::Future;
 
+use actix::clock::sleep;
 use actix_web::web;
 use actix_web::{HttpResponse, Responder};
 use actix_web_codegen_const_routes::get;
@@ -150,7 +151,7 @@ impl Ctx {
                 let shutdown = match rx.try_recv() {
                     // The channel is currently empty
                     Ok(x) => {
-                        log::info!("Received signal from tx");
+                        log::info!("[introducer] Received signal {x}");
                         x
                     }
                     Err(TryRecvError::Empty) => false,
@@ -164,6 +165,11 @@ impl Ctx {
                 }
 
                 let _ = ctx.bootstrap(&db).await;
+                log::info!(
+                    "Waiting for {} until re-introducing",
+                    ctx.settings.introducer.wait
+                );
+                tokio::time::sleep(std::time::Duration::new(ctx.settings.introducer.wait, 0)).await;
             }
         };
 
