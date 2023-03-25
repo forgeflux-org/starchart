@@ -31,6 +31,7 @@ do
 	echo "      - STARCHART__CRAWLER__WAIT_BEFORE_NEXT_API_CALL=2"
 	echo "      - STARCHART__CRAWLER__CLIENT_TIMEOUT=60"
 	echo "      - STARCHART__CRAWLER__ITEMS_PER_API_CALL=20"
+	echo "      - STARCHART__INTRODUCER__WAIT=10"
 	echo "      - STARCHART__INTRODUCER__PUBLIC_URL=http://localhost:$port"
 	if [ $count -gt 0 ]
 	then
