@@ -7,7 +7,7 @@ do
 	port=$(expr 11000 + $count)
 	echo "  server_$count:"
 	echo "    image: realaravinth/starchart-mock-gitea:latest"
-	echo "    container_name: $count.mock_gitea.starchart.test.forgeflux.org"
+	echo "    container_name: $count.mock_gitea"
 	echo "    environment:"
 	echo "      - USER_UID=1000"
 	echo "      - USER_GID=1000"
