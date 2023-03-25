@@ -39,6 +39,7 @@ wait_before_next_api_call = 2 # in seconds
 
 [introducer]
 #nodes = ["http://localhost:7000"]
+#public_url = "http://localhost:9000"
 public_url = "http://localhost:7000"
 nodes = []
 wait=1

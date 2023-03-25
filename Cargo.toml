@@ -10,7 +10,7 @@ license = "AGPLv3 or later version"
 build = "build.rs"
 
 [workspace]
-exclude = ["db/migrator", "utils/cache-bust"]
+exclude = ["db/migrator", "utils/cache-bust", "mock_gitea"]
 members = [
     ".",
     "db/db-core",

@@ -153,6 +153,9 @@ network.docker-config.init: ## Generate docker-compose for gitea network
 	rm -rf ./foo.yml || true
 	./gitea.sh > foo.yml
 
+network.logs: ## network logs
+	docker-compose -f ./foo.yml logs -f
+
 network.init: ## Initialize gitea network
 	@ . ./venv/bin/activate && python ./scripts/gitea.py
 
