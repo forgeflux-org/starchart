@@ -151,7 +151,7 @@ impl Crawler {
             match rx.try_recv() {
                 // The channel is currently empty
                 Ok(x) => {
-                    info!("Received signal from tx");
+                    info!("Received signal from tx: {}", x);
                     x
                 }
                 Err(TryRecvError::Empty) => false,
