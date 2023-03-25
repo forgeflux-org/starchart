@@ -439,7 +439,7 @@ impl SCDatabase for Database {
             ON
                 starchart_introducer.ID = starchart_forges.starchart_instance
             WHERE 
-                starchart_forges.imported = false
+                starchart_forges.imported = 0
             ORDER BY
                 starchart_forges.ID
             LIMIT $1 OFFSET $2;
