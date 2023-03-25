@@ -97,7 +97,7 @@ async fn main() {
     let f = federate.clone();
 
     let socket_addr = settings.server.get_ip();
-    let server_fut = HttpServer::new(move || {
+    HttpServer::new(move || {
         App::new()
             .wrap(middleware::Logger::default())
             .wrap(middleware::Compress::default())
@@ -112,11 +112,11 @@ async fn main() {
     })
     .bind(&socket_addr)
     .unwrap()
-    .run();
-    //    .await
-    //    .unwrap();
+    .run()
+    .await
+    .unwrap();
 
-    let s = tokio::spawn(server_fut);
+    //    let s = tokio::spawn(server_fut);
     //    f.import(
     //        url::Url::parse("http://localhost:7000").unwrap(),
     //        &c.client,
@@ -128,5 +128,4 @@ async fn main() {
     kill_introducer.send(true).unwrap();
     crawler_fut.await.unwrap().await;
     introducer_fut.await;
-    s.await.unwrap().unwrap();
 }
