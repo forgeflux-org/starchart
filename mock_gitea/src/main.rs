@@ -48,7 +48,7 @@ async fn main() {
     let settings = Settings::new().unwrap();
     pretty_env_logger::init();
 
-    let ctx = Ctx::new(settings.clone()).await;
+    let ctx = WebCtx::new(Ctx::new(settings.clone()).await);
     let db = WebDB::new(db::get_data(Some(settings.clone())).await);
     let socket_addr = settings.server.get_ip();
 
@@ -56,7 +56,7 @@ async fn main() {
 
     let workers = ctx.settings.server.workers;
 
-    let server_fut = HttpServer::new(move || {
+    HttpServer::new(move || {
         App::new()
             .wrap(middleware::Logger::default())
             .wrap(middleware::Compress::default())
@@ -65,14 +65,14 @@ async fn main() {
             .wrap(
                 middleware::DefaultHeaders::new().add(("Permissions-Policy", "interest-cohort=()")),
             )
-            .configure(routes::services)
+            .wrap(actix_web::middleware::NormalizePath::new(
+                actix_web::middleware::TrailingSlash::Trim,
+            ))
+            .configure(crate::routes::services)
     })
     .workers(workers)
     .bind(&socket_addr)
     .unwrap()
-    .run();
+    .run().await.unwrap();
 
-    let s = tokio::spawn(server_fut);
-
-    s.await.unwrap().unwrap();
 }
