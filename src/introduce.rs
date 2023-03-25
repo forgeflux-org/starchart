@@ -19,7 +19,7 @@ use std::collections::HashSet;
 use std::future::Future;
 
 use actix::clock::sleep;
-use actix_web::web;
+use actix_web::web::{self, Data};
 use actix_web::{HttpResponse, Responder};
 use actix_web_codegen_const_routes::get;
 use actix_web_codegen_const_routes::post;
@@ -112,15 +112,9 @@ impl Ctx {
             panic!()
         }
         starchart_url.set_path(ROUTES.introducer.get_mini_index);
-        Ok(self
-            .client
-            .get(starchart_url)
-            .send()
-            .await
-            .unwrap()
-            .json()
-            .await
-            .unwrap())
+        let resp = self.client.get(starchart_url).send().await.unwrap();
+        println!("{:?}", resp);
+        Ok(resp.json().await.unwrap())
     }
 
     async fn client_introduce_starchart(&self, mut starchart_url: Url) -> ServiceResult<()> {
@@ -178,15 +172,17 @@ impl Ctx {
     }
 
     pub async fn bootstrap(&self, db: &Box<dyn SCDatabase>) -> ServiceResult<()> {
-        let mut known_starcharts = HashSet::with_capacity(self.settings.introducer.nodes.len());
-        for starchart in self.settings.introducer.nodes.iter() {
+        async fn run(
+            ctx: &Ctx,
+            db: &Box<dyn SCDatabase>,
+            starchart: &Url,
+            known_starcharts: &mut HashSet<Url>,
+        ) -> ServiceResult<()> {
             let mut page = 1;
             loop {
-                let mut nodes = self
-                    .client_get_introducions(starchart.clone(), page)
-                    .await?;
+                let mut nodes = ctx.client_get_introducions(starchart.clone(), page).await?;
 
-                self.client_introduce_starchart(starchart.clone()).await?;
+                ctx.client_introduce_starchart(starchart.clone()).await?;
 
                 if nodes.is_empty() {
                     break;
@@ -209,6 +205,10 @@ impl Ctx {
                     }
                     ctx.import_forges(node_url.clone(), db).await?;
                     let mini_index = ctx.client_get_mini_index(node_url.clone()).await?;
+                    log::info!(
+                        "Received mini_index {} from {node_url}",
+                        mini_index.mini_index
+                    );
                     db.rm_imported_mini_index(&node_url).await?;
                     db.import_mini_index(&node_url, &mini_index.mini_index)
                         .await?;
@@ -216,14 +216,35 @@ impl Ctx {
                     Ok(())
                 }
 
-                _bootstrap(self, db, &mut known_starcharts, starchart.as_str()).await?;
+                _bootstrap(ctx, db, known_starcharts, starchart.as_str()).await?;
 
                 for node in nodes.drain(0..) {
-                    if node.instance_url == self.settings.introducer.public_url.as_str() {
+                    if node.instance_url == ctx.settings.introducer.public_url.as_str() {
                         continue;
                     }
-                    _bootstrap(self, db, &mut known_starcharts, &node.instance_url).await?;
+                    _bootstrap(ctx, db, known_starcharts, &node.instance_url).await?;
                 }
+                page += 1;
+            }
+            Ok(())
+        }
+        let mut known_starcharts = HashSet::with_capacity(self.settings.introducer.nodes.len());
+        for starchart in self.settings.introducer.nodes.iter() {
+            run(self, db, starchart, &mut known_starcharts).await?;
+        }
+
+        let mut page = 0;
+        loop {
+            let offset = page * LIMIT;
+            let starcharts = db
+                .get_all_introduced_starchart_instances(offset, LIMIT)
+                .await?;
+            for starchart in self.settings.introducer.nodes.iter() {
+                run(self, db, starchart, &mut known_starcharts).await?;
+            }
+            if starcharts.len() < LIMIT as usize {
+                break;
+            } else {
                 page += 1;
             }
         }
