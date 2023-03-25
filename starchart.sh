@@ -28,10 +28,10 @@ do
 	echo "      - STARCHART__DATABASE__POOL=5"
 	echo "      - STARCHART__DATABASE__TYPE=sqlite"
 	echo "      - STARCHART__CRAWLER__TTL=3600"
-	echo "      - STARCHART__CRAWLER__WAIT_BEFORE_NEXT_API_CALL=2"
+	echo "      - STARCHART__CRAWLER__WAIT_BEFORE_NEXT_API_CALL=0"
 	echo "      - STARCHART__CRAWLER__CLIENT_TIMEOUT=60"
 	echo "      - STARCHART__CRAWLER__ITEMS_PER_API_CALL=20"
-	echo "      - STARCHART__INTRODUCER__WAIT=10"
+	echo "      - STARCHART__INTRODUCER__WAIT=0"
 	echo "      - STARCHART__INTRODUCER__PUBLIC_URL=http://localhost:$port"
 	if [ $count -gt 0 ]
 	then
