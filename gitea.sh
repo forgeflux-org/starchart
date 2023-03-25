@@ -11,11 +11,10 @@ do
 	echo "    environment:"
 	echo "      - USER_UID=1000"
 	echo "      - USER_GID=1000"
+	echo "      - PORT=$port"
 	echo "      - DATABASE_URL=/var/log/mock-gitea"
 	echo "      - MGITEA__DATA=/var/lib/unique.txt"
 	echo "    restart: always"
-	#echo "    networks:"
-	#echo "      - gitea"
 	echo "    ports:"
-	echo "     - '$port:3000'"
+	echo "     - '$port:$port'"
 done
