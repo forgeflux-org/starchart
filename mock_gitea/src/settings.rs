@@ -90,6 +90,7 @@ pub struct Settings {
     pub source_code: String,
     #[validate(email)]
     pub admin_email: String,
+    pub data: String,
 }
 
 #[cfg(not(tarpaulin_include))]

@@ -86,6 +86,21 @@ impl ConnectionOptions {
     }
 }
 
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct LogInitialization {
+    pub num_users: i64,
+    pub num_tags: i64,
+    pub num_repos: i64,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct Initialization {
+    pub num_users: i64,
+    pub num_tags: i64,
+    pub num_repos: i64,
+    pub initialize_time: i64,
+}
+
 pub struct AddRepository<'a> {
     pub username: &'a str,
     pub name: &'a str,
@@ -246,6 +261,48 @@ impl Database {
         let tags = db_tags.drain(0..).map(|t| t.tag).collect();
         Ok(tags)
     }
+
+    pub async fn log_initialization(&self, msg: LogInitialization) -> ServiceResult<()> {
+        use sqlx::types::time::OffsetDateTime;
+
+        let now = OffsetDateTime::now_utc().unix_timestamp();
+        debug!("Logging initialization");
+        sqlx::query!(
+            "INSERT INTO mock_gitea_initialize_logs
+                (num_tags, num_users, num_repos, initialize_time)
+            VALUES
+                ($1 , $2, $3, $4);",
+            msg.num_tags,
+            msg.num_users,
+            msg.num_repos,
+            now
+        )
+        .execute(&self.pool)
+        .await
+        .unwrap();
+        Ok(())
+    }
+
+    pub async fn get_initializations(&self) -> ServiceResult<Vec<Initialization>> {
+        let recs = sqlx::query_as!(
+            Initialization,
+            "SELECT
+                num_tags, num_users, num_repos, initialize_time
+            FROM mock_gitea_initialize_logs;"
+        )
+        .fetch_all(&self.pool)
+        .await
+        .unwrap();
+        Ok(recs)
+    }
+
+    async fn delete_initializations(&self) -> ServiceResult<()> {
+        sqlx::query!("DELETE FROM mock_gitea_initialize_logs;")
+            .execute(&self.pool)
+            .await
+            .unwrap();
+        Ok(())
+    }
 }
 
 #[cfg(test)]
@@ -289,5 +346,20 @@ mod tests {
             assert_eq!(tags.len(), TAGS.len());
             assert_eq!(repo.username, USERNAME);
         }
+
+        let msg = LogInitialization {
+            num_users: 2,
+            num_repos: 2,
+            num_tags: 2,
+        };
+        db.log_initialization(msg.clone()).await.unwrap();
+        let mut logs = db.get_initializations().await.unwrap();
+        assert!(logs.len() >= 1);
+        let log = logs.pop().unwrap();
+        assert_eq!(log.num_users, msg.num_users);
+        assert_eq!(log.num_repos, msg.num_repos);
+        assert_eq!(log.num_tags, msg.num_tags);
+
+        db.delete_initializations().await.unwrap();
     }
 }

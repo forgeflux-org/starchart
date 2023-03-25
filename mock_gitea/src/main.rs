@@ -23,6 +23,7 @@ pub mod api;
 pub mod ctx;
 pub mod db;
 pub mod errors;
+mod init;
 pub mod routes;
 pub mod settings;
 #[cfg(test)]
@@ -50,6 +51,8 @@ async fn main() {
     let ctx = Ctx::new(settings.clone()).await;
     let db = WebDB::new(db::get_data(Some(settings.clone())).await);
     let socket_addr = settings.server.get_ip();
+
+    ctx.init(&db).await.unwrap();
 
     let workers = ctx.settings.server.workers;
 

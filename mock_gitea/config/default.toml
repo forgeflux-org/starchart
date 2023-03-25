@@ -2,6 +2,7 @@ log = "info" # possible values: "info", "warn", "trace", "error", "debug"
 source_code = "https://github.com/forgeflux-org/starchart"
 allow_new_index = true # allow registration on server
 admin_email = "admin@starchart.example.com"
+data = "/src/atm/code/starchart/mock_gitea/data/unique.txt"
 
 [server]
 # The port at which you want authentication to listen to

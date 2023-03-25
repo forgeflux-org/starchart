@@ -28,3 +28,29 @@ pub(crate) fn get_random(len: usize) -> String {
         .take(len)
         .collect::<String>()
 }
+
+pub(crate) fn get_random_number(upper_limit: i64) -> usize {
+    use rand::{rngs::ThreadRng, thread_rng, Rng};
+
+    let mut rng: ThreadRng = thread_rng();
+
+    rng.gen_range(0..upper_limit as u32) as usize
+}
+
+pub struct TextProcessor {
+    txt: String,
+    count: i64,
+}
+
+impl TextProcessor {
+    pub fn new(txt: String) -> Self {
+        let lines = txt.lines();
+        let count = lines.clone().count() as i64;
+        Self { txt, count }
+    }
+
+    pub(crate) fn get_random_shakespeare(&self) -> &str {
+        let lines = self.txt.lines();
+        lines.skip(get_random_number(self.count)).next().unwrap()
+    }
+}

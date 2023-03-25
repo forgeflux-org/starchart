@@ -23,19 +23,27 @@ doc: ## Prepare documentation
 
 docker: ## Build docker images
 	docker build \
-		-t forgedfed/starchart-mock-gitea:master \
-		-t forgedfed/starchart-mock-gitea:latest .
+		-t realaravinth/starchart-mock-gitea:master \
+		-t realaravinth/starchart-mock-gitea:latest .
 
 docker.run.detached: ## Run docker container in detached mode
-	docker run -p 8000:70000 -d forgefed/starchart-mock-gitea:latest
+	docker run \
+	-p 8000:7000 \
+	-e DATABASE_URL=/var/log/mock-gitea \
+	-d \
+	realaravinth/starchart-mock-gitea:latest
+
 
 docker.run: ## Run docker container in detached mode
-	docker run -p 8000:7000 forgefed/starchart-mock-gitea:latest
+	docker run \
+		-p 8000:7000 \
+		-e DATABASE_URL=/var/log/mock-gitea \
+		realaravinth/starchart-mock-gitea:latest
 
 
 docker.publish: docker ## Build and publish docker images
-	docker push forgedfed/starchart-mock-gitea:master 
-	docker push forgedfed/starchart-mock-gitea:latest
+	docker push realaravinth/starchart-mock-gitea:master 
+	docker push realaravinth/starchart-mock-gitea:latest
 
 lint: ## Lint codebase
 	cargo fmt -v --all -- --emit files
