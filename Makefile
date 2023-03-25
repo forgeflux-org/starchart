@@ -98,11 +98,11 @@ doc: ## Prepare documentation
 	cargo doc --no-deps --workspace --all-features
 
 docker: ## Build docker images
-	docker build -t forgedfed/starchart:master -t forgedfed/starchart:latest .
+	docker build -t realaravinth/starchart:master -t realaravinth/starchart:latest .
 
 docker-publish: docker ## Build and publish docker images
-	docker push forgedfed/starchart:master 
-	docker push forgedfed/starchart:latest
+	docker push realaravinth/starchart:master 
+	docker push realaravinth/starchart:latest
 
 lint: ## Lint codebase
 	cargo fmt -v --all -- --emit files
@@ -140,24 +140,39 @@ xml-test-coverage: migrate ## Generate cobertura.xml test coverage
 	$(call cache_bust)
 	cargo tarpaulin -t 1200 --out XMl --skip-clean  --all-features --no-fail-fast --workspace=db/db-sqlx-sqlite,forge/gitea,federate/publiccodeyml,.
 
-network.up: ## Deploy Gitea network
-	docker-compose -f ./foo.yml up --detach
+network.gitea.up: ## Deploy Gitea network
+	docker-compose -f ./gitea.yml up --detach
 
-network.down.rm: ## Remove gitea network, removing containers
-	docker-compose -f ./foo.yml down --remove-orphans -v
+network.gitea.down.rm: ## Remove gitea network, removing containers
+	docker-compose -f ./gitea.yml down --remove-orphans -v
 
-network.down: ## Remote Gitea network
-	docker-compose -f ./foo.yml down
+network.gitea.down: ## Remove Gitea network
+	docker-compose -f ./gitea.yml down
+
+network.gitea.logs: ## network logs
+	docker-compose -f ./gitea.yml logs -f
+
+network.gitea.init: ## Initialize gitea network
+	@ . ./venv/bin/activate && python ./scripts/gitea.py
+
+network.starchart.up: ## Deploy starchart network
+	docker-compose -f ./starchart.yml up --detach
+
+network.starchart.down.rm: ## Remove starchart network, removing containers
+	docker-compose -f ./starchart.yml down --remove-orphans -v
+
+network.starchart.down: ## Remote starchart network
+	docker-compose -f ./starchart.yml down
+
+network.starchart.logs: ## network logs
+	docker-compose -f ./starchart.yml logs -f
 
 network.docker-config.init: ## Generate docker-compose for gitea network
 	rm -rf ./foo.yml || true
-	./gitea.sh > foo.yml
+	./gitea.sh > gitea.yml
+	./starchart.sh > starchart.yml
 
-network.logs: ## network logs
-	docker-compose -f ./foo.yml logs -f
 
-network.init: ## Initialize gitea network
-	@ . ./venv/bin/activate && python ./scripts/gitea.py
 
 help: ## Prints help for targets with comments
 	@cat $(MAKEFILE_LIST) | grep -E '^[a-zA-Z._-]+:.*?## .*$$' | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'
