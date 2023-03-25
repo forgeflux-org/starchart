@@ -140,6 +140,10 @@ xml-test-coverage: migrate ## Generate cobertura.xml test coverage
 	$(call cache_bust)
 	cargo tarpaulin -t 1200 --out XMl --skip-clean  --all-features --no-fail-fast --workspace=db/db-sqlx-sqlite,forge/gitea,federate/publiccodeyml,.
 
+network.gitea.config.init: ## Generate docker-compose for gitea network
+	rm -rf ./gitea.yml || true
+	./gitea.sh > gitea.yml
+
 network.gitea.up: ## Deploy Gitea network
 	docker-compose -f ./gitea.yml up --detach
 
@@ -167,8 +171,13 @@ network.starchart.down: ## Remote starchart network
 network.starchart.logs: ## network logs
 	docker-compose -f ./starchart.yml logs -f
 
+network.starchart.config.init: ## Generate docker-compose for gitea network
+	rm -rf ./starchart.yml || true
+	./starchart.sh > starchart.yml
+
+
 network.docker-config.init: ## Generate docker-compose for gitea network
-	rm -rf ./foo.yml || true
+	rm -rf ./gitea.yml || true
 	./gitea.sh > gitea.yml
 	./starchart.sh > starchart.yml
 
