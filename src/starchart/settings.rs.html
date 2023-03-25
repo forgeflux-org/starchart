@@ -490,6 +490,7 @@
 <a href="#490" id="490">490</a>
 <a href="#491" id="491">491</a>
 <a href="#492" id="492">492</a>
+<a href="#493" id="493">493</a>
 </pre><pre class="rust"><code><span class="comment">/*
  * ForgeFlux StarChart - A federated software forge spider
  * Copyright (C) 2022  Aravinth Manivannan &lt;realaravinth@batsense.net&gt;
@@ -626,6 +627,7 @@
 </span><span class="kw">pub struct </span>Introducer {
     <span class="kw">pub </span>nodes: Vec&lt;Url&gt;,
     <span class="kw">pub </span>public_url: Url,
+    <span class="kw">pub </span>wait: u64,
 }
 
 <span class="attr">#[derive(Debug, Validate, Clone, PartialEq, Eq, Serialize, Deserialize)]

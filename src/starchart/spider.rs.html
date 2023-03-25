@@ -428,7 +428,7 @@
             </span><span class="kw">match </span>rx.try_recv() {
                 <span class="comment">// The channel is currently empty
                 </span><span class="prelude-val">Ok</span>(x) =&gt; {
-                    <span class="macro">info!</span>(<span class="string">&quot;Received signal from tx&quot;</span>);
+                    <span class="macro">info!</span>(<span class="string">&quot;Received signal from tx: {}&quot;</span>, x);
                     x
                 }
                 <span class="prelude-val">Err</span>(TryRecvError::Empty) =&gt; <span class="bool-val">false</span>,
