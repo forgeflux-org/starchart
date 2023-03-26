@@ -65,7 +65,7 @@ impl Ctx {
         let mut federated_resp = Vec::default();
 
         for starchart in db.search_mini_index(&query).await?.iter() {
-            if db.is_starchart_imported(&Url::parse(&starchart)?).await? {
+            if db.is_starchart_imported(&Url::parse(starchart)?).await? {
                 log::debug!("{starchart} is imported");
                 continue;
             }

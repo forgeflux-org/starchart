@@ -122,7 +122,7 @@ impl Handler<AddSearchMaster> for Master {
     type Result = MessageResult<AddSearchMaster>;
 
     fn handle(&mut self, m: AddSearchMaster, ctx: &mut Self::Context) -> Self::Result {
-        let (tx, rx) = channel();
+        let (tx, _rx) = channel();
         match self.get_site(&m.0) {
             None => {
                 let _ = tx.send(Ok(None));
@@ -235,7 +235,7 @@ impl Handler<AddCounter> for Master {
 
     fn handle(&mut self, m: AddCounter, _ctx: &mut Self::Context) -> Self::Result {
         //       let (tx, rx) = channel();
-        let counter: Counter = m.counter.into();
+        let counter: Counter = m.counter;
         let addr = counter.start();
         self.add_site(addr, m.id);
         //        tx.send(Ok(())).unwrap();

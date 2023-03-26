@@ -91,9 +91,9 @@ async fn main() {
     let (kill_introducer, introducer_fut) =
         Ctx::spawn_bootstrap(c, d.as_ref().clone()).await.unwrap();
 
-    let c = ctx.clone();
-    let d = db.clone();
-    let f = federate.clone();
+    let _c = ctx.clone();
+    let _d = db.clone();
+    let _f = federate.clone();
 
     let socket_addr = settings.server.get_ip();
     HttpServer::new(move || {

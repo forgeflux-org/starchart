@@ -90,7 +90,7 @@ pub async fn search(
         db: &BoxDB,
         query: String,
     ) -> ServiceResult<Vec<db_core::Repository>> {
-        let responses = ctx.search_repository(&db, query).await?;
+        let responses = ctx.search_repository(db, query).await?;
 
         Ok(responses)
     }
