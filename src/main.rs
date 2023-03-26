@@ -55,7 +55,6 @@ pub const CACHE_AGE: u32 = 60 * 60 * 24 * 30; // one month, I think?
 pub const VERSION: &str = env!("CARGO_PKG_VERSION");
 pub const PKG_NAME: &str = env!("CARGO_PKG_NAME");
 pub const GIT_COMMIT_HASH: &str = env!("GIT_HASH");
-pub const DOMAIN: &str = "developer-starchart.forgeflux.org";
 
 pub type ArcCtx = Arc<Ctx>;
 pub type WebCtx = Data<ArcCtx>;

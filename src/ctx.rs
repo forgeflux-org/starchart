@@ -19,16 +19,12 @@ use std::sync::Arc;
 use std::time::Duration;
 
 use actix::dev::*;
-use lazy_static::lazy_static;
 use reqwest::{Client, ClientBuilder};
 
 use crate::master::Master;
 use crate::settings::Settings;
-use crate::{DOMAIN, PKG_NAME, VERSION};
+use crate::{PKG_NAME, VERSION};
 
-lazy_static! {
-    pub static ref USER_AGENT: String = format!("{VERSION}---{PKG_NAME}---{DOMAIN}");
-}
 /// in seconds
 const CLIENT_TIMEOUT: u64 = 60;
 
@@ -41,9 +37,16 @@ pub struct Ctx {
 
 impl Ctx {
     pub async fn new(settings: Settings) -> Arc<Self> {
+        let host = settings.introducer.public_url.host_str().unwrap();
+        let host = if let Some(port) = settings.introducer.public_url.port() {
+            format!("{host}:{port}")
+        } else {
+            host.to_owned()
+        };
+        let ua = format!("{VERSION}---{PKG_NAME}---{host}");
         let timeout = Duration::new(CLIENT_TIMEOUT, 0);
         let client = ClientBuilder::new()
-            .user_agent(&*USER_AGENT)
+            .user_agent(&*ua)
             .use_rustls_tls()
             .timeout(timeout)
             .connect_timeout(timeout)

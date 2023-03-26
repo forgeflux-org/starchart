@@ -18,8 +18,7 @@
 use std::collections::HashSet;
 use std::future::Future;
 
-use actix::clock::sleep;
-use actix_web::web::{self, Data};
+use actix_web::web;
 use actix_web::{HttpResponse, Responder};
 use actix_web_codegen_const_routes::get;
 use actix_web_codegen_const_routes::post;
