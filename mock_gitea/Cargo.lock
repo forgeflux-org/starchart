@@ -649,9 +649,9 @@ dependencies = [
 
 [[package]]
 name = "cxx"
-version = "1.0.93"
+version = "1.0.94"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a9c00419335c41018365ddf7e4d5f1c12ee3659ddcf3e01974650ba1de73d038"
+checksum = "f61f1b6389c3fe1c316bf8a4dccc90a38208354b330925bce1f74a6c4756eb93"
 dependencies = [
  "cc",
  "cxxbridge-flags",
@@ -661,9 +661,9 @@ dependencies = [
 
 [[package]]
 name = "cxx-build"
-version = "1.0.93"
+version = "1.0.94"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "fb8307ad413a98fff033c8545ecf133e3257747b3bae935e7602aab8aa92d4ca"
+checksum = "12cee708e8962df2aeb38f594aae5d827c022b6460ac71a7a3e2c3c2aae5a07b"
 dependencies = [
  "cc",
  "codespan-reporting",
@@ -676,15 +676,15 @@ dependencies = [
 
 [[package]]
 name = "cxxbridge-flags"
-version = "1.0.93"
+version = "1.0.94"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "edc52e2eb08915cb12596d29d55f0b5384f00d697a646dbd269b6ecb0fbd9d31"
+checksum = "7944172ae7e4068c533afbb984114a56c46e9ccddda550499caa222902c7f7bb"
 
 [[package]]
 name = "cxxbridge-macro"
-version = "1.0.93"
+version = "1.0.94"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "631569015d0d8d54e6c241733f944042623ab6df7bc3be7466874b05fcdb1c5f"
+checksum = "2345488264226bf682893e25de0769f3360aac9957980ec49361b083ddaa5bc5"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -729,7 +729,7 @@ dependencies = [
 [[package]]
 name = "db-core"
 version = "0.1.0"
-source = "git+https://github.com/forgeflux-org/starchart?branch=starchart-network#6e1fa9272ac2461f625aeb739c0ecb7083d0d30a"
+source = "git+https://github.com/forgeflux-org/starchart?branch=starchart-network#1f6828979be602dc65b82183d4e5120c20c5620f"
 dependencies = [
  "async-trait",
  "serde",
@@ -943,7 +943,7 @@ checksum = "00b0228411908ca8685dba7fc2cdd70ec9990a6e753e89b6ac91a84c40fbaf4b"
 [[package]]
 name = "forge-core"
 version = "0.1.0"
-source = "git+https://github.com/forgeflux-org/starchart?branch=starchart-network#6e1fa9272ac2461f625aeb739c0ecb7083d0d30a"
+source = "git+https://github.com/forgeflux-org/starchart?branch=starchart-network#1f6828979be602dc65b82183d4e5120c20c5620f"
 dependencies = [
  "async-trait",
  "db-core",
@@ -1047,7 +1047,7 @@ dependencies = [
 [[package]]
 name = "gitea"
 version = "0.1.0"
-source = "git+https://github.com/forgeflux-org/starchart?branch=starchart-network#6e1fa9272ac2461f625aeb739c0ecb7083d0d30a"
+source = "git+https://github.com/forgeflux-org/starchart?branch=starchart-network#1f6828979be602dc65b82183d4e5120c20c5620f"
 dependencies = [
  "async-trait",
  "forge-core",
@@ -2143,9 +2143,9 @@ dependencies = [
 
 [[package]]
 name = "rust-embed"
-version = "6.6.0"
+version = "6.6.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "cb133b9a38b5543fad3807fb2028ea47c5f2b566f4f5e28a11902f1a358348b6"
+checksum = "1b68543d5527e158213414a92832d2aab11a84d2571a5eb021ebe22c43aab066"
 dependencies = [
  "rust-embed-impl",
  "rust-embed-utils",

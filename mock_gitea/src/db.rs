@@ -19,6 +19,7 @@ use log::debug;
 use serde::{Deserialize, Serialize};
 use sqlx::sqlite::SqlitePool;
 use sqlx::sqlite::SqlitePoolOptions;
+use sqlx::ConnectOptions;
 
 #[cfg(test)]
 use println as debug;
@@ -70,16 +71,15 @@ impl ConnectionOptions {
         use std::str::FromStr;
 
         let pool = match self {
-            Self::Fresh(fresh) => fresh
-                .pool_options
-                .connect_with(
-                    SqliteConnectOptions::from_str(&fresh.url)
-                        .unwrap()
-                        .create_if_missing(true)
-                        .read_only(false),
-                )
-                .await
-                .unwrap(),
+            Self::Fresh(fresh) => {
+                let mut opts = SqliteConnectOptions::from_str(&fresh.url)
+                    .unwrap()
+                    .create_if_missing(true)
+                    .journal_mode(sqlx::sqlite::SqliteJournalMode::Wal)
+                    .read_only(false);
+                opts.disable_statement_logging();
+                fresh.pool_options.connect_with(opts).await.unwrap()
+            }
             Self::Existing(conn) => conn.0,
         };
         Ok(Database { pool })

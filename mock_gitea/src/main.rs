@@ -73,6 +73,7 @@ async fn main() {
     .workers(workers)
     .bind(&socket_addr)
     .unwrap()
-    .run().await.unwrap();
-
+    .run()
+    .await
+    .unwrap();
 }
