@@ -199,7 +199,7 @@
         db: <span class="kw-2">&amp;</span>BoxDB,
         query: String,
     ) -&gt; ServiceResult&lt;Vec&lt;db_core::Repository&gt;&gt; {
-        <span class="kw">let </span>responses = ctx.search_repository(<span class="kw-2">&amp;</span>db, query).<span class="kw">await</span><span class="question-mark">?</span>;
+        <span class="kw">let </span>responses = ctx.search_repository(db, query).<span class="kw">await</span><span class="question-mark">?</span>;
 
         <span class="prelude-val">Ok</span>(responses)
     }

@@ -60,6 +60,9 @@
 <a href="#60" id="60">60</a>
 <a href="#61" id="61">61</a>
 <a href="#62" id="62">62</a>
+<a href="#63" id="63">63</a>
+<a href="#64" id="64">64</a>
+<a href="#65" id="65">65</a>
 </pre><pre class="rust"><code><span class="comment">/*
  * ForgeFlux StarChart - A federated software forge spider
  * Copyright © 2022 Aravinth Manivannan &lt;realaravinth@batsense.net&gt;
@@ -81,16 +84,12 @@
 <span class="kw">use </span>std::time::Duration;
 
 <span class="kw">use </span>actix::dev::<span class="kw-2">*</span>;
-<span class="kw">use </span>lazy_static::lazy_static;
 <span class="kw">use </span>reqwest::{Client, ClientBuilder};
 
 <span class="kw">use </span><span class="kw">crate</span>::master::Master;
 <span class="kw">use </span><span class="kw">crate</span>::settings::Settings;
-<span class="kw">use crate</span>::{DOMAIN, PKG_NAME, VERSION};
+<span class="kw">use crate</span>::{PKG_NAME, VERSION};
 
-<span class="macro">lazy_static! </span>{
-    <span class="kw">pub static </span><span class="kw-2">ref </span>USER_AGENT: String = <span class="macro">format!</span>(<span class="string">&quot;{VERSION}---{PKG_NAME}---{DOMAIN}&quot;</span>);
-}
 <span class="doccomment">/// in seconds
 </span><span class="kw">const </span>CLIENT_TIMEOUT: u64 = <span class="number">60</span>;
 
@@ -103,9 +102,16 @@
 
 <span class="kw">impl </span>Ctx {
     <span class="kw">pub async fn </span>new(settings: Settings) -&gt; Arc&lt;<span class="self">Self</span>&gt; {
+        <span class="kw">let </span>host = settings.introducer.public_url.host_str().unwrap();
+        <span class="kw">let </span>host = <span class="kw">if let </span><span class="prelude-val">Some</span>(port) = settings.introducer.public_url.port() {
+            <span class="macro">format!</span>(<span class="string">&quot;{host}:{port}&quot;</span>)
+        } <span class="kw">else </span>{
+            host.to_owned()
+        };
+        <span class="kw">let </span>ua = <span class="macro">format!</span>(<span class="string">&quot;{VERSION}---{PKG_NAME}---{host}&quot;</span>);
         <span class="kw">let </span>timeout = Duration::new(CLIENT_TIMEOUT, <span class="number">0</span>);
         <span class="kw">let </span>client = ClientBuilder::new()
-            .user_agent(<span class="kw-2">&amp;*</span>USER_AGENT)
+            .user_agent(<span class="kw-2">&amp;*</span>ua)
             .use_rustls_tls()
             .timeout(timeout)
             .connect_timeout(timeout)

@@ -277,7 +277,7 @@
         <span class="kw">let </span><span class="kw-2">mut </span>federated_resp = Vec::default();
 
         <span class="kw">for </span>starchart <span class="kw">in </span>db.search_mini_index(<span class="kw-2">&amp;</span>query).<span class="kw">await</span><span class="question-mark">?</span>.iter() {
-            <span class="kw">if </span>db.is_starchart_imported(<span class="kw-2">&amp;</span>Url::parse(<span class="kw-2">&amp;</span>starchart)<span class="question-mark">?</span>).<span class="kw">await</span><span class="question-mark">? </span>{
+            <span class="kw">if </span>db.is_starchart_imported(<span class="kw-2">&amp;</span>Url::parse(starchart)<span class="question-mark">?</span>).<span class="kw">await</span><span class="question-mark">? </span>{
                 <span class="macro">log::debug!</span>(<span class="string">&quot;{starchart} is imported&quot;</span>);
                 <span class="kw">continue</span>;
             }
